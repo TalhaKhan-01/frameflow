@@ -1,0 +1,104 @@
+{
+  "_note": "Config for the niche-study skill. 'global' queries run without a region, 'india' with regionCode=IN. Each query costs 100 YouTube API units.",
+  "secrets_file": "~/.config/frameflow/secrets.env",
+  "report_dir": "~/Talha_Khan/Projects/Frameflow/Docs",
+  "report_context": "Method: [[Niche Study]]. Decision context: [[Wide Lanes India First]].",
+  "report_next_step": "Next step: a deep study of the breakout Shorts (hooks, pacing, captions, format) to calibrate the [[Quality Bar]].",
+  "regions": {
+    "global": null,
+    "india": "IN"
+  },
+  "language": "en",
+  "lanes": {
+    "ai-news": {
+      "label": "AI news: what it means for you",
+      "global": [
+        "AI news",
+        "ChatGPT new update",
+        "OpenAI announcement",
+        "Google Gemini update",
+        "new AI model released",
+        "Claude AI"
+      ],
+      "india": [
+        "AI news India",
+        "AI tools India"
+      ]
+    },
+    "ai-money": {
+      "label": "AI × money: chips, companies, markets, jobs",
+      "global": [
+        "Nvidia stock",
+        "AI stocks",
+        "AI bubble",
+        "AI taking jobs",
+        "semiconductor war",
+        "tech layoffs AI"
+      ],
+      "india": [
+        "AI jobs India",
+        "share market AI India"
+      ]
+    },
+    "dev-tools": {
+      "label": "Dev tool of the day: repos and open-source AI",
+      "global": [
+        "github repo you need",
+        "open source AI tool",
+        "AI coding tool",
+        "developer tools",
+        "VS Code extension",
+        "best free AI tools for coding"
+      ],
+      "india": [
+        "coding tips India",
+        "AI tools for students"
+      ]
+    },
+    "how-tech-works": {
+      "label": "How tech works: explainers",
+      "global": [
+        "how does ChatGPT work",
+        "how GPU works",
+        "how the internet works",
+        "how computers work",
+        "how AI learns",
+        "engineering explained"
+      ],
+      "india": [
+        "technology explained Hindi English",
+        "how UPI works"
+      ]
+    },
+    "india-tech": {
+      "label": "India's tech scene",
+      "global": [
+        "Indian startup",
+        "ISRO",
+        "India semiconductor",
+        "Indian tech news"
+      ],
+      "india": [
+        "India tech news",
+        "Indian startup story",
+        "Jio AI",
+        "UPI news"
+      ]
+    },
+    "global-tech": {
+      "label": "Global tech changes: big tech, gadgets, policy",
+      "global": [
+        "tech news",
+        "Apple new",
+        "Samsung new phone",
+        "big tech",
+        "tech explained",
+        "future technology"
+      ],
+      "india": [
+        "tech news today India",
+        "new smartphone launch India"
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+[project]
+name = "frameflow"
+version = "0.1.0"
+description = "Automated short vertical videos for YouTube Shorts and Instagram Reels"
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
