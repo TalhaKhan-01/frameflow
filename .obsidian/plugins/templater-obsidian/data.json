@@ -1,0 +1,12 @@
+{
+  "templates_folder": "Templates",
+  "trigger_on_file_creation": true,
+  "auto_jump_to_cursor": true,
+  "enable_folder_templates": true,
+  "folder_templates": [
+    {"folder": "Wiki/Concepts", "template": "Templates/Concept.md"},
+    {"folder": "Wiki/Sources", "template": "Templates/Source.md"},
+    {"folder": "Decisions", "template": "Templates/Decision.md"},
+    {"folder": "Docs", "template": "Templates/Doc.md"}
+  ]
+}
