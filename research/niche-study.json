@@ -1,7 +1,7 @@
 {
   "_note": "Config for the niche-study skill. 'global' queries run without a region, 'india' with regionCode=IN. Each query costs 100 YouTube API units.",
   "secrets_file": "~/.config/frameflow/secrets.env",
-  "report_dir": "~/Talha_Khan/Projects/Frameflow/Docs",
+  "report_dir": "vault/Docs",
   "report_context": "Method: [[Niche Study]]. Decision context: [[Wide Lanes India First]].",
   "report_next_step": "Next step: a deep study of the breakout Shorts (hooks, pacing, captions, format) to calibrate the [[Quality Bar]].",
   "regions": {
