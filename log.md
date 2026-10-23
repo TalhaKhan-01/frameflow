@@ -6,6 +6,13 @@ tags: [log]
 
 Newest entries at the top.
 
+## 2026-10-23 · Niche direction, publishing, skills
+- [[Wide Lanes India First]] accepted: all six lanes, English, India-first audience; "Thirdspace" stays an experiment.
+- [[Manual Publishing For Now]] accepted: Google Auth Platform skipped; uploads by hand.
+- Stock alternatives added to [[Tool Candidates]] (Openverse, Wikimedia, NASA).
+- 27 Claude skills installed into the personal setup (GSAP ×8, Remotion ×6, HyperFrames ×11, Context7 find-docs, Playwright CLI); record in `~/Talha_Khan/Claude/skills/VENDORED.md`.
+- Next: build the `niche-study` tool and run [[Niche Study]].
+
 ## 2026-10-23 · Setup progress
 - Done: Bitwarden; Google Cloud project `Frameflow`; YouTube channel `UCrcF7Q5J4kEENdJuA8BPQxQ` on Talha's own account (to move later); Instagram Creator account `@madebythirdspace`.
 - Blocked: Pexels and Pixabay API key requests are paused. Need free alternatives (see [[Tool Candidates]]).

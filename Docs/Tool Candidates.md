@@ -69,7 +69,9 @@ Hardware: RTX 3050 Laptop (4 GB VRAM), 16 threads, 15 GB RAM. FFmpeg, Blender, N
 | Tool | Licence | Notes |
 |---|---|---|
 | ★ Playwright | Apache-2.0 | Deterministic screenshots and page captures (never a jittery screencast); news snapshots, product pages |
-| ★ Pexels, Pixabay | free commercial licences | Stock video and photos through their APIs |
+| ⏸ Pexels, Pixabay | free commercial licences | API key requests paused (2026-10-23); waitlist |
+| ★ Openverse API | CC / public domain, per file | Images and audio, no key needed |
+| ★ Wikimedia Commons, NASA Images APIs | per file / public domain | No key needed |
 | Mixkit, Coverr | free licences | More stock video |
 | NASA media, Wikimedia Commons | public domain / per file | Space and science shots |
 | Lucide / Iconify icons, Google Fonts | ISC / OFL | Icons and fonts |
