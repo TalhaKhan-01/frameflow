@@ -2,6 +2,7 @@
 
     frameflow render <plan.json> [--out DIR] [--quality looks|delivery] [--mood MOOD]
     frameflow ideas collect|rank|list
+    frameflow script <idea-id>
     frameflow qa <out-dir>
     frameflow validate <plan.json>
 """
@@ -23,6 +24,9 @@ def main():
     i.add_argument("action", choices=["collect", "rank", "list"])
     i.add_argument("--hours", type=int, default=48)
     i.add_argument("--top", type=int, default=15)
+    s = sub.add_parser("script", help="ranked idea -> scene plan (plans/<id>.json)")
+    s.add_argument("idea_id", type=int)
+    s.add_argument("--model", default="sonnet")
     q = sub.add_parser("qa", help="automatic quality gates on a render folder")
     q.add_argument("out_dir")
     v = sub.add_parser("validate", help="check a scene plan")
@@ -40,6 +44,9 @@ def main():
         else:
             for r in ideas.top(a.top):
                 print(f"{r['score']:3} {r['lane']:15} {r['title'][:70]}\n    hook: {r['hook']}\n    India: {r['india_angle']}")
+    elif a.cmd == "script":
+        from frameflow import script
+        print(json.dumps(script.write(a.idea_id, a.model), indent=1))
     elif a.cmd == "qa":
         from frameflow import qa
         sys.argv = ["qa", a.out_dir]

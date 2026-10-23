@@ -66,7 +66,13 @@ def norm(text):
     """Lowercase word tokens; numbers spelled out, ₹ read as rupees, spelled letters (G.S.T.) joined."""
     text = text.lower().replace("₹", " rupees ").replace("%", " percent ")
     text = re.sub(r"\b(?:[a-z]\.){2,}", lambda m: m.group(0).replace(".", ""), text)
-    text = re.sub(r"\d[\d,]*", lambda m: " " + spell(int(m.group(0).replace(",", ""))) + " ", text)
+    def number(m):
+        raw = m.group(0)
+        n = int(raw.replace(",", ""))
+        if "," not in raw and 1900 <= n <= 2099:   # years are said "twenty twenty-seven", not "two thousand ..."
+            return f" {spell(n // 100)} {spell(n % 100) if n % 100 else 'hundred'} "
+        return " " + spell(n) + " "
+    text = re.sub(r"\d[\d,]*", number, text)
     return re.findall(r"[a-z]+", text)
 
 
@@ -111,7 +117,7 @@ def composition(words, total):
         #captions-band { position: absolute; left: var(--ff-safe-x); right: var(--ff-safe-right); top: var(--ff-caption-top);
           height: 260px; display: flex; align-items: center; justify-content: center; }
         .cap-chunk { position: absolute; left: 0; right: 0; text-align: center; opacity: 0; }
-        .cap-w { display: inline-block; margin: 0 0.22em; font: 800 84px/1.1 var(--ff-display); letter-spacing: -0.02em;
+        .cap-w { display: inline-block; margin: 0 0.26em; transform-origin: 50% 60%; font: 800 84px/1.1 var(--ff-display); letter-spacing: -0.02em;
           color: var(--ff-fg); text-transform: uppercase; -webkit-text-stroke: 10px rgba(5, 7, 12, 0.85); paint-order: stroke fill; }
         .cap-w.on { color: var(--ff-accent-2); }
       </style>
@@ -141,7 +147,7 @@ def composition(words, total):
             c.words.forEach((w, wi) => {
               const el = "#cap-c" + ci + "-w" + wi;
               tl.set(el, { attr: { class: "cap-w on" } }, w.s);
-              tl.fromTo(el, { scale: 1.18 }, { scale: 1, duration: 0.16, ease: "power2.out" }, w.s);
+              tl.fromTo(el, { scale: 1.1 }, { scale: 1, duration: 0.16, ease: "power2.out" }, w.s);
               if (wi + 1 < c.words.length) tl.set(el, { attr: { class: "cap-w" } }, c.words[wi + 1].s);
             });
           });

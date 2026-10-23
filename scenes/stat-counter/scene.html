@@ -8,7 +8,7 @@
         #__ID__-wrap { position: relative; display: flex; align-items: center; gap: 48px; }
         #__ID__-ring { width: 340px; height: 340px; flex: none; }
         #__ID__-ring circle { fill: none; stroke-width: 26; }
-        #__ID__-value { font-size: 260px; line-height: 0.9; color: var(--ff-accent-2); white-space: nowrap; }
+        #__ID__-value { display: inline-block; font-size: 260px; line-height: 0.9; color: var(--ff-accent-2); white-space: nowrap; }
         #__ID__-value small { font-size: 0.45em; color: var(--ff-fg); margin: 0 0.06em; }
         #__ID__-label { margin-top: 36px; font: 600 58px/1.2 var(--ff-body); color: var(--ff-fg); max-width: 880px; }
         #__ID__-bar { margin-top: 44px; height: 22px; background: var(--ff-panel); border-radius: 11px; overflow: hidden; }
@@ -44,7 +44,17 @@
           const C = 2 * Math.PI * 125;
           const arc = document.getElementById("__ID__-arc");
           const proxy = { v: 0 };
+          // Fit the number to the stage width (checked every frame: digits grow while counting, fonts may load late).
+          const wrap = document.getElementById("__ID__-wrap");
+          const fitValue = () => {
+            const room = stage.clientWidth * 0.94 - (arc ? 388 : 0);
+            let fs = 260;
+            valueEl.style.fontSize = fs + "px";
+            while (valueEl.scrollWidth > room && fs > 90) { fs -= 8; valueEl.style.fontSize = fs + "px"; }
+          };
           const render = () => {
+            write(D.value);   // size for the final value, so the number doesn't jump while counting
+            fitValue();
             write(proxy.v);
             if (arc) arc.setAttribute("stroke-dasharray", `${(C * proxy.v) / 100} ${C}`);
           };
@@ -55,7 +65,7 @@
           tl.fromTo(proxy, { v: 0 }, { v: D.value, duration: 1.4, ease: "power2.out", onUpdate: render }, 0.2);
           if (!pct) tl.fromTo("#__ID__-fill", { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "power2.out" }, 0.2);
           tl.fromTo("#__ID__-label", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.7);
-          tl.fromTo("#__ID__-wrap", { scale: 1 }, { scale: 1.04, duration: __DUR__, ease: "none" }, 0);
+          tl.fromTo("#__ID__-wrap", { scale: 1 }, { scale: 1.04, duration: __DUR__, ease: "none", onUpdate: render }, 0);
           window.__timelines["__ID__"] = tl;
         })();
       </script>

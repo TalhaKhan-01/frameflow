@@ -1,0 +1,168 @@
+{
+ "id": "2026-10-23-whatsapp-telegram-sim-binding-rules-from-january",
+ "lane": "india-tech",
+ "title": "WhatsApp may need an active SIM from 1 Jan 2027",
+ "description": "India's DoT SIM-binding rules could tie WhatsApp, Telegram and other apps to an active, registered SIM. Here's who is affected.",
+ "scenes": [
+  {
+   "type": "headline-reveal",
+   "say": "WhatsApp and Telegram may need a registered, active SIM in your phone from January first, twenty twenty-seven.",
+   "data": {
+    "kicker": "NEW DoT RULE",
+    "lines": [
+     "WhatsApp. Telegram.",
+     "Active SIM needed",
+     "From January 1, 2027"
+    ],
+    "highlight": "Active SIM needed"
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/apps/whatsapp-telegram-sim-binding-rules-from-january-1-2027-who-will-be-affected-in-india-11792669130256.html"
+   ]
+  },
+  {
+   "type": "stat-counter",
+   "say": "The government says cyber fraud cost Indians more than twenty-two thousand eight hundred crore rupees last year.",
+   "data": {
+    "value": 22800,
+    "prefix": "₹",
+    "suffix": " cr",
+    "label": "Cyber fraud losses last year, per Ministry",
+    "kicker": "WHY THE RULE"
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/apps/whatsapp-telegram-sim-binding-rules-from-january-1-2027-who-will-be-affected-in-india-11792669130256.html"
+   ]
+  },
+  {
+   "type": "comparison",
+   "say": "Today, you can often keep your account after removing the SIM. Binding closes that gap.",
+   "data": {
+    "title": "Account access",
+    "columns": [
+     {
+      "label": "Today",
+      "value": "Works without SIM",
+      "note": "After one-time SMS code"
+     },
+     {
+      "label": "SIM binding",
+      "value": "SIM must be active",
+      "note": "Installed in the device"
+     }
+    ],
+    "highlight": 1
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/apps/whatsapp-telegram-sim-binding-rules-from-january-1-2027-who-will-be-affected-in-india-11792669130256.html"
+   ]
+  },
+  {
+   "type": "headline-reveal",
+   "say": "Covered apps include WhatsApp, Telegram, Snapchat, Arattai, ShareChat, Josh, JioChat and Signal.",
+   "data": {
+    "kicker": "APPS COVERED",
+    "lines": [
+     "WhatsApp, Telegram, Signal",
+     "Snapchat, Arattai, JioChat",
+     "ShareChat, Josh"
+    ],
+    "highlight": "WhatsApp, Telegram, Signal"
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/apps/whatsapp-telegram-sim-binding-rules-from-january-1-2027-who-will-be-affected-in-india-11792669130256.html"
+   ]
+  },
+  {
+   "type": "stat-counter",
+   "say": "WhatsApp has an estimated five hundred million users in India, so the impact could be big.",
+   "data": {
+    "value": 500,
+    "suffix": " million",
+    "label": "Estimated WhatsApp users in India",
+    "kicker": "SCALE"
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/apps/whatsapp-telegram-sim-binding-rules-from-january-1-2027-who-will-be-affected-in-india-11792669130256.html"
+   ]
+  },
+  {
+   "type": "comparison",
+   "say": "Wi-Fi-only users, multi-device users, frequent SIM swappers and people travelling abroad may need to adjust.",
+   "data": {
+    "kicker": "WHO'S AFFECTED",
+    "columns": [
+     {
+      "label": "Wi-Fi only",
+      "value": "No SIM"
+     },
+     {
+      "label": "Many devices",
+      "value": "Multi-device"
+     },
+     {
+      "label": "SIM swappers",
+      "value": "Frequent change"
+     },
+     {
+      "label": "Travellers",
+      "value": "Abroad often"
+     }
+    ]
+   },
+   "claim": true,
+   "payoff": true,
+   "sources": [
+    "https://www.livemint.com/technology/apps/whatsapp-telegram-sim-binding-rules-from-january-1-2027-who-will-be-affected-in-india-11792669130256.html"
+   ]
+  },
+  {
+   "type": "stat-counter",
+   "say": "A CUTS International survey found eighty percent of consumers expect disruption from SIM binding.",
+   "data": {
+    "value": 80,
+    "suffix": "%",
+    "label": "Consumers expecting disruption (CUTS survey)",
+    "kicker": "SURVEY"
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/apps/whatsapp-telegram-sim-binding-rules-from-january-1-2027-who-will-be-affected-in-india-11792669130256.html"
+   ]
+  },
+  {
+   "type": "headline-reveal",
+   "say": "But accounts won't all stop that day. The six-hour Web logout idea was also dropped.",
+   "data": {
+    "kicker": "GOOD NEWS",
+    "lines": [
+     "No 6-hour Web logouts",
+     "Risk-based logout instead"
+    ],
+    "highlight": "No 6-hour Web logouts"
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/apps/whatsapp-telegram-sim-binding-rules-from-january-1-2027-who-will-be-affected-in-india-11792669130256.html"
+   ]
+  },
+  {
+   "type": "headline-reveal",
+   "say": "Do you use WhatsApp without your SIM? Send this to someone who does.",
+   "data": {
+    "kicker": "YOUR TURN",
+    "lines": [
+     "Use WhatsApp",
+     "without your SIM?"
+    ],
+    "highlight": "without your SIM?"
+   }
+  }
+ ],
+ "idea_id": 238
+}

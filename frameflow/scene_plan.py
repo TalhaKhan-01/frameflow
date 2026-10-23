@@ -24,7 +24,7 @@ from pathlib import Path
 
 LANES = {"global-tech", "india-tech", "ai-news", "dev-tools", "ai-money", "how-tech-works"}
 MAX_SECONDS = 60.0
-WORDS_PER_SECOND = 2.8   # about 170 words a minute, the breakout median from the deep study
+WORDS_PER_SECOND = 2.7   # about 160 words a minute: Kokoro at speed 1.1 (breakout median is 171-175)
 PAD = 0.25               # silence between scenes, as in the voice step
 URL = re.compile(r"^https?://[^\s/$.?#].[^\s]*$", re.I)
 

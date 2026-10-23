@@ -1,11 +1,12 @@
 {
  "type": "stat-counter",
- "say": "Most of the gap is customs duty and G.S.T., not Apple's base price.",
+ "say": "Cyber fraud cost Indians more than twenty-two thousand eight hundred crore rupees last year.",
  "data": {
-  "kicker": "TAX ON PHONES",
-  "value": 18,
-  "suffix": "%",
-  "label": "GST on every phone sold in India"
+  "kicker": "WHY THE RULE",
+  "value": 22800,
+  "prefix": "₹",
+  "suffix": " cr",
+  "label": "Cyber fraud losses last year (illustrative)"
  },
  "claim": true,
  "sources": [
