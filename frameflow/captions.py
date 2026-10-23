@@ -117,8 +117,8 @@ def composition(words, total):
         #captions-band { position: absolute; left: var(--ff-safe-x); right: var(--ff-safe-right); top: var(--ff-caption-top);
           height: 260px; display: flex; align-items: center; justify-content: center; }
         .cap-chunk { position: absolute; left: 0; right: 0; text-align: center; opacity: 0; }
-        .cap-w { display: inline-block; margin: 0 0.26em; transform-origin: 50% 60%; font: 800 96px/1.08 var(--ff-display); letter-spacing: -0.02em;
-          color: var(--ff-fg); text-transform: uppercase; -webkit-text-stroke: 10px rgba(5, 7, 12, 0.85); paint-order: stroke fill; }
+        .cap-w { display: inline-block; margin: 0 0.26em; transform-origin: 50% 60%; font: 800 96px/1.08 var(--ff-cap-font); letter-spacing: -0.02em;
+          color: var(--ff-cap-fill); text-transform: uppercase; -webkit-text-stroke: 10px var(--ff-cap-stroke); paint-order: stroke fill; }
         .cap-w.on { color: var(--ff-accent-2); }
       </style>
       <div id="captions-root" data-composition-id="captions" data-width="1080" data-height="1920" data-duration="__TOTAL__">

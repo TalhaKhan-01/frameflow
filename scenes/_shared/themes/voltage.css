@@ -1,0 +1,5 @@
+/* C · Voltage: near-black, electric lime + hot pink; loud and energetic. */
+:root {
+  --ff-bg: #070708; --ff-bg-2: #0f0f12; --ff-panel: #141418; --ff-line: #2a2a31; --ff-glow: #1a1f08;
+  --ff-fg: #f6f6f2; --ff-muted: #b4b4bd; --ff-accent: #c6ff3d; --ff-accent-2: #ff4fa3; --ff-accent-3: #47e4ff; --ff-bad: #ff4fa3;
+}

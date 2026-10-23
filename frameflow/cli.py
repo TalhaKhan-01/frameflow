@@ -24,6 +24,7 @@ def main():
     r.add_argument("--out")
     r.add_argument("--quality", default="looks", choices=["draft", "looks", "delivery"])
     r.add_argument("--mood")
+    r.add_argument("--theme", help="visual identity in scenes/_shared/themes/ (default: plan's theme, else theme.css)")
     i = sub.add_parser("ideas", help="collect, rank and list ideas")
     i.add_argument("action", choices=["collect", "rank", "list"])
     i.add_argument("--hours", type=int, default=48)
@@ -62,7 +63,7 @@ def main():
     a = ap.parse_args()
     if a.cmd == "render":
         from frameflow import pipeline
-        print(json.dumps(pipeline.render(a.plan, a.out, a.quality, a.mood), indent=1))
+        print(json.dumps(pipeline.render(a.plan, a.out, a.quality, a.mood, a.theme), indent=1))
     elif a.cmd == "ideas":
         from frameflow import ideas
         if a.action == "collect":

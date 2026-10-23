@@ -29,6 +29,11 @@
   --ff-accent-2: #f6c177;    /* amber: the one thing to look at */
   --ff-accent-3: #a78bfa;    /* violet: secondary series */
   --ff-bad: #f7768e;
+  --ff-glow: #1b2234;         /* background glow */
+  --ff-cap-font: var(--ff-display);          /* word-pop captions */
+  --ff-cap-fill: #f2f3f5;
+  --ff-cap-stroke: rgba(5, 7, 12, 0.85);
+  --ff-chip-bg: rgba(11, 13, 18, 0.7);       /* source chips and labels over content */
   /* type */
   --ff-display: "FF Display", ui-sans-serif, system-ui, sans-serif;
   --ff-body: "FF Body", ui-sans-serif, system-ui, sans-serif;
@@ -45,7 +50,7 @@ html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; backgro
 * { box-sizing: border-box; }
 
 /* Shared scene pieces (classes, never on a sub-composition root) */
-.ff-bg { position: absolute; inset: 0; background: radial-gradient(120% 70% at 20% 10%, #1b2234 0%, var(--ff-bg) 60%); }
+.ff-bg { position: absolute; inset: 0; background: radial-gradient(120% 70% at 20% 10%, var(--ff-glow) 0%, var(--ff-bg) 60%); }
 .ff-grid { position: absolute; inset: 0; opacity: 0.35;
   background-image: linear-gradient(var(--ff-line) 1px, transparent 1px), linear-gradient(90deg, var(--ff-line) 1px, transparent 1px);
   background-size: 90px 90px; -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, #000 60%, transparent); }

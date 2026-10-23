@@ -72,7 +72,7 @@ def mix(raw, out, voice_dir, mood, scene_starts, total):
     return out
 
 
-def render(plan_path, out_dir=None, quality="looks", mood=None):
+def render(plan_path, out_dir=None, quality="looks", mood=None, theme=None):
     plan = json.loads(Path(plan_path).read_text())
     errs = scene_plan.validate(plan)
     if errs:
@@ -87,7 +87,7 @@ def render(plan_path, out_dir=None, quality="looks", mood=None):
     shutil.copy(out / "script.json", vdir / "script.json")
     words = captions.align(vdir)
     word_error = captions.wer(" ".join(l["say"] for l in script["lines"]), " ".join(w["w"] for w in words))
-    proj, total = build.project(plan, out / "project", vdir)
+    proj, total = build.project(plan, out / "project", vdir, theme=theme)
     raw = build.render(proj, out / "raw.mp4", quality)
     mood = mood or plan.get("music", {}).get("mood") or LANE_MOOD.get(plan["lane"], "calm-tech")
     starts = [s for s, _ in build.timings(plan, vdir)]

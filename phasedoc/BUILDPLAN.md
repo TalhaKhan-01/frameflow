@@ -79,8 +79,9 @@
   - [x] **P3.2** Scene-plan contract with a validator  
     _Acceptance:_ tests/test_scene_plan.py passes: a valid sample plan validates, and plans with an unknown scene type, a missing field or a total over 60 s are rejected
     _Note 2026-10-23:_ Test run 2026-10-23: uv run pytest tests/test_scene_plan.py -> 7 passed (valid sample; unknown type, missing field, over 60 s, unknown lane rejected). frameflow/scene_plan.py, 7 scene types.
-  - [ ] **P3.3** Visual identity locked  
+  - [~] **P3.3** Visual identity locked  
     _Acceptance:_ vault/Docs/Visual Identity.md accepted by Talha: palette tokens, a licensed font pairing, motion language, safe zones for both platforms, and one signature move
+    _Note 2026-10-24:_ Options ready 2026-10-24: vault/Docs/Visual Identity.md with the same video rendered in 3 identities (A Midnight Signal, B Paper Press with Fraunces, C Voltage) + comparison sheet; themes are token files in scenes/_shared/themes/. Waiting for Talha's choice.
   - **P3.4 Scene templates** (8/8)
     - [x] **P3.4.1** Headline reveal  
       _Acceptance:_ rendering scenes/headline-reveal/sample.json gives a 1080x1920 clip of the planned length; two renders give identical frame hashes at t=1 s

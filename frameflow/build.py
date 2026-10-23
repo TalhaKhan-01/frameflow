@@ -95,7 +95,7 @@ def credits_composition(credits, total):
   #credits-root {{ position: absolute; inset: 0; pointer-events: none; }}
   .credit {{ position: absolute; left: var(--ff-safe-x); top: calc(var(--ff-caption-top) - 92px); opacity: 0;
     font: 600 34px/1 var(--ff-body); color: var(--ff-muted); padding: 14px 20px; border: 2px solid var(--ff-line);
-    border-radius: 999px; background: rgba(11, 13, 18, 0.7); }}
+    border-radius: 999px; background: var(--ff-chip-bg); }}
   .credit b {{ color: var(--ff-fg); font-weight: 700; }}
 </style>
 <div id="credits-root" data-composition-id="credits" data-width="1080" data-height="1920" data-duration="{total:.3f}"></div>
@@ -155,7 +155,7 @@ def render_scene_file(scene, comp_id, duration):
                .replace("__DATA__", json_for_html(scene.get("data", {}))))
 
 
-def project(plan, out_dir, voice_dir=None, captions=True):
+def project(plan, out_dir, voice_dir=None, captions=True, theme=None):
     errs = scene_plan.validate(plan)
     if errs:
         raise SystemExit("plan is not valid:\n" + "\n".join(errs))
@@ -164,6 +164,13 @@ def project(plan, out_dir, voice_dir=None, captions=True):
         shutil.rmtree(out)
     (out / "compositions").mkdir(parents=True)
     shutil.copytree(SHARED, out / "assets")
+    theme = theme or plan.get("theme")
+    if theme:   # a visual identity = a few token overrides appended to the shared theme
+        extra = SHARED / "themes" / f"{theme}.css"
+        if not extra.exists():
+            raise SystemExit(f"no theme {theme} in {SHARED / 'themes'}")
+        with open(out / "assets" / "theme.css", "a") as f:
+            f.write("\n" + extra.read_text())
     slots = timings(plan, voice_dir)
     total = round(slots[-1][0] + slots[-1][1] + TAIL, 3)
     hosts = []
