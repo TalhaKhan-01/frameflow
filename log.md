@@ -6,6 +6,12 @@ tags: [log]
 
 Newest entries at the top.
 
+## 2026-10-23 · Niche study, first run
+- YouTube API key added and tested. Shortsmith (office skill) read for ideas only; no code copied.
+- Built the `niche-study` tool, then turned it into a generic skill at Talha's request ("tools are skills": the skill holds the code, the project holds `research/niche-study.json` and `data/`).
+- First run: [[Niche Study Results 2026-10-23]]. Reading and caveats in [[Niche Study]].
+- Next: tune the queries and add a topic filter, re-run, then the deep study of breakout Shorts.
+
 ## 2026-10-23 · Niche direction, publishing, skills
 - [[Wide Lanes India First]] accepted: all six lanes, English, India-first audience; "Thirdspace" stays an experiment.
 - [[Manual Publishing For Now]] accepted: Google Auth Platform skipped; uploads by hand.

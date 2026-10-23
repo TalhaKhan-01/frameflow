@@ -9,7 +9,8 @@ Catalogue of every note in the vault, one line each. Kept up to date by Claude.
 Hub: [[Frameflow]]
 
 ## Docs
-- [[Niche Study]]: planned; method for scoring the six lanes
+- [[Niche Study]]: method and first-run reading
+- [[Niche Study Results 2026-10-23]]: generated lane scores, breakout and most-viewed Shorts per lane
 - [[Strategy Q&A 2026-10-23]]: agentic or not, what high quality means, how the algorithms pick videos
 - [[Setup Tasks]]: Talha's checklist for accounts and keys, and the secrets rules
 - [[Tool Candidates]]: free tools for each stage, with licences and hardware notes
