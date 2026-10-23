@@ -1,19 +1,78 @@
 {
-  "id": "sample-iphone-prices",
-  "lane": "global-tech",
-  "title": "Same iPhone, ₹20,000 more in India",
-  "voice": {"voice": "af_heart", "speed": 0.95},
-  "scenes": [
-    {"type": "headline-reveal", "say": "The same iPhone costs twenty thousand rupees more in India than in Dubai.",
-     "data": {"kicker": "INDIA vs DUBAI", "lines": ["Same iPhone,", "₹20,000 more."]},
-     "claim": true, "sources": ["https://www.apple.com/in/shop/buy-iphone", "https://www.apple.com/ae/shop/buy-iphone"]},
-    {"type": "comparison", "say": "Here's the same model, in three countries, converted to rupees.",
-     "data": {"title": "Same model, in ₹", "columns": [{"label": "India", "value": "₹1,34,900"}, {"label": "USA", "value": "₹1,19,000"}, {"label": "UAE", "value": "₹1,14,600"}]},
-     "claim": true, "sources": ["https://www.apple.com/in/shop/buy-iphone", "https://www.apple.com/shop/buy-iphone", "https://www.apple.com/ae/shop/buy-iphone"]},
-    {"type": "stat-counter", "say": "Most of the gap is customs duty and G.S.T., not Apple's base price.",
-     "data": {"value": 18, "suffix": "%", "label": "GST on phones in India"},
-     "claim": true, "sources": ["https://cbic-gst.gov.in/gst-goods-services-rates.html"]},
-    {"type": "headline-reveal", "say": "Would you fly to Dubai for a phone? Tell me below.",
-     "data": {"lines": ["Would you fly", "for a phone?"]}}
-  ]
+ "id": "sample-iphone-prices",
+ "lane": "global-tech",
+ "title": "Same iPhone, ₹20,000 more in India",
+ "voice": {
+  "voice": "af_heart",
+  "speed": 0.95
+ },
+ "scenes": [
+  {
+   "type": "headline-reveal",
+   "say": "The same iPhone costs twenty thousand rupees more in India than in Dubai.",
+   "data": {
+    "kicker": "INDIA vs DUBAI",
+    "lines": [
+     "Same iPhone,",
+     "₹20,000 more."
+    ]
+   },
+   "claim": true,
+   "sources": [
+    "https://www.apple.com/in/shop/buy-iphone",
+    "https://www.apple.com/ae/shop/buy-iphone"
+   ]
+  },
+  {
+   "type": "comparison",
+   "say": "Here's the same model, in three countries, converted to rupees.",
+   "data": {
+    "title": "Same model, in ₹",
+    "columns": [
+     {
+      "label": "India",
+      "value": "₹1,34,900"
+     },
+     {
+      "label": "USA",
+      "value": "₹1,19,000"
+     },
+     {
+      "label": "UAE",
+      "value": "₹1,14,600"
+     }
+    ]
+   },
+   "claim": true,
+   "sources": [
+    "https://www.apple.com/in/shop/buy-iphone",
+    "https://www.apple.com/shop/buy-iphone",
+    "https://www.apple.com/ae/shop/buy-iphone"
+   ]
+  },
+  {
+   "type": "stat-counter",
+   "say": "Most of the gap is customs duty and G.S.T., not Apple's base price.",
+   "data": {
+    "value": 18,
+    "suffix": "%",
+    "label": "GST on phones in India"
+   },
+   "claim": true,
+   "sources": [
+    "https://cbic-gst.gov.in/gst-goods-services-rates.html"
+   ]
+  },
+  {
+   "type": "headline-reveal",
+   "say": "Would you fly to Dubai for a phone? Tell me below.",
+   "data": {
+    "lines": [
+     "Would you fly",
+     "for a phone?"
+    ]
+   }
+  }
+ ],
+ "_note": "Test fixture with illustrative prices. Not checked; never publish as-is."
 }

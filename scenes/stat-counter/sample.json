@@ -1,0 +1,15 @@
+{
+ "type": "stat-counter",
+ "say": "Most of the gap is customs duty and G.S.T., not Apple's base price.",
+ "data": {
+  "kicker": "TAX ON PHONES",
+  "value": 18,
+  "suffix": "%",
+  "label": "GST on every phone sold in India"
+ },
+ "claim": true,
+ "sources": [
+  "https://cbic-gst.gov.in/gst-goods-services-rates.html"
+ ],
+ "_note": "Template sample with illustrative numbers. Not checked; never publish as-is."
+}

@@ -1,0 +1,31 @@
+{
+ "type": "comparison",
+ "say": "Here's the same model, in three countries, converted to rupees.",
+ "data": {
+  "kicker": "SAME iPHONE, IN ₹",
+  "columns": [
+   {
+    "label": "India",
+    "value": "₹1,34,900",
+    "note": "incl. 18% GST"
+   },
+   {
+    "label": "USA",
+    "value": "₹1,19,000",
+    "note": "before state sales tax"
+   },
+   {
+    "label": "UAE",
+    "value": "₹1,14,600",
+    "note": "incl. 5% VAT"
+   }
+  ]
+ },
+ "claim": true,
+ "sources": [
+  "https://www.apple.com/in/shop/buy-iphone",
+  "https://www.apple.com/shop/buy-iphone",
+  "https://www.apple.com/ae/shop/buy-iphone"
+ ],
+ "_note": "Template sample with illustrative numbers. Not checked; never publish as-is."
+}

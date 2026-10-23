@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; color: var(--ff-fg); font-family: var(--ff-body); }
+        #__ID__-svg { width: 100%; height: 760px; overflow: visible; }
+        #__ID__-svg .lab { font: 600 30px var(--ff-body); fill: var(--ff-muted); }
+        #__ID__-svg .val { font: 700 40px var(--ff-display); fill: var(--ff-fg); }
+        #__ID__-svg .val.hot { fill: var(--ff-accent-2); }
+        #__ID__-svg .bar { fill: var(--ff-accent); }
+        #__ID__-svg .bar.hot { fill: var(--ff-accent-2); }
+        #__ID__-svg .axis { stroke: var(--ff-line); stroke-width: 3; }
+        #__ID__-svg .line { fill: none; stroke: var(--ff-accent); stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+        #__ID__-svg .dot { fill: var(--ff-bg); stroke: var(--ff-accent); stroke-width: 7; }
+        #__ID__-svg .dot.hot { stroke: var(--ff-accent-2); fill: var(--ff-accent-2); }
+        #__ID__-unit { margin-top: 18px; font: 500 32px var(--ff-body); color: var(--ff-muted); }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__">
+        <div class="ff-bg"></div><div class="ff-grid"></div>
+        <div class="ff-stage" id="__ID__-stage"></div>
+      </div>
+      <script>
+        (() => {
+          const D = __DATA__;
+          const NS = "http://www.w3.org/2000/svg";
+          const stage = document.getElementById("__ID__-stage");
+          if (D.kicker) { const k = document.createElement("div"); k.className = "ff-kicker"; k.id = "__ID__-kicker"; k.textContent = D.kicker; stage.append(k); }
+          if (D.title) { const t = document.createElement("div"); t.className = "ff-title"; t.id = "__ID__-title"; t.textContent = D.title; stage.append(t); }
+          const svg = document.createElementNS(NS, "svg");
+          svg.id = "__ID__-svg";
+          const W = 920, H = 760, top = 70, bottom = 70, plotH = H - top - bottom;
+          svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+          stage.append(svg);
+          if (D.unit) { const u = document.createElement("div"); u.id = "__ID__-unit"; u.textContent = D.unit; stage.append(u); }
+          const pts = D.series, n = pts.length;
+          const max = Math.max(...pts.map((p) => p.value), 0) || 1;
+          const hot = Number.isInteger(D.highlight) ? D.highlight : n - 1;
+          const fmt = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 1 });
+          const el = (tag, attrs, text) => {
+            const e = document.createElementNS(NS, tag);
+            for (const k in attrs) e.setAttribute(k, attrs[k]);
+            if (text != null) e.textContent = text;
+            svg.append(e);
+            return e;
+          };
+          el("line", { class: "axis", x1: 0, x2: W, y1: H - bottom, y2: H - bottom });
+          const slot = W / n, x = (i) => slot * i + slot / 2, y = (v) => top + plotH * (1 - v / max);
+          const tl = gsap.timeline({ paused: true });
+          if (D.kicker) tl.fromTo("#__ID__-kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, 0);
+          if (D.title) tl.fromTo("#__ID__-title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+          if (D.kind === "bar") {
+            const bw = Math.min(slot * 0.62, 150);
+            pts.forEach((p, i) => {
+              const h = plotH * (p.value / max);
+              const bar = el("rect", { class: "bar" + (i === hot ? " hot" : ""), x: x(i) - bw / 2, y: H - bottom - h, width: bw, height: h, rx: 10 });
+              const val = el("text", { class: "val" + (i === hot ? " hot" : ""), x: x(i), y: H - bottom - h - 18, "text-anchor": "middle" }, fmt.format(p.value));
+              el("text", { class: "lab", x: x(i), y: H - bottom + 46, "text-anchor": "middle" }, p.label);
+              const at = 0.35 + i * (1.2 / n);
+              tl.fromTo(bar, { scaleY: 0, transformOrigin: "50% 100%" }, { scaleY: 1, transformOrigin: "50% 100%", duration: 0.7, ease: "power3.out" }, at);
+              tl.fromTo(val, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.45);
+            });
+          } else {
+            const d = pts.map((p, i) => `${i ? "L" : "M"}${x(i)},${y(p.value)}`).join(" ");
+            const path = el("path", { class: "line", d });
+            const len = path.getTotalLength();
+            path.setAttribute("stroke-dasharray", `${len} ${len}`);
+            tl.fromTo(path, { attr: { "stroke-dashoffset": len } }, { attr: { "stroke-dashoffset": 0 }, duration: 1.4, ease: "power2.inOut" }, 0.35);
+            pts.forEach((p, i) => {
+              const dot = el("circle", { class: "dot" + (i === hot ? " hot" : ""), cx: x(i), cy: y(p.value), r: i === hot ? 16 : 11 });
+              el("text", { class: "lab", x: x(i), y: H - bottom + 46, "text-anchor": "middle" }, p.label);
+              const val = el("text", { class: "val" + (i === hot ? " hot" : ""), x: x(i), y: y(p.value) - 30, "text-anchor": "middle" }, fmt.format(p.value));
+              const at = 0.35 + (1.4 * i) / Math.max(n - 1, 1);
+              tl.fromTo([dot, val], { opacity: 0 }, { opacity: 1, duration: 0.25 }, at);
+            });
+          }
+          tl.fromTo("#__ID__-svg", { scale: 1 }, { scale: 1.03, duration: __DUR__, ease: "none", transformOrigin: "50% 100%" }, 0);
+          window.__timelines["__ID__"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

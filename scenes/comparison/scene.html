@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; color: var(--ff-fg); font-family: var(--ff-body); }
+        .__ID__-row { position: relative; padding: 30px 34px; margin-bottom: 26px; background: var(--ff-panel);
+          border: 2px solid var(--ff-line); border-radius: 22px; overflow: hidden; }
+        .__ID__-row.hot { border-color: var(--ff-accent-2); }
+        .__ID__-fill { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(125, 211, 192, 0.14); transform-origin: 0 50%; }
+        .__ID__-row.hot .__ID__-fill { background: rgba(246, 193, 119, 0.2); }
+        .__ID__-top { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; }
+        .__ID__-label { font: 600 50px/1.1 var(--ff-body); color: var(--ff-fg); }
+        .__ID__-value { font-size: 76px; line-height: 1; white-space: nowrap; color: var(--ff-fg); }
+        .__ID__-row.hot .__ID__-value { color: var(--ff-accent-2); }
+        .__ID__-note { position: relative; margin-top: 10px; font: 500 34px/1.2 var(--ff-body); color: var(--ff-muted); }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__">
+        <div class="ff-bg"></div><div class="ff-grid"></div>
+        <div class="ff-stage" id="__ID__-stage"></div>
+      </div>
+      <script>
+        (() => {
+          const D = __DATA__;
+          const stage = document.getElementById("__ID__-stage");
+          const num = (v) => typeof v === "number" ? v : parseFloat(String(v).replace(/[^0-9.]/g, "")) || 0;
+          const nums = D.columns.map((c) => num(c.value));
+          const max = Math.max(...nums, 1);
+          // Highlight: explicit index, else the largest value.
+          const hot = Number.isInteger(D.highlight) ? D.highlight : nums.indexOf(Math.max(...nums));
+          if (D.kicker) { const k = document.createElement("div"); k.className = "ff-kicker"; k.id = "__ID__-kicker"; k.textContent = D.kicker; stage.append(k); }
+          if (D.title) { const t = document.createElement("div"); t.className = "ff-title"; t.id = "__ID__-title"; t.textContent = D.title; stage.append(t); }
+          D.columns.forEach((c, i) => {
+            const row = document.createElement("div");
+            row.className = "__ID__-row" + (i === hot ? " hot" : "");
+            row.id = "__ID__-r" + i;
+            const fill = document.createElement("div");
+            fill.className = "__ID__-fill"; fill.id = "__ID__-f" + i;
+            fill.style.width = Math.max(8, (nums[i] / max) * 100) + "%";
+            const top = document.createElement("div"); top.className = "__ID__-top";
+            const label = document.createElement("div"); label.className = "__ID__-label"; label.textContent = c.label;
+            const value = document.createElement("div"); value.className = "__ID__-value ff-num"; value.textContent = String(c.value);
+            top.append(label, value);
+            row.append(fill, top);
+            if (c.note) { const n = document.createElement("div"); n.className = "__ID__-note"; n.textContent = c.note; row.append(n); }
+            stage.append(row);
+          });
+          const tl = gsap.timeline({ paused: true });
+          if (D.kicker) tl.fromTo("#__ID__-kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, 0);
+          if (D.title) tl.fromTo("#__ID__-title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+          D.columns.forEach((_, i) => {
+            const at = 0.3 + i * 0.22;
+            tl.fromTo("#__ID__-r" + i, { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, at);
+            tl.fromTo("#__ID__-f" + i, { scaleX: 0 }, { scaleX: 1, duration: 0.9, ease: "power2.out" }, at + 0.15);
+          });
+          tl.fromTo("#__ID__-r" + hot, { scale: 1 }, { scale: 1.03, duration: 0.35, ease: "back.out(3)" }, 0.5 + D.columns.length * 0.22);
+          window.__timelines["__ID__"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

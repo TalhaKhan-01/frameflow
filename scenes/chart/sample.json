@@ -1,0 +1,28 @@
+{
+ "type": "chart",
+ "say": "Nvidia's data-center revenue grew almost eight times in two years.",
+ "data": {
+  "kicker": "NVIDIA DATA CENTER",
+  "kind": "bar",
+  "unit": "Revenue, US$ billion, fiscal year",
+  "series": [
+   {
+    "label": "FY23",
+    "value": 15
+   },
+   {
+    "label": "FY24",
+    "value": 47.5
+   },
+   {
+    "label": "FY25",
+    "value": 115.2
+   }
+  ]
+ },
+ "claim": true,
+ "sources": [
+  "https://investor.nvidia.com/financial-info/financial-reports/default.aspx"
+ ],
+ "_note": "Template sample. FY23-FY25 data-center revenue as reported by Nvidia (US$ bn, rounded); recheck before publishing."
+}

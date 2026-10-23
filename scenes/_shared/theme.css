@@ -43,3 +43,16 @@
 
 html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--ff-bg); }
 * { box-sizing: border-box; }
+
+/* Shared scene pieces (classes, never on a sub-composition root) */
+.ff-bg { position: absolute; inset: 0; background: radial-gradient(120% 70% at 20% 10%, #1b2234 0%, var(--ff-bg) 60%); }
+.ff-grid { position: absolute; inset: 0; opacity: 0.35;
+  background-image: linear-gradient(var(--ff-line) 1px, transparent 1px), linear-gradient(90deg, var(--ff-line) 1px, transparent 1px);
+  background-size: 90px 90px; -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, #000 60%, transparent); }
+.ff-stage { position: absolute; left: var(--ff-safe-x); right: var(--ff-safe-right-upper); top: var(--ff-safe-top);
+  height: calc(var(--ff-caption-top) - var(--ff-safe-top)); display: flex; flex-direction: column; justify-content: center; }
+.ff-kicker { display: flex; align-items: center; gap: 18px; font: 700 38px/1 var(--ff-display); letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--ff-accent); margin-bottom: 40px; }
+.ff-kicker::before { content: ""; display: block; width: 56px; height: 6px; background: var(--ff-accent); }
+.ff-title { font: 700 72px/1.05 var(--ff-display); letter-spacing: -0.03em; color: var(--ff-fg); margin-bottom: 48px; }
+.ff-num { font-family: var(--ff-display); font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }

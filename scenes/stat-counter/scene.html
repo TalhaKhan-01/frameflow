@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; color: var(--ff-fg); font-family: var(--ff-body); }
+        #__ID__-wrap { position: relative; display: flex; align-items: center; gap: 48px; }
+        #__ID__-ring { width: 340px; height: 340px; flex: none; }
+        #__ID__-ring circle { fill: none; stroke-width: 26; }
+        #__ID__-value { font-size: 260px; line-height: 0.9; color: var(--ff-accent-2); white-space: nowrap; }
+        #__ID__-value small { font-size: 0.45em; color: var(--ff-fg); margin: 0 0.06em; }
+        #__ID__-label { margin-top: 36px; font: 600 58px/1.2 var(--ff-body); color: var(--ff-fg); max-width: 880px; }
+        #__ID__-bar { margin-top: 44px; height: 22px; background: var(--ff-panel); border-radius: 11px; overflow: hidden; }
+        #__ID__-fill { height: 100%; width: 100%; background: var(--ff-accent); transform-origin: 0 50%; border-radius: 11px; }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__">
+        <div class="ff-bg"></div><div class="ff-grid"></div>
+        <div class="ff-stage" id="__ID__-stage"></div>
+      </div>
+      <script>
+        (() => {
+          const D = __DATA__;
+          const stage = document.getElementById("__ID__-stage");
+          const decimals = D.decimals || 0;
+          const fmt = new Intl.NumberFormat("en-IN", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+          const pct = (D.suffix || "").trim() === "%" && D.value <= 100;
+          stage.innerHTML =
+            (D.kicker ? '<div class="ff-kicker" id="__ID__-kicker"></div>' : "") +
+            '<div id="__ID__-wrap">' +
+            (pct ? '<svg id="__ID__-ring" viewBox="0 0 300 300"><circle cx="150" cy="150" r="125" stroke="var(--ff-panel)"/>' +
+                   '<circle id="__ID__-arc" cx="150" cy="150" r="125" stroke="var(--ff-accent)" stroke-linecap="round" transform="rotate(-90 150 150)"/></svg>' : "") +
+            '<div id="__ID__-value" class="ff-num"></div></div>' +
+            '<div id="__ID__-label"></div>' + (pct ? "" : '<div id="__ID__-bar"><div id="__ID__-fill"></div></div>');
+          if (D.kicker) document.getElementById("__ID__-kicker").textContent = D.kicker;
+          document.getElementById("__ID__-label").textContent = D.label;
+          const valueEl = document.getElementById("__ID__-value");
+          const write = (v) => {
+            valueEl.textContent = "";
+            if (D.prefix) { const s = document.createElement("small"); s.textContent = D.prefix; valueEl.append(s); }
+            valueEl.append(fmt.format(v));
+            if (D.suffix) { const s = document.createElement("small"); s.textContent = D.suffix; valueEl.append(s); }
+          };
+          const C = 2 * Math.PI * 125;
+          const arc = document.getElementById("__ID__-arc");
+          const proxy = { v: 0 };
+          const render = () => {
+            write(proxy.v);
+            if (arc) arc.setAttribute("stroke-dasharray", `${(C * proxy.v) / 100} ${C}`);
+          };
+          render();
+          const tl = gsap.timeline({ paused: true });
+          if (D.kicker) tl.fromTo("#__ID__-kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, 0);
+          tl.fromTo("#__ID__-wrap", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+          tl.fromTo(proxy, { v: 0 }, { v: D.value, duration: 1.4, ease: "power2.out", onUpdate: render }, 0.2);
+          if (!pct) tl.fromTo("#__ID__-fill", { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "power2.out" }, 0.2);
+          tl.fromTo("#__ID__-label", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.7);
+          tl.fromTo("#__ID__-wrap", { scale: 1 }, { scale: 1.04, duration: __DUR__, ease: "none" }, 0);
+          window.__timelines["__ID__"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
