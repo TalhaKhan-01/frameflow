@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; color: var(--ff-fg); font-family: var(--ff-body);
+          background: radial-gradient(120% 70% at 20% 10%, #1b2234 0%, var(--ff-bg) 60%); }
+        #__ID__-grid { position: absolute; inset: 0; opacity: 0.35;
+          background-image: linear-gradient(var(--ff-line) 1px, transparent 1px), linear-gradient(90deg, var(--ff-line) 1px, transparent 1px);
+          background-size: 90px 90px; -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%, #000 60%, transparent); }
+        #__ID__-block { position: absolute; left: var(--ff-safe-x); right: var(--ff-safe-right-upper); top: 0; height: var(--ff-caption-top);
+          display: flex; flex-direction: column; justify-content: center; }
+        #__ID__-kicker { display: flex; align-items: center; gap: 18px; font: 700 38px/1 var(--ff-display); letter-spacing: 0.16em;
+          text-transform: uppercase; color: var(--ff-accent); margin-bottom: 36px; }
+        #__ID__-kicker i { display: block; width: 56px; height: 6px; background: var(--ff-accent); }
+        .__ID__-mask { display: block; overflow: hidden; padding-bottom: 0.06em; }
+        .__ID__-line { display: inline-block; white-space: nowrap; font-family: var(--ff-display); font-weight: 700; letter-spacing: -0.035em; line-height: 1.0; }
+        .__ID__-hl { color: var(--ff-accent-2); }
+        #__ID__-bar { display: block; height: 16px; width: 62%; margin-top: 44px; background: var(--ff-accent-2); transform-origin: 0 50%; }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__">
+        <div id="__ID__-grid"></div>
+        <div id="__ID__-block" data-layout-allow-overflow></div>
+      </div>
+      <script>
+        (() => {
+          const D = __DATA__;
+          const block = document.getElementById("__ID__-block");
+          const longest = Math.max(...D.lines.map((l) => l.length));
+          const size = longest <= 10 ? 168 : longest <= 14 ? 148 : longest <= 19 ? 124 : longest <= 24 ? 104 : 88;
+          if (D.kicker) {
+            const k = document.createElement("div");
+            k.id = "__ID__-kicker";
+            k.append(document.createElement("i"), D.kicker);
+            block.append(k);
+          }
+          D.lines.forEach((text, i) => {
+            const mask = document.createElement("span");
+            mask.className = "__ID__-mask";
+            mask.setAttribute("data-layout-allow-overflow", "");
+            const line = document.createElement("span");
+            line.className = "__ID__-line";
+            line.id = "__ID__-l" + i;
+            line.style.fontSize = size + "px";
+            const hl = D.highlight && text.indexOf(D.highlight);
+            if (D.highlight && hl >= 0) {
+              const mark = document.createElement("span");
+              mark.className = "__ID__-hl";
+              mark.textContent = D.highlight;
+              line.append(text.slice(0, hl), mark, text.slice(hl + D.highlight.length));
+            } else line.textContent = text;
+            mask.append(line);
+            block.append(mask);
+          });
+          // Fit: shrink each line until it fits inside the safe area. Runs on every frame (below), so it is exact
+          // once the bundled font has loaded, in every render worker. Never gate the timeline on fonts.ready.
+          const lineEls = D.lines.map((_, i) => document.getElementById("__ID__-l" + i));
+          const fit = () => {
+            const room = block.clientWidth * 0.95; // room for the slow zoom and glyph overhang
+            lineEls.forEach((el) => {
+              let fs = size;
+              el.style.fontSize = fs + "px";
+              while (el.scrollWidth > room && fs > 56) { fs -= 4; el.style.fontSize = fs + "px"; }
+            });
+          };
+          fit();
+          const bar = document.createElement("div");
+          bar.id = "__ID__-bar";
+          block.append(bar);
+
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo(block, { scale: 1 }, { scale: 1.035, duration: __DUR__, ease: "none", onUpdate: fit }, 0);
+          if (D.kicker) tl.fromTo("#__ID__-kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, 0.05);
+          D.lines.forEach((_, i) =>
+            tl.fromTo("#__ID__-l" + i, { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: "power4.out" }, 0.15 + i * 0.18));
+          tl.fromTo(bar, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power2.inOut" }, 0.35 + D.lines.length * 0.18);
+          window.__timelines["__ID__"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -36,7 +36,8 @@
   /* layout: safe zones keep text clear of the Shorts/Reels interface (top bar, right-hand buttons, bottom caption area) */
   --ff-safe-top: 230px;
   --ff-safe-x: 80px;
-  --ff-safe-right: 170px;
+  --ff-safe-right: 170px;      /* right-hand buttons: lower half only (from about y 960) */
+  --ff-safe-right-upper: 80px; /* upper half can use the full width */
   --ff-caption-top: 1280px;  /* the word-pop caption band starts here; scene content stays above it */
 }
 
