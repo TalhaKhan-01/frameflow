@@ -3,7 +3,10 @@ name = "frameflow"
 version = "0.1.0"
 description = "Automated short vertical videos for YouTube Shorts and Instagram Reels"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "kokoro-onnx==0.6.1",
+    "soundfile==0.14.0",
+]
 
 [build-system]
 requires = ["hatchling"]

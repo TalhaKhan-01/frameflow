@@ -1,0 +1,12 @@
+{
+  "voice": "af_heart",
+  "speed": 1.0,
+  "pad": 0.25,
+  "lines": [
+    {"id": "hook", "say": "The same iPhone costs twenty thousand rupees more in India than in Dubai."},
+    {"id": "stake", "say": "So if you're buying one this month, the country on the receipt matters."},
+    {"id": "why", "say": "Most of the gap is import duty and G.S.T., not Apple's base price."},
+    {"id": "payoff", "say": "Made-in-India models close part of that gap, but not the Pro Max yet."},
+    {"id": "out", "say": "Would you fly to Dubai for a phone? Tell me below."}
+  ]
+}
