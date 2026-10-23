@@ -6,6 +6,11 @@ tags: [log]
 
 Newest entries at the top.
 
+## 2026-10-23 · Niche study, second pass
+- Topic filter added to the `niche-study` skill; 12 queries sharpened; results regenerated in [[Niche Study Results 2026-10-23]].
+- Ranking held: global tech > India tech ≈ AI news > dev tools > AI × money > how tech works. Reading in [[Niche Study]].
+- Quota used today: about 6,100 of 10,000 units.
+
 ## 2026-10-23 · Niche study, first run
 - YouTube API key added and tested. Shortsmith (office skill) read for ideas only; no code copied.
 - Built the `niche-study` tool, then turned it into a generic skill at Talha's request ("tools are skills": the skill holds the code, the project holds `research/niche-study.json` and `data/`).

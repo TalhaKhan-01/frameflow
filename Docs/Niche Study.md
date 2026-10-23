@@ -22,6 +22,12 @@ Purpose: set the mix and priorities across the six lanes in [[Wide Lanes India F
 First run 2026-10-23: [[Niche Study Results 2026-10-23]] (48 queries, ~1,900 Shorts, ~4,900 quota units).
 Tool: the `niche-study` skill (`~/Talha_Khan/Claude/skills/niche-study/`); Frameflow's config is `~/Talha_Khan/Code/frameflow/research/niche-study.json`.
 
+## Second pass (same day): sharper queries plus topic filter
+- Title filter added: English/Latin only; gaming, cheat-code and Hinglish words excluded; per-lane include words. 12 off-topic queries replaced (about 1,200 units). On-topic share is now 70–90% per lane.
+- The ranking held after cleaning, so it's robust: global tech changes 0.92 (median 1.3M views, 35% breakout) > India's tech scene 0.41 > AI news 0.40 > dev tools 0.14 > AI × money 0.10 > how tech works 0.07.
+- **Query wording shapes the numbers** (e.g. "Apple new" alone has a median of 4.7M). Scores compare these query sets, not whole topics.
+- **How tech works:** low median views (1.5k), but a 16% breakout rate, and premium explainers break out big (e.g. "How Does Tesla's Roadster Hang Upside Down?", 2.3M on a 2.9k-sub channel). Read: low-effort explainers fail and high-craft ones win. That's a possible gap for our quality-first approach, not a dead lane.
+
 ## First-run reading
 - Ranking: global tech changes (0.88) > India's tech scene (0.64) > AI news (0.55) > dev tools (0.25) > AI × money (0.09) > how tech works (0.08).
 - **Samples are noisy:** some queries pulled off-topic videos (game cheat codes under dev tools, Aadhaar how-tos under AI news, Hindi titles despite English relevance). The low-scoring lanes may be under-measured. Fix: sharper queries and a topic filter, then re-run.
