@@ -24,7 +24,8 @@ Output one scene plan as JSON. Every video is built from these scene templates (
 - comparison: kicker/title (optional), columns (2-4 objects: label <=24 chars, value string or number, note optional), highlight (optional index)
 - chart: kind ("bar" or "line"), series (2-12 objects: label <=16 chars, value number), unit (optional), kicker/title (optional), highlight (optional index)
 Rules (all must hold):
-R1 scene 1's say line is the hook: a concrete stake (a number, comparison or bold claim the video then proves). No greeting.
+R1 scene 1's say line is the hook: lead with the biggest concrete number or comparison in the source (who is affected, how many, how much),
+stated plainly, not hedged with 'may' unless the source is hedged. No greeting.
 R2 every video starts speaking at once (scene 1 has a say line).
 R3 one idea per video. R4 each say line <= 18 words, spoken English, contractions, talk to "you" where natural.
 R5 total spoken length 30-50 seconds (about 2.8 words per second; aim for 90-130 words in total, 6-9 scenes).
@@ -32,7 +33,8 @@ R6 a new visual every few seconds: no scene longer than about 6 seconds of speec
 R7 every number in a say line also appears in that scene's data (shown, not only said).
 R8 every scene stating a fact sets claim: true and lists source URLs (use the provided source URL).
 R9 include an honest India angle when one exists. R10 mark the scene that answers the hook with payoff: true; it must start before 85% of the runtime.
-R11 the last say line is a question to the viewer or a share prompt ("Send this to someone who...").
+R11 the second-to-last scene answers the hook in practical terms (what changes for you, what to do); the last say line is a question
+to the viewer or a share prompt ("Send this to someone who...").
 R12 no hype words unless the next line proves them. R13 in say lines, spell numbers and acronyms for the voice
 ("twenty thousand rupees", "G.S.T."); digits go only in data. R14 title <= 60 characters and contains the hook's stake.
 Use ONLY facts present in the provided source text, title and summary. Never invent numbers. If the source lacks a figure,
@@ -87,3 +89,24 @@ def write(idea_id, model="sonnet"):
     con.commit()
     return {"plan": str(out), "attempts": attempts, "fails": fails, "seconds": round(scene_plan.total_seconds(plan), 1),
             "source_chars": len(body)}
+
+
+def rewrite(plan_path, feedback, model="sonnet"):
+    """One rewrite of an existing plan from review feedback (at most one per video, by policy)."""
+    plan = json.loads(Path(plan_path).read_text())
+    con = ideas.db()
+    idea = con.execute("SELECT * FROM ideas WHERE id=?", (plan.get("idea_id"),)).fetchone()
+    body = source_text(idea["url"]) if idea else ""
+    prompt = (f"Source: {idea['url'] if idea else ''}\nSource text:\n{body or '(not available)'}\n\nCurrent plan:\n"
+              f"{json.dumps(plan, ensure_ascii=False)}\n\nA reviewer asked for these fixes; apply all that the source supports, keep "
+              f"every rule, keep the id \"{plan['id']}\", return the full plan:\n- " + "\n- ".join(feedback))
+    new = llm.call(prompt, SYSTEM, PLAN_SCHEMA, model=model, purpose=f"script-rewrite:{plan['id']}", effort="medium")
+    new["id"], new["idea_id"] = plan["id"], plan.get("idea_id")
+    fails = rules.check(new)
+    if fails:   # one repair for rule failures introduced by the rewrite
+        new = llm.call(f"{prompt}\n\nYour rewrite fails these checks; fix them:\n- " + "\n- ".join(fails), SYSTEM, PLAN_SCHEMA,
+                       model=model, purpose=f"script-rewrite-fix:{plan['id']}", effort="medium")
+        new["id"], new["idea_id"] = plan["id"], plan.get("idea_id")
+        fails = rules.check(new)
+    Path(plan_path).write_text(json.dumps(new, ensure_ascii=False, indent=1) + "\n")
+    return {"plan": str(plan_path), "fails": fails}

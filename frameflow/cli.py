@@ -1,9 +1,13 @@
 """frameflow: command-line entry point. Each step also runs on its own (python -m frameflow.<module>).
 
+    frameflow make <idea-id>                      the whole chain for one idea
+    frameflow status | approve <id> | reject <id> <why>
+    frameflow publish <id> | posted <id> <yt> <ig> | stats <id> ... | learn
     frameflow render <plan.json> [--out DIR] [--quality looks|delivery] [--mood MOOD]
     frameflow ideas collect|rank|list
     frameflow script <idea-id>
     frameflow qa <out-dir>
+    frameflow review <out-dir>
     frameflow validate <plan.json>
 """
 import argparse
@@ -27,6 +31,27 @@ def main():
     s = sub.add_parser("script", help="ranked idea -> scene plan (plans/<id>.json)")
     s.add_argument("idea_id", type=int)
     s.add_argument("--model", default="sonnet")
+    rv = sub.add_parser("review", help="model review against the Quality Bar")
+    rv.add_argument("out_dir")
+    m = sub.add_parser("make", help="idea -> script -> render -> qa -> review (+1 rewrite) -> awaiting approval")
+    m.add_argument("idea_id", type=int)
+    sub.add_parser("status", help="list videos")
+    ap_ = sub.add_parser("approve", help="Talha approves a video after watching it")
+    ap_.add_argument("video_id")
+    rj = sub.add_parser("reject", help="send a video back")
+    rj.add_argument("video_id")
+    rj.add_argument("why")
+    pb = sub.add_parser("publish", help="publish pack for an approved video")
+    pb.add_argument("video_id")
+    po = sub.add_parser("posted", help="record the live links")
+    po.add_argument("video_id")
+    po.add_argument("youtube_url")
+    po.add_argument("instagram_url")
+    stt = sub.add_parser("stats", help="48 h stats (YouTube public counts fetched; private numbers typed in)")
+    stt.add_argument("video_id")
+    for k in ("avg-viewed", "swiped", "yt-shares", "yt-subs", "ig-plays", "ig-likes", "ig-comments", "ig-shares", "ig-saves", "ig-avg-watch", "ig-follows"):
+        stt.add_argument("--" + k, type=float)
+    sub.add_parser("learn", help="weekly learning report into the vault")
     q = sub.add_parser("qa", help="automatic quality gates on a render folder")
     q.add_argument("out_dir")
     v = sub.add_parser("validate", help="check a scene plan")
@@ -47,6 +72,34 @@ def main():
     elif a.cmd == "script":
         from frameflow import script
         print(json.dumps(script.write(a.idea_id, a.model), indent=1))
+    elif a.cmd == "review":
+        from frameflow import review
+        sys.argv = ["review", a.out_dir]
+        review.main()
+    elif a.cmd == "make":
+        from frameflow import videos
+        print(json.dumps(videos.make(a.idea_id), indent=1))
+    elif a.cmd == "status":
+        from frameflow import videos
+        for v in videos.listing():
+            print(f"{v['status']:18} {v['review_total'] or '-':>2}/12 qa:{'ok' if v['qa_pass'] else '--'}  {v['lane']:15} {v['id']}")
+    elif a.cmd in ("approve", "reject"):
+        from frameflow import videos
+        videos.set_status(a.video_id, "approved" if a.cmd == "approve" else "rejected", getattr(a, "why", ""))
+        print(f"{a.video_id}: {a.cmd}d")
+    elif a.cmd == "publish":
+        from frameflow import publish
+        print(json.dumps(publish.publish(a.video_id), indent=1))
+    elif a.cmd == "posted":
+        from frameflow import publish
+        print(json.dumps(publish.posted(a.video_id, a.youtube_url, a.instagram_url), indent=1))
+    elif a.cmd == "stats":
+        from frameflow import publish
+        manual = {k.replace("-", "_"): v for k, v in vars(a).items() if v is not None and k not in ("cmd", "video_id")}
+        print(json.dumps(publish.stats(a.video_id, manual), indent=1))
+    elif a.cmd == "learn":
+        from frameflow import publish
+        print(json.dumps(publish.learn(), indent=1))
     elif a.cmd == "qa":
         from frameflow import qa
         sys.argv = ["qa", a.out_dir]

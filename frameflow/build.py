@@ -17,6 +17,7 @@ import json
 import os
 import shutil
 import subprocess
+import urllib.parse
 from pathlib import Path
 
 from frameflow import scene_plan
@@ -71,6 +72,57 @@ def voice_script(plan):
             "lines": [{"id": f"s{i}", "say": s["say"]} for i, s in enumerate(plan["scenes"]) if s.get("say", "").strip()]}
 
 
+SOURCE_NAMES = {"livemint.com": "Mint", "economictimes.indiatimes.com": "The Economic Times", "indianexpress.com": "The Indian Express",
+                "theverge.com": "The Verge", "techcrunch.com": "TechCrunch", "arstechnica.com": "Ars Technica", "inc42.com": "Inc42",
+                "technologyreview.com": "MIT Technology Review", "reuters.com": "Reuters", "github.com": "GitHub",
+                "news.google.com": "Google News", "apple.com": "Apple", "nvidia.com": "Nvidia", "gov.in": "Government of India"}
+
+
+def source_name(url):
+    host = urllib.parse.urlparse(url).netloc.lower().removeprefix("www.")
+    for domain, name in SOURCE_NAMES.items():
+        if host == domain or host.endswith("." + domain):
+            return name
+    return host
+
+
+def credits_composition(credits, total):
+    """A small 'Source: …' chip above the caption band while each claim scene is on screen."""
+    chips = json.dumps([{"s": s, "e": round(s + d, 3), "name": n} for s, d, n in credits], ensure_ascii=False).replace("</", "<\\/")
+    return f"""<!doctype html>
+<html><head><meta charset="UTF-8" /></head><body><template>
+<style>
+  #credits-root {{ position: absolute; inset: 0; pointer-events: none; }}
+  .credit {{ position: absolute; left: var(--ff-safe-x); top: calc(var(--ff-caption-top) - 92px); opacity: 0;
+    font: 600 30px/1 var(--ff-body); color: var(--ff-muted); padding: 12px 18px; border: 2px solid var(--ff-line);
+    border-radius: 999px; background: rgba(11, 13, 18, 0.7); }}
+  .credit b {{ color: var(--ff-fg); font-weight: 700; }}
+</style>
+<div id="credits-root" data-composition-id="credits" data-width="1080" data-height="1920" data-duration="{total:.3f}"></div>
+<script>
+  (() => {{
+    const C = {chips};
+    const root = document.getElementById("credits-root");
+    const tl = gsap.timeline({{ paused: true }});
+    C.forEach((c, i) => {{
+      const el = document.createElement("div");
+      el.className = "credit";
+      el.id = "credit-" + i;
+      el.append("Source: ");
+      const b = document.createElement("b");
+      b.textContent = c.name;
+      el.append(b);
+      root.append(el);
+      tl.fromTo(el, {{ opacity: 0 }}, {{ opacity: 1, duration: 0.25 }}, c.s + 0.4);
+      tl.set(el, {{ opacity: 0 }}, c.e);
+    }});
+    window.__timelines["credits"] = tl;
+  }})();
+</script>
+</template></body></html>
+"""
+
+
 def render_scene_file(scene, comp_id, duration):
     tpl = (SCENES / scene["type"] / "scene.html").read_text()
     return (tpl.replace("__ID__", comp_id)
@@ -102,6 +154,13 @@ def project(plan, out_dir, voice_dir=None, captions=True):
     if voice_dir:
         shutil.copy(Path(voice_dir) / "voice.wav", out / "assets" / "voice.wav")
         audio = f'<audio id="voice" src="assets/voice.wav" data-start="0" data-duration="{total}" data-track-index="0"></audio>'
+    credit_host = ""
+    credits = [(start, dur, source_name(s["sources"][0])) for s, (start, dur) in zip(plan["scenes"], slots)
+               if s.get("claim") and s.get("sources")]
+    if credits:
+        (out / "compositions" / "credits.html").write_text(credits_composition(credits, total))
+        credit_host = (f'<div id="credits" data-composition-id="credits" data-composition-src="compositions/credits.html" '
+                       f'data-start="0" data-duration="{total}" data-track-index="3" data-width="{WIDTH}" data-height="{HEIGHT}"></div>')
     caption_host = ""
     if captions and voice_dir and (Path(voice_dir) / "words.json").exists():
         from frameflow import captions as cap
@@ -125,6 +184,7 @@ def project(plan, out_dir, voice_dir=None, captions=True):
       {audio}
       {chr(10).join("      " + h for h in hosts).strip()}
       {caption_host}
+      {credit_host}
     </div>
     <script>
       const tl = gsap.timeline({{ paused: true }});

@@ -1,0 +1,126 @@
+{
+ "id": "2026-10-23-iphone-duo-shortage-in-india-why-buyers-are-payi",
+ "lane": "global-tech",
+ "title": "iPhone Duo in India: buyers pay up to ₹1 lakh extra",
+ "description": "Apple's first foldable is scarce in India, and some retailers reportedly charge ₹70,000 to ₹1 lakh over list price. Here's why.",
+ "scenes": [
+  {
+   "type": "stat-counter",
+   "say": "Indian retailers reportedly charge seventy thousand rupees to one lakh extra for Apple's iPhone Duo.",
+   "data": {
+    "prefix": "₹",
+    "value": 100000,
+    "label": "Reported top premium; range is ₹70,000 to ₹1 lakh",
+    "kicker": "iPhone Duo shortage"
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/tech-news/iphone-duo-shortage-in-india-why-buyers-are-paying-up-to-1-lakh-extra-for-apples-foldable-11792734988542.html"
+   ]
+  },
+  {
+   "type": "comparison",
+   "say": "List price is two lakh ninety-nine thousand nine hundred rupees. With the premium, it's nearly four lakh.",
+   "data": {
+    "title": "List price vs street price",
+    "columns": [
+     {
+      "label": "Official price",
+      "value": "₹2,99,900"
+     },
+     {
+      "label": "With premium",
+      "value": "~₹4 lakh",
+      "note": "Some retailers"
+     }
+    ],
+    "highlight": 1
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/tech-news/iphone-duo-shortage-in-india-why-buyers-are-paying-up-to-1-lakh-extra-for-apples-foldable-11792734988542.html"
+   ]
+  },
+  {
+   "type": "comparison",
+   "say": "Some top retailers expected about one hundred units but got only five to seven, says the retailers' association.",
+   "data": {
+    "title": "Top retailers' stock",
+    "columns": [
+     {
+      "label": "Expected",
+      "value": "~100"
+     },
+     {
+      "label": "Received",
+      "value": "5 to 7"
+     }
+    ],
+    "highlight": 1
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/tech-news/iphone-duo-shortage-in-india-why-buyers-are-paying-up-to-1-lakh-extra-for-apples-foldable-11792734988542.html"
+   ]
+  },
+  {
+   "type": "stat-counter",
+   "say": "Bloomberg says only a few Chinese facilities make it. A report flagged yields stuck at sixty percent.",
+   "data": {
+    "value": 60,
+    "suffix": "%",
+    "label": "Reported production yield for the iPhone Duo",
+    "kicker": "Why the shortage"
+   },
+   "claim": true,
+   "payoff": true,
+   "sources": [
+    "https://www.livemint.com/technology/tech-news/iphone-duo-shortage-in-india-why-buyers-are-paying-up-to-1-lakh-extra-for-apples-foldable-11792734988542.html"
+   ]
+  },
+  {
+   "type": "headline-reveal",
+   "say": "Apple's sites showed twenty twenty-seven delivery dates within hours. Indian orders are capped at two units.",
+   "data": {
+    "kicker": "Apple's own sites",
+    "lines": [
+     "Delivery dates: 2027",
+     "Limit: 2 per order"
+    ],
+    "highlight": "2027"
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/tech-news/iphone-duo-shortage-in-india-why-buyers-are-paying-up-to-1-lakh-extra-for-apples-foldable-11792734988542.html"
+   ]
+  },
+  {
+   "type": "headline-reveal",
+   "say": "Some shops still sell at the official price to loyal customers, so ask your regular retailer first.",
+   "data": {
+    "kicker": "What you can do",
+    "lines": [
+     "Ask your regular shop",
+     "Skip the premium"
+    ],
+    "highlight": "regular shop"
+   },
+   "claim": true,
+   "sources": [
+    "https://www.livemint.com/technology/tech-news/iphone-duo-shortage-in-india-why-buyers-are-paying-up-to-1-lakh-extra-for-apples-foldable-11792734988542.html"
+   ]
+  },
+  {
+   "type": "headline-reveal",
+   "say": "Would you pay four lakh for a foldable iPhone? Send this to a friend who would.",
+   "data": {
+    "lines": [
+     "Would you pay",
+     "₹4 lakh for a foldable?"
+    ],
+    "highlight": "₹4 lakh"
+   }
+  }
+ ],
+ "idea_id": 233
+}

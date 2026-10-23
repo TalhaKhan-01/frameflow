@@ -1,0 +1,90 @@
+"""Video register: every rendered video, its checks, and Talha's approval. Nothing is published without approval.
+
+    frameflow make <idea-id>             script -> render -> qa -> review (+ one rewrite on FIX) -> awaiting approval
+    frameflow status                     list videos and their state
+    frameflow approve <video-id>         Talha approves (only after watching final.mp4)
+    frameflow reject <video-id> <why>    send back with a reason
+"""
+import datetime as dt
+import json
+import sqlite3
+from pathlib import Path
+
+from frameflow import ideas, pipeline, qa, review, script
+
+ROOT = Path(__file__).resolve().parent.parent
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS videos (
+  id TEXT PRIMARY KEY, idea_id INTEGER, plan TEXT, out_dir TEXT, lane TEXT, title TEXT,
+  qa_pass INTEGER, review_total INTEGER, review_pass INTEGER, status TEXT, note TEXT,
+  youtube_url TEXT, instagram_url TEXT, created_at TEXT, updated_at TEXT);
+"""
+
+
+def db():
+    con = ideas.db()
+    con.executescript(SCHEMA)
+    return con
+
+
+def now():
+    return dt.datetime.now().replace(microsecond=0).isoformat()
+
+
+def check(out):
+    q = qa.run(out)
+    r = review.run(out)
+    return q, r
+
+
+def make(idea_id):
+    s = script.write(idea_id)
+    if s["fails"]:
+        return {"status": "script-failed", **s}
+    plan_path = Path(s["plan"])
+    report = pipeline.render(plan_path)
+    out = Path(report["final"]).parent
+    q, r = check(out)
+    rewrites = 0
+    if not (q["pass"] and r["pass"]):
+        feedback = [f"{f['row']}: {f['fix']}" for f in r["fixes"]] + [f"automatic check {k}: {g['detail']}" for k, g in q["gates"].items() if not g["pass"]]
+        script.rewrite(plan_path, feedback)
+        rewrites = 1
+        report = pipeline.render(plan_path)
+        q, r = check(out)
+    plan = json.loads(plan_path.read_text())
+    status = "awaiting-approval" if q["pass"] and r["pass"] else "needs-work"
+    con = db()
+    con.execute("INSERT OR REPLACE INTO videos (id, idea_id, plan, out_dir, lane, title, qa_pass, review_total, review_pass, status, note, created_at, updated_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (plan["id"], idea_id, str(plan_path), str(out), plan["lane"], plan["title"], int(q["pass"]), r["total"], int(r["pass"]),
+                 status, f"{rewrites} rewrite(s)", now(), now()))
+    con.execute("UPDATE ideas SET status='made' WHERE id=?", (idea_id,))
+    con.commit()
+    return {"video": plan["id"], "status": status, "qa": q["pass"], "review": f"{r['total']}/12", "rewrites": rewrites,
+            "seconds": report["seconds"], "final": report["final"]}
+
+
+def set_status(video_id, status, note=""):
+    con = db()
+    row = con.execute("SELECT * FROM videos WHERE id=?", (video_id,)).fetchone()
+    if not row:
+        raise SystemExit(f"no video {video_id}")
+    if status == "approved" and not (row["qa_pass"] and row["review_pass"]):
+        raise SystemExit(f"{video_id} has not passed qa and review; fix it before approving")
+    con.execute("UPDATE videos SET status=?, note=?, updated_at=? WHERE id=?", (status, note or row["note"], now(), video_id))
+    con.commit()
+
+
+def require_approved(video_id):
+    row = db().execute("SELECT * FROM videos WHERE id=?", (video_id,)).fetchone()
+    if not row:
+        raise SystemExit(f"no video {video_id}")
+    if row["status"] not in ("approved", "posted"):
+        raise SystemExit(f"{video_id} is '{row['status']}': only videos Talha approved can be published (frameflow approve {video_id})")
+    return row
+
+
+def listing():
+    return [dict(r) for r in db().execute("SELECT id, status, lane, review_total, qa_pass, title FROM videos ORDER BY created_at DESC")]
