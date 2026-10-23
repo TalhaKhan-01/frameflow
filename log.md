@@ -6,6 +6,12 @@ tags: [log]
 
 Newest entries at the top.
 
+## 2026-10-23 · Strategy Q&A and setup tasks
+- [[Strategy Q&A 2026-10-23]] saved: code pipeline over full agent ([[Pipeline With Few Model Calls]], proposed), [[High Quality Short]], [[Algorithm Signals]].
+- New concepts: [[Scene Library]], [[Quality Bar]].
+- [[Setup Tasks]] written for Talha. Secrets file `~/.config/frameflow/secrets.env` created (mode 600, empty), and Claude's file tools are denied access to that folder.
+- Next: Talha does setup parts A–C (now); niche study; then the channel and Instagram setup.
+
 ## 2026-10-23 · First answers and tool research
 - Answers recorded in [[V1 Scope]]: stock footage plus code-made motion graphics, Kokoro voice, ideas from tech, AI and finance news, 1–2 videos a day, free tools only.
 - Decision [[Free Tools Only]] accepted.
