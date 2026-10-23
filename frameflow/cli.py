@@ -1,6 +1,7 @@
 """frameflow: command-line entry point. Each step also runs on its own (python -m frameflow.<module>).
 
     frameflow render <plan.json> [--out DIR] [--quality looks|delivery] [--mood MOOD]
+    frameflow qa <out-dir>
     frameflow validate <plan.json>
 """
 import argparse
@@ -17,12 +18,18 @@ def main():
     r.add_argument("--out")
     r.add_argument("--quality", default="looks", choices=["draft", "looks", "delivery"])
     r.add_argument("--mood")
+    q = sub.add_parser("qa", help="automatic quality gates on a render folder")
+    q.add_argument("out_dir")
     v = sub.add_parser("validate", help="check a scene plan")
     v.add_argument("plan")
     a = ap.parse_args()
     if a.cmd == "render":
         from frameflow import pipeline
         print(json.dumps(pipeline.render(a.plan, a.out, a.quality, a.mood), indent=1))
+    elif a.cmd == "qa":
+        from frameflow import qa
+        sys.argv = ["qa", a.out_dir]
+        qa.main()
     elif a.cmd == "validate":
         from frameflow import scene_plan
         errs = scene_plan.validate(json.loads(Path(a.plan).read_text()))
