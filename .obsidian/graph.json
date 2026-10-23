@@ -1,22 +1,65 @@
 {
+  "collapse-filter": true,
   "search": "-path:Templates",
   "showTags": false,
   "showAttachments": false,
+  "hideUnresolved": false,
   "showOrphans": true,
-  "showArrow": true,
+  "collapse-color-groups": true,
   "colorGroups": [
-    {"query": "tag:#hub", "color": {"a": 1, "rgb": 15222076}},
-    {"query": "path:Wiki/Concepts", "color": {"a": 1, "rgb": 5016565}},
-    {"query": "path:Wiki/Sources", "color": {"a": 1, "rgb": 3450963}},
-    {"query": "path:Docs", "color": {"a": 1, "rgb": 15898880}},
-    {"query": "path:Decisions", "color": {"a": 1, "rgb": 10181046}},
-    {"query": "path:Raw", "color": {"a": 1, "rgb": 10395294}}
+    {
+      "query": "tag:#hub",
+      "color": {
+        "a": 1,
+        "rgb": 15222076
+      }
+    },
+    {
+      "query": "path:Wiki/Concepts",
+      "color": {
+        "a": 1,
+        "rgb": 5016565
+      }
+    },
+    {
+      "query": "path:Wiki/Sources",
+      "color": {
+        "a": 1,
+        "rgb": 3450963
+      }
+    },
+    {
+      "query": "path:Docs",
+      "color": {
+        "a": 1,
+        "rgb": 15898880
+      }
+    },
+    {
+      "query": "path:Decisions",
+      "color": {
+        "a": 1,
+        "rgb": 10181046
+      }
+    },
+    {
+      "query": "path:Raw",
+      "color": {
+        "a": 1,
+        "rgb": 10395294
+      }
+    }
   ],
+  "collapse-display": true,
+  "showArrow": true,
+  "textFadeMultiplier": 0,
   "nodeSizeMultiplier": 1.1,
   "lineSizeMultiplier": 1,
-  "textFadeMultiplier": 0,
+  "collapse-forces": true,
   "centerStrength": 0.5,
   "repelStrength": 12,
   "linkStrength": 1,
-  "linkDistance": 220
+  "linkDistance": 220,
+  "scale": 1,
+  "close": false
 }

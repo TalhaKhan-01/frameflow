@@ -8,12 +8,17 @@ tags: [hub]
 ---
 # Frameflow
 
-**What it is:** _one line about the project_
+**What it is:** a pipeline that turns an idea into a finished vertical short video (9:16, under 60 s) and publishes it to YouTube Shorts and Instagram Reels.
+**Status:** shaping the first version, see [[V1 Scope]]
 **Code:** `~/Talha_Khan/Code/frameflow`
-**Status:** active · [[log]] · [[index]]
+**Links:** [[log]] · [[index]]
 
 ## Goals
--
+_Draft goals, to be confirmed with Talha._
+- Idea → script → voiceover → visuals → captions → rendered 9:16 video, in one run.
+- A review step before anything is posted.
+- Publish (or schedule) to YouTube Shorts and Instagram Reels from the same render.
+- Keep running costs low: local or free tools by default, paid APIs only where they clearly pay off.
 
 ## Dashboard
 
