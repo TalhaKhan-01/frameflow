@@ -1,0 +1,32 @@
+{
+  "_note": "Config for the deep-study skill. Relative paths resolve inside this repo.",
+  "niche_db": "data/niche.db",
+  "niche_config": "research/niche-study.json",
+  "per_lane": 5,
+  "min_views": 50000,
+  "lanes": [],
+  "sheets_dir": "data/deep-study-sheets",
+  "report_dir": "vault/Docs",
+  "report_context": "Lanes and breakouts come from [[Niche Study Results 2026-10-23]]. Method: [[Deep Study]].",
+  "report_next_step": "Next step: turn these medians and judgement modes into the [[Quality Bar]].",
+  "ytdlp": [
+    "uvx",
+    "--quiet",
+    "yt-dlp@2026.8.19",
+    "--js-runtimes",
+    "node"
+  ],
+  "scene_threshold": 0.2,
+  "pause_s": 6,
+  "transcriber": [
+    "uvx",
+    "--quiet",
+    "whisper-ctranslate2@0.5.8",
+    "--model",
+    "base.en",
+    "--device",
+    "cpu",
+    "--compute_type",
+    "int8"
+  ]
+}

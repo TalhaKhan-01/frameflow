@@ -1,0 +1,111 @@
+[
+ {
+  "group": "Plan",
+  "items": [
+   {
+    "label": "Plan of record",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/phasedoc/PLAN.md"
+   },
+   {
+    "label": "Architecture",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/phasedoc/ARCHITECTURE.md"
+   },
+   {
+    "label": "Buildplan mirror (generated)",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/phasedoc/BUILDPLAN.md"
+   },
+   {
+    "label": "Plan script",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/phasedoc/plan.py"
+   }
+  ]
+ },
+ {
+  "group": "Vault (Obsidian)",
+  "items": [
+   {
+    "label": "Hub",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/vault/Frameflow.md"
+   },
+   {
+    "label": "V1 Scope",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/vault/Docs/V1 Scope.md"
+   },
+   {
+    "label": "Niche Study",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/vault/Docs/Niche Study.md"
+   },
+   {
+    "label": "Niche Study Results 2026-10-23",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/vault/Docs/Niche Study Results 2026-10-23.md"
+   },
+   {
+    "label": "Deep Study 2026-10-23",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/vault/Docs/Deep Study 2026-10-23.md"
+   },
+   {
+    "label": "Tool Candidates",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/vault/Docs/Tool Candidates.md"
+   },
+   {
+    "label": "Setup Tasks",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/vault/Docs/Setup Tasks.md"
+   },
+   {
+    "label": "Decisions folder",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow/vault/Decisions/"
+   }
+  ]
+ },
+ {
+  "group": "Code and skills",
+  "items": [
+   {
+    "label": "GitHub: TalhaKhan-01/frameflow (private)",
+    "href": "https://github.com/TalhaKhan-01/frameflow"
+   },
+   {
+    "label": "Repo",
+    "path": "/home/talha-khan/Talha_Khan/Code/frameflow"
+   },
+   {
+    "label": "niche-study skill",
+    "path": "/home/talha-khan/Talha_Khan/Claude/skills/niche-study/SKILL.md"
+   },
+   {
+    "label": "deep-study skill",
+    "path": "/home/talha-khan/Talha_Khan/Claude/skills/deep-study/scripts/deep_study.py"
+   },
+   {
+    "label": "Shared cockpit program",
+    "path": "/home/talha-khan/Talha_Khan/Code/phasedoc-cockpit/cockpit.py"
+   }
+  ]
+ },
+ {
+  "group": "Channels",
+  "items": [
+   {
+    "label": "YouTube channel",
+    "href": "https://www.youtube.com/channel/UCrcF7Q5J4kEENdJuA8BPQxQ"
+   },
+   {
+    "label": "Instagram @madebythirdspace",
+    "href": "https://www.instagram.com/madebythirdspace/"
+   }
+  ]
+ },
+ {
+  "group": "Services",
+  "items": [
+   {
+    "label": "This cockpit (PM2 phasedoc-frameflow, port 7300)",
+    "href": "http://127.0.0.1:7300/"
+   },
+   {
+    "label": "Port registry",
+    "path": "/home/talha-khan/Talha_Khan/PORTS.md"
+   }
+  ]
+ }
+]
