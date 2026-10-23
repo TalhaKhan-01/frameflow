@@ -22,7 +22,25 @@
       ],
       "india": [
         "AI news India",
-        "AI tools India"
+        "ChatGPT India"
+      ],
+      "include": [
+        "ai",
+        "chatgpt",
+        "gpt",
+        "openai",
+        "gemini",
+        "claude",
+        "llm",
+        "copilot",
+        "grok",
+        "deepseek",
+        "agent",
+        "agents",
+        "sora",
+        "midjourney",
+        "anthropic",
+        "perplexity"
       ]
     },
     "ai-money": {
@@ -32,12 +50,37 @@
         "AI stocks",
         "AI bubble",
         "AI taking jobs",
-        "semiconductor war",
+        "AI chip war",
         "tech layoffs AI"
       ],
       "india": [
         "AI jobs India",
-        "share market AI India"
+        "AI stocks India"
+      ],
+      "include": [
+        "ai",
+        "nvidia",
+        "stock",
+        "stocks",
+        "market",
+        "markets",
+        "job",
+        "jobs",
+        "layoff",
+        "layoffs",
+        "bubble",
+        "chip",
+        "chips",
+        "semiconductor",
+        "data center",
+        "data centers",
+        "valuation",
+        "economy",
+        "invest",
+        "investing",
+        "money",
+        "billion",
+        "trillion"
       ]
     },
     "dev-tools": {
@@ -51,23 +94,74 @@
         "best free AI tools for coding"
       ],
       "india": [
-        "coding tips India",
-        "AI tools for students"
+        "AI coding tools India",
+        "AI tools for developers"
+      ],
+      "include": [
+        "github",
+        "open source",
+        "open-source",
+        "code",
+        "coding",
+        "coder",
+        "developer",
+        "developers",
+        "programming",
+        "programmer",
+        "vs code",
+        "vscode",
+        "cursor",
+        "api",
+        "python",
+        "javascript",
+        "terminal",
+        "linux",
+        "repo",
+        "software",
+        "devtools",
+        "copilot",
+        "build",
+        "app",
+        "apps",
+        "website",
+        "websites",
+        "agent",
+        "agents",
+        "no-code",
+        "automation",
+        "saas"
       ]
     },
     "how-tech-works": {
       "label": "How tech works: explainers",
       "global": [
-        "how does ChatGPT work",
+        "how ChatGPT works explained",
         "how GPU works",
         "how the internet works",
         "how computers work",
-        "how AI learns",
+        "how neural networks work",
         "engineering explained"
       ],
       "india": [
-        "technology explained Hindi English",
+        "how ISRO rockets work",
         "how UPI works"
+      ],
+      "include": [
+        "how",
+        "why",
+        "explained",
+        "works",
+        "inside",
+        "science",
+        "engineering"
+      ],
+      "exclude": [
+        "update",
+        "setting",
+        "settings",
+        "access",
+        "download",
+        "install"
       ]
     },
     "india-tech": {
@@ -79,26 +173,109 @@
         "Indian tech news"
       ],
       "india": [
-        "India tech news",
+        "Indian tech news today",
         "Indian startup story",
         "Jio AI",
         "UPI news"
+      ],
+      "include": [
+        "india",
+        "indian",
+        "isro",
+        "upi",
+        "jio",
+        "bharat",
+        "tata",
+        "reliance",
+        "made in india",
+        "startup",
+        "startups",
+        "shark tank india",
+        "bengaluru",
+        "bangalore",
+        "zepto",
+        "blinkit",
+        "zomato",
+        "swiggy",
+        "flipkart",
+        "paytm",
+        "phonepe",
+        "ola",
+        "nykaa",
+        "crore",
+        "cr",
+        "business",
+        "brand"
       ]
     },
     "global-tech": {
       "label": "Global tech changes: big tech, gadgets, policy",
       "global": [
-        "tech news",
+        "biggest tech news",
         "Apple new",
         "Samsung new phone",
         "big tech",
-        "tech explained",
-        "future technology"
+        "tech news explained",
+        "new gadget"
       ],
       "india": [
         "tech news today India",
         "new smartphone launch India"
+      ],
+      "include": [
+        "apple",
+        "iphone",
+        "ipad",
+        "mac",
+        "samsung",
+        "galaxy",
+        "google",
+        "pixel",
+        "tech",
+        "phone",
+        "smartphone",
+        "microsoft",
+        "meta",
+        "tesla",
+        "gadget",
+        "gadgets",
+        "laptop",
+        "chip",
+        "android",
+        "nothing",
+        "oneplus",
+        "xiaomi",
+        "foldable",
+        "vivo",
+        "oppo",
+        "realme",
+        "motorola",
+        "pro max",
+        "ai"
       ]
     }
+  },
+  "filters": {
+    "latin_only": true,
+    "exclude": [
+      "cheat code",
+      "cheat codes",
+      "gta",
+      "free fire",
+      "bgmi",
+      "minecraft",
+      "roblox",
+      "bike driving",
+      "kaise",
+      "kare",
+      "karen",
+      "kya",
+      "banaye",
+      "hai",
+      "ka",
+      "ki",
+      "se",
+      "mein"
+    ]
   }
 }
