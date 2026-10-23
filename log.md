@@ -6,6 +6,11 @@ tags: [log]
 
 Newest entries at the top.
 
+## 2026-10-23 · Setup progress
+- Done: Bitwarden; Google Cloud project `Frameflow`; YouTube channel `UCrcF7Q5J4kEENdJuA8BPQxQ` on Talha's own account (to move later); Instagram Creator account `@madebythirdspace`.
+- Blocked: Pexels and Pixabay API key requests are paused. Need free alternatives (see [[Tool Candidates]]).
+- Next: OAuth consent screen explained to Talha; niche discussion; Claude skills list.
+
 ## 2026-10-23 · Strategy Q&A and setup tasks
 - [[Strategy Q&A 2026-10-23]] saved: code pipeline over full agent ([[Pipeline With Few Model Calls]], proposed), [[High Quality Short]], [[Algorithm Signals]].
 - New concepts: [[Scene Library]], [[Quality Bar]].
