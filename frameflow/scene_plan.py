@@ -99,11 +99,18 @@ def _news(d):
     return errs
 
 
+SUBJECTS_3D = ("chip", "phone", "server", "globe", "rocket", "satellite")
+ACTIONS_3D = ("spin", "explode", "orbit")
+
+
 def _explainer(d):
     errs = []
-    for k in ("subject", "action"):
-        if not _str(d.get(k), 80):
-            errs.append(f"data.{k} is required (at most 80 characters)")
+    if d.get("subject") not in SUBJECTS_3D:
+        errs.append(f"data.subject must be one of {', '.join(SUBJECTS_3D)}")
+    if d.get("action") not in ACTIONS_3D:
+        errs.append(f"data.action must be one of {', '.join(ACTIONS_3D)}")
+    if "title" in d and not _str(d["title"], 60):
+        errs.append("data.title must be at most 60 characters")
     return errs
 
 

@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; color: var(--ff-fg); font-family: var(--ff-body); }
+        #__ID__-canvas { position: absolute; left: 0; top: 300px; width: 1080px; height: 1080px; display: block; }
+        #__ID__-text { position: absolute; left: var(--ff-safe-x); right: var(--ff-safe-right-upper); top: var(--ff-safe-top); }
+        #__ID__-title { font: 700 64px/1.08 var(--ff-display); letter-spacing: -0.02em; }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__">
+        <div class="ff-bg"></div>
+        <canvas id="__ID__-canvas" width="1080" height="1080"></canvas>
+        <div id="__ID__-text"><div class="ff-kicker" id="__ID__-kicker"></div><div id="__ID__-title"></div></div>
+      </div>
+      <!-- Three.js r159 (MIT) is loaded by the page head before scenes mount; referenced here for the linter. -->
+      <script src="assets/vendor/three.min.js"></script>
+      <script>
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          document.getElementById("__ID__-kicker").textContent = D.kicker || D.subject.toUpperCase();
+          document.getElementById("__ID__-title").textContent = D.title || "";
+          const canvas = document.getElementById("__ID__-canvas");
+          const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+          renderer.setPixelRatio(1);
+          renderer.setSize(1080, 1080, false);
+          const scene = new THREE.Scene();
+          const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+          const css = getComputedStyle(document.documentElement);
+          const col = (v, d) => new THREE.Color((css.getPropertyValue(v) || d).trim());
+          const teal = col("--ff-accent", "#7dd3c0"), amber = col("--ff-accent-2", "#f6c177"), violet = col("--ff-accent-3", "#a78bfa");
+          const panel = new THREE.Color("#2a3145"), dark = new THREE.Color("#1a1f2e");
+          const mat = (c) => new THREE.MeshStandardMaterial({ color: c, flatShading: true, roughness: 0.55, metalness: 0.1 });
+          scene.add(new THREE.HemisphereLight(0xffffff, 0x1b2234, 1.6));
+          const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 5, 4); scene.add(key);
+          const rim = new THREE.DirectionalLight(0x7dd3c0, 1.2); rim.position.set(-4, 2, -3); scene.add(rim);
+          const group = new THREE.Group(); scene.add(group);
+          const parts = [];   // [mesh, explode direction]
+          const add = (geo, color, x, y, z, dir) => {
+            const m = new THREE.Mesh(geo, mat(color)); m.position.set(x, y, z); group.add(m);
+            parts.push([m, new THREE.Vector3(...(dir || [x, y, z])).normalize(), m.position.clone()]);
+            return m;
+          };
+          const builders = {
+            chip() {
+              add(new THREE.BoxGeometry(2.4, 0.22, 2.4), dark, 0, 0, 0, [0, -1, 0]);
+              add(new THREE.BoxGeometry(1.3, 0.2, 1.3), teal, 0, 0.2, 0, [0, 1, 0]);
+              for (let i = 0; i < 8; i++) for (const s of [-1, 1]) {
+                const o = -1.05 + i * 0.3;
+                add(new THREE.BoxGeometry(0.12, 0.06, 0.34), amber, o, -0.02, s * 1.35, [0, 0, s]);
+                add(new THREE.BoxGeometry(0.34, 0.06, 0.12), amber, s * 1.35, -0.02, o, [s, 0, 0]);
+              }
+            },
+            phone() {
+              add(new THREE.BoxGeometry(1.5, 3.0, 0.16), dark, 0, 0, 0, [0, 0, -1]);
+              add(new THREE.BoxGeometry(1.36, 2.8, 0.04), teal, 0, 0, 0.1, [0, 0, 1]);
+              add(new THREE.BoxGeometry(0.5, 0.5, 0.1), panel, -0.38, 1.1, -0.13, [0, 0, -1]);
+              add(new THREE.CylinderGeometry(0.11, 0.11, 0.08, 10), amber, -0.38, 1.1, -0.2, [-1, 0.5, -1]).rotation.x = Math.PI / 2;
+            },
+            server() {
+              for (let i = 0; i < 5; i++) {
+                const y = -1.2 + i * 0.6;
+                add(new THREE.BoxGeometry(2.2, 0.48, 1.6), i % 2 ? panel : dark, 0, y, 0, [i % 2 ? 1 : -1, 0, 0.3]);
+                add(new THREE.BoxGeometry(0.12, 0.12, 0.05), i === 2 ? amber : teal, 0.85, y, 0.82, [1, 0, 1]);
+              }
+            },
+            globe() {
+              add(new THREE.IcosahedronGeometry(1.4, 1), teal, 0, 0, 0, [0, 1, 0]);
+              const ring = add(new THREE.TorusGeometry(2.0, 0.05, 6, 48), amber, 0, 0, 0, [0, -1, 0]); ring.rotation.x = Math.PI / 2.4;
+              add(new THREE.OctahedronGeometry(0.18, 0), violet, 2.0, 0.25, 0, [1, 0.2, 0]);
+            },
+            rocket() {
+              add(new THREE.CylinderGeometry(0.45, 0.5, 2.2, 8), panel, 0, 0, 0, [0, -1, 0]);
+              add(new THREE.ConeGeometry(0.45, 0.9, 8), amber, 0, 1.55, 0, [0, 1, 0]);
+              for (let i = 0; i < 4; i++) {
+                const a = (i / 4) * Math.PI * 2;
+                add(new THREE.BoxGeometry(0.08, 0.7, 0.5), teal, Math.cos(a) * 0.55, -0.95, Math.sin(a) * 0.55, [Math.cos(a), -0.3, Math.sin(a)]).rotation.y = -a;
+              }
+              add(new THREE.ConeGeometry(0.32, 0.6, 8), amber, 0, -1.45, 0, [0, -1, 0]).rotation.x = Math.PI;
+            },
+            satellite() {
+              add(new THREE.BoxGeometry(0.9, 0.9, 1.2), amber, 0, 0, 0, [0, 1, 0]);
+              add(new THREE.BoxGeometry(2.0, 0.04, 0.8), teal, -1.55, 0, 0, [-1, 0, 0]);
+              add(new THREE.BoxGeometry(2.0, 0.04, 0.8), teal, 1.55, 0, 0, [1, 0, 0]);
+              add(new THREE.ConeGeometry(0.4, 0.35, 10, 1, true), panel, 0, 0, 0.8, [0, 0, 1]).rotation.x = -Math.PI / 2;
+            },
+          };
+          (builders[D.subject] || builders.chip)();
+          const radius = 8.6;
+          const renderAt = (t) => {
+            const p = Math.min(Math.max(t / DUR, 0), 1);
+            const yaw = 0.7 + p * (D.action === "orbit" ? 2.2 : 0.9);
+            camera.position.set(Math.sin(yaw) * radius, 2.4 - p * 0.6, Math.cos(yaw) * radius);
+            camera.lookAt(0, 0, 0);
+            group.rotation.y = D.action === "spin" ? t * 0.9 : 0;
+            const e = D.action === "explode" ? Math.max(0, Math.min(1, (t - 0.8) / 1.6)) : 0;
+            const ease = e * e * (3 - 2 * e);
+            parts.forEach(([m, dir, base]) => m.position.copy(base).addScaledVector(dir, ease * 0.7));
+            renderer.render(scene, camera);
+          };
+          const clock = { t: 0 };
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => renderAt(clock.t) }, 0);
+          tl.fromTo("#__ID__-text", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+          renderAt(0);
+          window.__timelines["__ID__"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

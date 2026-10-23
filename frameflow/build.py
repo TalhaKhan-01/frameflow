@@ -209,6 +209,8 @@ def project(plan, out_dir, voice_dir=None, captions=True):
     font_warm = ('<div aria-hidden="true" style="position:absolute;opacity:0;pointer-events:none">'
                       '<span style="font-family:var(--ff-display)">₹Aa</span><span style="font-family:var(--ff-body)">₹Aa</span>'
                       '<span style="font-family:var(--ff-mono)">Aa</span></div>')
+    three_script = ('\n    <script src="assets/vendor/three.min.js"></script>'
+                    if any(s["type"] == "explainer-3d" for s in plan["scenes"]) else "")
     index = f"""<!doctype html>
 <html lang="en" data-resolution="portrait">
   <head>
@@ -217,7 +219,7 @@ def project(plan, out_dir, voice_dir=None, captions=True):
     <title>{html.escape(plan["title"])}</title>
     <link rel="stylesheet" href="assets/theme.css" />
     {font_preloads}
-    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/vendor/gsap.min.js"></script>{three_script}
     <style>
       #root {{ position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--ff-bg); }}
     </style>

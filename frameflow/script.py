@@ -23,6 +23,9 @@ Output one scene plan as JSON. Every video is built from these scene templates (
 - stat-counter: value (number), prefix (optional, e.g. "₹"), suffix (optional, e.g. "%", " cr"), label (<=60 chars), kicker (optional), decimals (optional)
 - comparison: kicker/title (optional), columns (2-4 objects: label <=24 chars, value string or number, note optional), highlight (optional index)
 - chart: kind ("bar" or "line"), series (2-12 objects: label <=16 chars, value number), unit (optional), kicker/title (optional), highlight (optional index)
+- code-card: language, code (<=14 lines, each <=46 chars; real code from the source only), file (optional), highlight_lines (optional 1-based list), repo (optional {name, stars}), kicker (optional)
+- news-snapshot: url (the source article), headline (short), source (publication name), highlight (exact phrase from the headline). Use once per video at most, for the core report.
+- explainer-3d: subject (one of chip, phone, server, globe, rocket, satellite), action (spin, explode or orbit), kicker, title (<=60 chars). Use for "how it works" moments.
 Rules (all must hold):
 R1 scene 1's say line is the hook: lead with the biggest concrete number or comparison in the source (who is affected, how many, how much),
 stated plainly, not hedged with 'may' unless the source is hedged. No greeting.
@@ -44,7 +47,7 @@ PLAN_SCHEMA = {"type": "object", "required": ["id", "lane", "title", "scenes"], 
     "id": {"type": "string"}, "lane": {"type": "string", "enum": sorted(scene_plan.LANES)},
     "title": {"type": "string"}, "description": {"type": "string"},
     "scenes": {"type": "array", "minItems": 5, "maxItems": 11, "items": {"type": "object", "required": ["type", "say", "data"],
-        "properties": {"type": {"type": "string", "enum": ["headline-reveal", "stat-counter", "comparison", "chart"]},
+        "properties": {"type": {"type": "string", "enum": ["headline-reveal", "stat-counter", "comparison", "chart", "code-card", "news-snapshot", "explainer-3d"]},
                        "say": {"type": "string"}, "data": {"type": "object"}, "claim": {"type": "boolean"},
                        "payoff": {"type": "boolean"}, "sources": {"type": "array", "items": {"type": "string"}}}}}}}
 
