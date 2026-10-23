@@ -35,8 +35,9 @@
     - [~] **P1.1.2** Every lane's sample is at least 70% on-topic  
       _Acceptance:_ niche-study score: kept/found >= 0.70 for every lane (spot-check of 6 dropped titles per lane shows real off-topic videos)
       _Note 2026-10-23:_ Test run 2026-10-23: global-tech 74%, ai-money 82%, dev-tools 71%, but india-tech 63%, ai-news 66%, how-tech-works 67%. Needs sharper queries in those three lanes.
-    - [ ] **P1.1.3** Weekly lane mix decided from the evidence  
+    - [~] **P1.1.3** Weekly lane mix decided from the evidence  
       _Acceptance:_ vault/Decisions/Lane Mix.md exists with status accepted, naming per-lane frequency and citing the niche and deep study numbers
+      _Note 2026-10-23:_ Proposal written 2026-10-23: Decisions/Lane Mix.md (status proposed): 3 global tech, 3 AI news, 2 India tech, 1 how-tech-works, 1 dev tools/AI money alternating. Waiting for Talha.
   - **P1.2 Deep study of breakout Shorts** (3/4)
     - [x] **P1.2.1** deep-study skill measures clips: speech start, words/min, cuts, loudness, contact sheets  
       _Acceptance:_ vault/Docs/Deep Study <date>.md lists at least 25 measured clips with cuts/10s, LUFS and caption status; local Whisper fills blocked captions
