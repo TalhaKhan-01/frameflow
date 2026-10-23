@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; color: var(--ff-fg); font-family: var(--ff-body); }
+        #__ID__-win { background: #10131c; border: 2px solid var(--ff-line); border-radius: 26px; overflow: hidden;
+          box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5); }
+        #__ID__-bar { display: flex; align-items: center; gap: 12px; padding: 22px 26px; background: #161a26; border-bottom: 2px solid var(--ff-line); }
+        #__ID__-bar i { width: 18px; height: 18px; border-radius: 50%; display: block; }
+        #__ID__-file { margin-left: 14px; font: 600 30px var(--ff-mono); color: var(--ff-muted); }
+        #__ID__-code { padding: 26px 30px 30px; font: 500 33px/1.5 var(--ff-mono); white-space: pre; }
+        .__ID__-ln { display: block; min-height: 1.5em; }
+        .__ID__-ln.hot { background: rgba(246, 193, 119, 0.14); box-shadow: inset 6px 0 0 var(--ff-accent-2); margin: 0 -30px; padding: 0 30px; }
+        #__ID__-repo { display: flex; gap: 22px; align-items: center; margin-top: 32px; font: 600 40px var(--ff-display); }
+        #__ID__-repo span { color: var(--ff-accent-2); }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__">
+        <div class="ff-bg"></div><div class="ff-grid"></div>
+        <div class="ff-stage" id="__ID__-stage"></div>
+      </div>
+      <script>
+        (() => {
+          const D = __DATA__;
+          const stage = document.getElementById("__ID__-stage");
+          if (D.kicker) { const k = document.createElement("div"); k.className = "ff-kicker"; k.id = "__ID__-kicker"; k.textContent = D.kicker; stage.append(k); }
+          const win = document.createElement("div"); win.id = "__ID__-win";
+          const bar = document.createElement("div"); bar.id = "__ID__-bar";
+          ["#f7768e", "#f6c177", "#9ece6a"].forEach((c) => { const i = document.createElement("i"); i.style.background = c; bar.append(i); });
+          const file = document.createElement("span"); file.id = "__ID__-file"; file.textContent = D.file || D.language; bar.append(file);
+          const code = document.createElement("div"); code.id = "__ID__-code";
+          const hot = new Set(D.highlight_lines || []);
+          // _html is produced by the build step (Pygments, inline colours; every text node escaped there)
+          D._html.split("\n").forEach((html, i) => {
+            const ln = document.createElement("span");
+            ln.className = "__ID__-ln" + (hot.has(i + 1) ? " hot" : "");
+            ln.id = "__ID__-ln" + i;
+            ln.innerHTML = html || " ";
+            code.append(ln);
+          });
+          win.append(bar, code); stage.append(win);
+          if (D.repo) {
+            const r = document.createElement("div"); r.id = "__ID__-repo";
+            r.append(D.repo.name);
+            if (D.repo.stars != null) { const s = document.createElement("span"); s.textContent = "★ " + new Intl.NumberFormat("en-IN").format(D.repo.stars); r.append(s); }
+            stage.append(r);
+          }
+          // shrink the code font until the widest line fits the window
+          const fit = () => {
+            let fs = 33; code.style.fontSize = fs + "px";
+            while (code.scrollWidth > win.clientWidth - 6 && fs > 20) { fs -= 1; code.style.fontSize = fs + "px"; }
+          };
+          fit();
+          const tl = gsap.timeline({ paused: true });
+          if (D.kicker) tl.fromTo("#__ID__-kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, 0);
+          tl.fromTo(win, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+          // re-fit on every frame of the scene: exact once the bundled mono font is loaded, in every render worker
+          tl.fromTo(stage, { x: 0 }, { x: 0, duration: __DUR__, ease: "none", onUpdate: fit }, 0);
+          const n = D._html.split("\n").length, step = Math.min(0.18, 1.6 / n);
+          for (let i = 0; i < n; i++) tl.fromTo("#__ID__-ln" + i, { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.2 }, 0.45 + i * step);
+          if (D.repo) tl.fromTo("#__ID__-repo", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 0.6 + n * step);
+          window.__timelines["__ID__"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -151,6 +151,7 @@ source = { editable = "." }
 dependencies = [
     { name = "kokoro-onnx" },
     { name = "playwright" },
+    { name = "pygments" },
     { name = "soundfile" },
 ]
 
@@ -163,6 +164,7 @@ dev = [
 requires-dist = [
     { name = "kokoro-onnx", specifier = "==0.6.1" },
     { name = "playwright", specifier = "==1.63.0" },
+    { name = "pygments", specifier = "==2.21.0" },
     { name = "soundfile", specifier = "==0.14.0" },
 ]
 

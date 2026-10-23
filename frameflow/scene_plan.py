@@ -82,6 +82,8 @@ def _code(d):
     errs = []
     if not _str(d.get("code")) or len(d["code"].splitlines()) > 14:
         errs.append("data.code must be non-empty and at most 14 lines")
+    elif max(len(l) for l in d["code"].splitlines()) > 46:
+        errs.append("data.code lines must be at most 46 characters (longer lines shrink the code below phone-readable size)")
     if not _str(d.get("language"), 20):
         errs.append("data.language is required")
     return errs

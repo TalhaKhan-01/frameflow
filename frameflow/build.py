@@ -123,6 +123,31 @@ def credits_composition(credits, total):
 """
 
 
+CODE_COLOURS = {"Keyword": "#a78bfa", "Name.Function": "#7dd3c0", "Name.Class": "#7dd3c0", "Name.Builtin": "#7aa2f7",
+                "String": "#9ece6a", "Number": "#f6c177", "Comment": "#8b93ad", "Operator": "#f7768e", "Name.Decorator": "#f6c177"}
+
+
+def highlight_code(code, language):
+    """Syntax-coloured HTML lines (inline colours; Pygments escapes every text node)."""
+    from pygments import lex
+    from pygments.lexers import get_lexer_by_name, guess_lexer
+    from pygments.token import Token
+    try:
+        lexer = get_lexer_by_name(language)
+    except Exception:
+        lexer = guess_lexer(code)
+    out = []
+    for ttype, value in lex(code, lexer):
+        colour = None
+        t = ttype
+        while t is not Token and colour is None:
+            colour = CODE_COLOURS.get(str(t).removeprefix("Token."))
+            t = t.parent
+        text = html.escape(value)
+        out.append(f'<span style="color:{colour}">{text}</span>' if colour else text)
+    return "".join(out).rstrip("\n")
+
+
 def render_scene_file(scene, comp_id, duration):
     tpl = (SCENES / scene["type"] / "scene.html").read_text()
     return (tpl.replace("__ID__", comp_id)
@@ -145,6 +170,8 @@ def project(plan, out_dir, voice_dir=None, captions=True):
     manifest = []
     for i, (scene, (start, dur)) in enumerate(zip(plan["scenes"], slots)):
         cid = f"s{i}"
+        if scene["type"] == "code-card":
+            scene = {**scene, "data": {**scene["data"], "_html": highlight_code(scene["data"]["code"], scene["data"]["language"])}}
         if scene["type"] == "news-snapshot":
             from frameflow import capture
             snap = f"assets/{cid}-snap.png"
@@ -176,6 +203,12 @@ def project(plan, out_dir, voice_dir=None, captions=True):
         (out / "compositions" / "captions.html").write_text(cap.composition(json.loads((Path(voice_dir) / "words.json").read_text()), total))
         caption_host = (f'<div id="captions" data-composition-id="captions" data-composition-src="compositions/captions.html" '
                         f'data-start="0" data-duration="{total}" data-track-index="2" data-width="{WIDTH}" data-height="{HEIGHT}"></div>')
+    # Load every bundled font with the page (not when a scene first uses it), so no render worker draws a fallback font.
+    font_preloads = "\n    ".join(f'<link rel="preload" href="assets/vendor/fonts/{f.name}" as="font" type="font/woff2" crossorigin />'
+                                   for f in sorted((SHARED / "vendor" / "fonts").glob("*.woff2")))
+    font_warm = ('<div aria-hidden="true" style="position:absolute;opacity:0;pointer-events:none">'
+                      '<span style="font-family:var(--ff-display)">₹Aa</span><span style="font-family:var(--ff-body)">₹Aa</span>'
+                      '<span style="font-family:var(--ff-mono)">Aa</span></div>')
     index = f"""<!doctype html>
 <html lang="en" data-resolution="portrait">
   <head>
@@ -183,6 +216,7 @@ def project(plan, out_dir, voice_dir=None, captions=True):
     <meta name="viewport" content="width={WIDTH}, height={HEIGHT}" />
     <title>{html.escape(plan["title"])}</title>
     <link rel="stylesheet" href="assets/theme.css" />
+    {font_preloads}
     <script src="assets/vendor/gsap.min.js"></script>
     <style>
       #root {{ position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--ff-bg); }}
@@ -190,6 +224,7 @@ def project(plan, out_dir, voice_dir=None, captions=True):
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="{total}" data-width="{WIDTH}" data-height="{HEIGHT}">
+      {font_warm}
       {audio}
       {chr(10).join("      " + h for h in hosts).strip()}
       {caption_host}
