@@ -142,8 +142,17 @@ def project(plan, out_dir, voice_dir=None, captions=True):
     slots = timings(plan, voice_dir)
     total = round(slots[-1][0] + slots[-1][1] + TAIL, 3)
     hosts = []
+    manifest = []
     for i, (scene, (start, dur)) in enumerate(zip(plan["scenes"], slots)):
         cid = f"s{i}"
+        if scene["type"] == "news-snapshot":
+            from frameflow import capture
+            snap = f"assets/{cid}-snap.png"
+            capture.capture(scene["data"]["url"], out / snap)
+            scene = {**scene, "data": {**scene["data"], "_image": snap}}
+            manifest.append({"file": snap, "asset": f"scene {i} snapshot", "source": f"screenshot of {scene['data']['url']}",
+                             "licence": "short screenshot for news reporting and commentary (fair dealing), source credited on screen",
+                             "url": scene["data"]["url"], "author": scene["data"].get("source", "")})
         (out / "compositions" / f"{cid}.html").write_text(render_scene_file(scene, cid, dur + (TAIL if i == len(slots) - 1 else 0)))
         for asset in (SCENES / scene["type"]).glob("asset-*"):
             shutil.copy(asset, out / "assets" / asset.name)
@@ -195,6 +204,7 @@ def project(plan, out_dir, voice_dir=None, captions=True):
 """
     (out / "index.html").write_text(index)
     (out / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=1))
+    (out / "assets-manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
     (out / "package.json").write_text(json.dumps({"name": plan["id"], "private": True, "type": "module"}, indent=1))
     return out, total
 

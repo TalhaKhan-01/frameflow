@@ -1,0 +1,3 @@
+{"type": "news-snapshot", "say": "The new telecom rules say your messaging app must stay tied to an active SIM.",
+ "data": {"url": "file:///home/talha-khan/Talha_Khan/Code/frameflow/tests/fixtures/article/index.html", "headline": "Messaging apps must stay linked to an active SIM", "source": "The Sample Times", "highlight": "an active SIM"},
+ "_note": "Template sample using a local test fixture page, not a real article."}

@@ -21,7 +21,7 @@ SFX_DB = -16
 TARGET_LUFS, TRUE_PEAK = -14.0, -1.5
 
 
-def ledger_rows(plan, mood, sfx_used):
+def ledger_rows(plan, mood, sfx_used, project_dir=None):
     lib = {r["file"]: r for r in json.loads((music.LIBRARY / "ledger.json").read_text())}
     rows = [{"asset": "voice", "source": "Kokoro-82M text-to-speech, generated locally", "licence": "Apache-2.0 model; output is ours",
              "url": "https://github.com/thewh1teagle/kokoro-onnx", "author": "Frameflow"},
@@ -30,8 +30,11 @@ def ledger_rows(plan, mood, sfx_used):
             {"asset": "music", **lib[f"music/bed-{mood}.wav"]}]
     rows += [{"asset": "sfx", **lib[f"sfx/{name}.wav"]} for name in sorted(set(sfx_used))]
     for i, s in enumerate(plan["scenes"]):
-        for a in s.get("assets", []):  # scene-specific assets (snapshots, images) carry their own ledger rows
+        for a in s.get("assets", []):  # scene-specific assets declared in the plan carry their own ledger rows
             rows.append({"asset": f"scene {i}", **a})
+    manifest = Path(project_dir or "") / "assets-manifest.json"
+    if project_dir and manifest.exists():    # assets the build step created (page snapshots)
+        rows += json.loads(manifest.read_text())
     return rows
 
 
@@ -89,7 +92,7 @@ def render(plan_path, out_dir=None, quality="looks", mood=None):
     mood = mood or plan.get("music", {}).get("mood") or LANE_MOOD.get(plan["lane"], "calm-tech")
     starts = [s for s, _ in build.timings(plan, vdir)]
     final = mix(raw, out / "final.mp4", vdir, mood, starts, total)
-    rows = ledger_rows(plan, mood, ["whoosh-short"] * (len(starts) > 1))
+    rows = ledger_rows(plan, mood, ["whoosh-short"] * (len(starts) > 1), proj)
     (out / "assets.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1))
     report = {"id": plan["id"], "final": str(final), "seconds": round(media.duration(final), 2), "lufs": media.loudness(final),
               "voice_lufs": info["lufs"], "music_lufs_premix": media.loudness(out / "music-stem.wav"), "words": len(words), "wer": round(word_error, 4), "mood": mood, "quality": quality}

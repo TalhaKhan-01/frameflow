@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; color: var(--ff-fg); font-family: var(--ff-body); }
+        #__ID__-card { position: absolute; left: var(--ff-safe-x); right: var(--ff-safe-right-upper); top: 250px; height: 760px;
+          border-radius: 28px; overflow: hidden; border: 3px solid var(--ff-line); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55); background: #fff; }
+        #__ID__-img { position: absolute; left: 0; top: 0; width: 100%; height: auto; transform-origin: 30% 20%; }
+        #__ID__-via { position: absolute; left: 22px; top: 22px; font: 700 30px/1 var(--ff-body); color: #fff; background: rgba(11, 13, 18, 0.85);
+          padding: 12px 18px; border-radius: 999px; }
+        #__ID__-panel { position: absolute; left: var(--ff-safe-x); right: var(--ff-safe-right-upper); top: 1040px; }
+        #__ID__-headline { font: 700 58px/1.12 var(--ff-display); letter-spacing: -0.02em; color: var(--ff-fg); }
+        #__ID__-mark { color: var(--ff-accent-2); background-image: linear-gradient(var(--ff-accent-2), var(--ff-accent-2));
+          background-repeat: no-repeat; background-position: 0 100%; background-size: 0% 8px; padding-bottom: 6px; }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__">
+        <div class="ff-bg"></div>
+        <div id="__ID__-card" data-layout-allow-overflow><img id="__ID__-img" alt="" /><div id="__ID__-via"></div></div>
+        <div id="__ID__-panel"><div id="__ID__-headline"></div></div>
+      </div>
+      <script>
+        (() => {
+          const D = __DATA__;
+          document.getElementById("__ID__-img").src = D._image;
+          document.getElementById("__ID__-via").textContent = "via " + D.source;
+          const head = document.getElementById("__ID__-headline");
+          const at = D.highlight ? D.headline.indexOf(D.highlight) : -1;
+          if (at >= 0) {
+            const mark = document.createElement("span");
+            mark.id = "__ID__-mark";
+            mark.textContent = D.highlight;
+            head.append(D.headline.slice(0, at), mark, D.headline.slice(at + D.highlight.length));
+          } else head.textContent = D.headline;
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo("#__ID__-card", { opacity: 0, y: 80, rotation: -1.5 }, { opacity: 1, y: 0, rotation: 0, duration: 0.6, ease: "power3.out" }, 0);
+          tl.fromTo("#__ID__-img", { scale: 1.0 }, { scale: 1.12, duration: __DUR__, ease: "none" }, 0);
+          tl.fromTo("#__ID__-panel", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.35);
+          if (at >= 0) tl.fromTo("#__ID__-mark", { backgroundSize: "0% 8px" }, { backgroundSize: "100% 8px", duration: 0.7, ease: "power2.inOut" }, 0.9);
+          window.__timelines["__ID__"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

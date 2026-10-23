@@ -67,8 +67,14 @@ def run(out_dir):
     rows = json.loads((out / "assets.json").read_text()) if (out / "assets.json").exists() else []
     missing = [r.get("asset", "?") for r in rows if not all(str(r.get(k, "")).strip() for k in ("source", "licence", "url", "author"))]
     kinds = {r.get("asset") for r in rows}
-    gate("licences", rows and not missing and {"voice", "music"} <= kinds,
-         f"{len(rows)} rows; incomplete: {missing or 'none'}; voice and music rows: {'yes' if {'voice', 'music'} <= kinds else 'no'}")
+    # every image the build step put in the project needs its own ledger row
+    images = sorted(str(f.relative_to(out / "project")) for f in (out / "project" / "assets").glob("*")
+                    if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")) if (out / "project" / "assets").exists() else []
+    covered = {r.get("file") for r in rows}
+    unlisted = [f for f in images if f not in covered]
+    gate("licences", rows and not missing and not unlisted and {"voice", "music"} <= kinds,
+         f"{len(rows)} rows; incomplete: {missing or 'none'}; images without a row: {unlisted or 'none'}; "
+         f"voice and music rows: {'yes' if {'voice', 'music'} <= kinds else 'no'}")
     report = {"pass": all(g["pass"] for g in gates.values()), "gates": gates, "warnings": warnings}
     (out / "qa.json").write_text(json.dumps(report, indent=1))
     return report

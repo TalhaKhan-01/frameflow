@@ -89,7 +89,7 @@ def _code(d):
 
 def _news(d):
     errs = []
-    if not (_str(d.get("url")) and URL.match(d["url"])):
+    if not (_str(d.get("url")) and (URL.match(d["url"]) or d["url"].startswith("file://"))):
         errs.append("data.url must be an http(s) URL")
     for k in ("headline", "source", "highlight"):
         if not _str(d.get(k)):

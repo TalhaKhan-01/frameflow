@@ -5,6 +5,7 @@ description = "Automated short vertical videos for YouTube Shorts and Instagram 
 requires-python = ">=3.12"
 dependencies = [
     "kokoro-onnx==0.6.1",
+    "playwright==1.63.0",
     "soundfile==0.14.0",
 ]
 

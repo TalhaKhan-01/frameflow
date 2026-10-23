@@ -28,5 +28,16 @@
     "cpu",
     "--compute_type",
     "int8"
+  ],
+  "language_detector": [
+    "uvx",
+    "--quiet",
+    "whisper-ctranslate2@0.5.8",
+    "--model",
+    "tiny",
+    "--device",
+    "cpu",
+    "--compute_type",
+    "int8"
   ]
 }

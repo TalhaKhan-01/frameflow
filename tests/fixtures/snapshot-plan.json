@@ -1,0 +1,7 @@
+{"id": "sample-snapshot", "lane": "india-tech", "title": "Apps must stay tied to an active SIM",
+ "_note": "Test fixture using a local sample page. Not real news; never publish.",
+ "scenes": [
+  {"type": "headline-reveal", "say": "Your messaging app may soon need an active SIM in the phone.", "data": {"kicker": "NEW RULE", "lines": ["Messaging apps", "need an active SIM"], "highlight": "active SIM"}},
+  {"type": "news-snapshot", "say": "Here's the report that started it.", "data": {"url": "file:///home/talha-khan/Talha_Khan/Code/frameflow/tests/fixtures/article/index.html", "headline": "Messaging apps must stay linked to an active SIM", "source": "The Sample Times", "highlight": "an active SIM"}},
+  {"type": "headline-reveal", "say": "Would this rule change how you use your phone?", "data": {"lines": ["Would this change", "how you use it?"]}}
+ ]}
