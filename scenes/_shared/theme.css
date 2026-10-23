@@ -1,0 +1,44 @@
+/* Frameflow theme: design tokens shared by every scene template.
+   PROVISIONAL until the visual identity is locked (phasedoc P3.3). Changing the look = editing this file only.
+   Fonts are bundled (OFL-1.1) with Latin + Latin Extended subsets, so ₹ renders in the brand font. */
+
+@font-face { font-family: "FF Display"; font-weight: 300 700; font-display: block;
+  src: url("vendor/fonts/space-grotesk-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "FF Display"; font-weight: 300 700; font-display: block;
+  src: url("vendor/fonts/space-grotesk-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "FF Body"; font-weight: 100 900; font-display: block;
+  src: url("vendor/fonts/inter-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "FF Body"; font-weight: 100 900; font-display: block;
+  src: url("vendor/fonts/inter-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "FF Mono"; font-weight: 100 800; font-display: block;
+  src: url("vendor/fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2"); }
+
+:root {
+  /* colour */
+  --ff-bg: #0b0d12;
+  --ff-bg-2: #141824;
+  --ff-panel: #1a1f2e;
+  --ff-line: #2a3145;
+  --ff-fg: #f2f3f5;
+  --ff-muted: #a9afbd;
+  --ff-accent: #7dd3c0;      /* teal: kickers, highlights, "good" */
+  --ff-accent-2: #f6c177;    /* amber: the one thing to look at */
+  --ff-accent-3: #a78bfa;    /* violet: secondary series */
+  --ff-bad: #f7768e;
+  /* type */
+  --ff-display: "FF Display", ui-sans-serif, system-ui, sans-serif;
+  --ff-body: "FF Body", ui-sans-serif, system-ui, sans-serif;
+  --ff-mono: "FF Mono", ui-monospace, monospace;
+  /* layout: safe zones keep text clear of the Shorts/Reels interface (top bar, right-hand buttons, bottom caption area) */
+  --ff-safe-top: 230px;
+  --ff-safe-x: 80px;
+  --ff-safe-right: 170px;
+  --ff-caption-top: 1280px;  /* the word-pop caption band starts here; scene content stays above it */
+}
+
+html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--ff-bg); }
+* { box-sizing: border-box; }
