@@ -57,8 +57,9 @@
   - [x] **P2.1** Local text-to-speech installed in the project  
     _Acceptance:_ uv run python -m frameflow.voice sample "Hello from Frameflow" writes a WAV longer than 1 s using Kokoro, with no global installs
     _Note 2026-10-23:_ Test run 2026-10-23: uv run python -m frameflow.voice sample 'Hello from Frameflow' -> 1.23 s WAV at -15.0 LUFS; kokoro-onnx 0.6.1 + soundfile 0.14.0 in the project env; model files v1.0 in ~/.cache/frameflow/kokoro (sha256 in SHA256SUMS).
-  - [ ] **P2.2** House voice chosen by ear  
+  - [~] **P2.2** House voice chosen by ear  
     _Acceptance:_ vault/Decisions/House Voice.md accepted, after Talha listened to at least 4 samples (Kokoro and one alternative such as Chatterbox), naming voice, speed and licence
+    _Note 2026-10-23:_ Audition ready 2026-10-23: vault/Docs/Voice Audition.md with 8 Kokoro voices and 2 Chatterbox styles (same hook line, same loudness). Waiting for Talha's pick.
   - [x] **P2.3** Voice step: script lines to per-scene audio plus durations  
     _Acceptance:_ frameflow voice tts on a 5-line sample script writes 5 WAVs and durations.json; each clip is 48 kHz mono and the joined voice measures -16 to -14 LUFS
     _Note 2026-10-23:_ Test run 2026-10-23: tests/fixtures/sample-script.json (5 lines) -> 5 WAVs at 48000 Hz mono + durations.json; voice.wav 20.36 s at -15.6 LUFS. Short lines ran 224-250 wpm at speed 1.0 (breakout median 171): the house-voice decision should set speed.
