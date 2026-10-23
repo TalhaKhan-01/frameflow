@@ -94,7 +94,7 @@ def credits_composition(credits, total):
 <style>
   #credits-root {{ position: absolute; inset: 0; pointer-events: none; }}
   .credit {{ position: absolute; left: var(--ff-safe-x); top: calc(var(--ff-caption-top) - 92px); opacity: 0;
-    font: 600 30px/1 var(--ff-body); color: var(--ff-muted); padding: 12px 18px; border: 2px solid var(--ff-line);
+    font: 600 34px/1 var(--ff-body); color: var(--ff-muted); padding: 14px 20px; border: 2px solid var(--ff-line);
     border-radius: 999px; background: rgba(11, 13, 18, 0.7); }}
   .credit b {{ color: var(--ff-fg); font-weight: 700; }}
 </style>
