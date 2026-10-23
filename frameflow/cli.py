@@ -1,6 +1,7 @@
 """frameflow: command-line entry point. Each step also runs on its own (python -m frameflow.<module>).
 
     frameflow render <plan.json> [--out DIR] [--quality looks|delivery] [--mood MOOD]
+    frameflow ideas collect|rank|list
     frameflow qa <out-dir>
     frameflow validate <plan.json>
 """
@@ -18,6 +19,10 @@ def main():
     r.add_argument("--out")
     r.add_argument("--quality", default="looks", choices=["draft", "looks", "delivery"])
     r.add_argument("--mood")
+    i = sub.add_parser("ideas", help="collect, rank and list ideas")
+    i.add_argument("action", choices=["collect", "rank", "list"])
+    i.add_argument("--hours", type=int, default=48)
+    i.add_argument("--top", type=int, default=15)
     q = sub.add_parser("qa", help="automatic quality gates on a render folder")
     q.add_argument("out_dir")
     v = sub.add_parser("validate", help="check a scene plan")
@@ -26,6 +31,15 @@ def main():
     if a.cmd == "render":
         from frameflow import pipeline
         print(json.dumps(pipeline.render(a.plan, a.out, a.quality, a.mood), indent=1))
+    elif a.cmd == "ideas":
+        from frameflow import ideas
+        if a.action == "collect":
+            print(json.dumps(ideas.collect(), indent=1))
+        elif a.action == "rank":
+            print(json.dumps(ideas.rank(a.hours), indent=1))
+        else:
+            for r in ideas.top(a.top):
+                print(f"{r['score']:3} {r['lane']:15} {r['title'][:70]}\n    hook: {r['hook']}\n    India: {r['india_angle']}")
     elif a.cmd == "qa":
         from frameflow import qa
         sys.argv = ["qa", a.out_dir]

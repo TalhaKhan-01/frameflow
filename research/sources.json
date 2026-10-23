@@ -1,0 +1,52 @@
+{
+  "_note": "Idea sources for frameflow ideas collect. Feeds are read as RSS/Atom; google_news runs one Google News RSS search per query for India.",
+  "rss": [
+    {
+      "name": "The Verge",
+      "url": "https://www.theverge.com/rss/index.xml"
+    },
+    {
+      "name": "TechCrunch",
+      "url": "https://techcrunch.com/feed/"
+    },
+    {
+      "name": "Ars Technica",
+      "url": "https://feeds.arstechnica.com/arstechnica/index"
+    },
+    {
+      "name": "Inc42",
+      "url": "https://inc42.com/feed/"
+    },
+    {
+      "name": "MIT Technology Review",
+      "url": "https://www.technologyreview.com/feed/"
+    },
+    {
+      "name": "Mint Technology",
+      "url": "https://www.livemint.com/rss/technology"
+    },
+    {
+      "name": "ET Tech",
+      "url": "https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms"
+    },
+    {
+      "name": "Indian Express Tech",
+      "url": "https://indianexpress.com/section/technology/feed/"
+    }
+  ],
+  "google_news": [
+    "artificial intelligence",
+    "smartphone launch India",
+    "Indian startup",
+    "Nvidia OR semiconductor",
+    "OpenAI OR Gemini OR Claude",
+    "ISRO OR UPI"
+  ],
+  "hacker_news_top": 30,
+  "github_trending": true,
+  "youtube_most_popular": {
+    "regionCode": "IN",
+    "videoCategoryId": "28",
+    "maxResults": 25
+  }
+}
