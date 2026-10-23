@@ -1,0 +1,11 @@
+{
+  "name": "rm-card",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@remotion/cli": "4.0.534",
+    "remotion": "4.0.534",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}

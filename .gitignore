@@ -6,3 +6,7 @@ data/
 *.db
 logs/
 !phasedoc/plan.db
+node_modules/
+spikes/**/out*.mp4
+spikes/**/render*.log
+data/measure-*.log
