@@ -67,7 +67,7 @@ def timings(plan, voice_dir=None):
 def voice_script(plan):
     """The voice step's script.json for a plan: one line per scene that has something to say."""
     v = plan.get("voice", {})
-    return {"voice": v.get("voice", "af_heart"), "speed": v.get("speed", 1.0), "pad": 0.0,
+    return {"voice": v.get("voice", "af_heart"), "speed": v.get("speed", 1.0), "pad": PAD,
             "lines": [{"id": f"s{i}", "say": s["say"]} for i, s in enumerate(plan["scenes"]) if s.get("say", "").strip()]}
 
 
