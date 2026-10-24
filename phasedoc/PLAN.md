@@ -36,3 +36,6 @@ Uploading is manual for now (a decision recorded in the vault), so Frameflow pre
 
 ## P8 Launch
 The finish line: three pilot videos in three different lanes, then a full week with at least one video every day, then a retrospective that adjusts the lane mix using real numbers from the channel.
+
+## P9 Quality v2
+Talha's review of the first video: it read out facts over number screens. P9 makes videos feel written and directed by people. A scriptwriter skill writes in the voice of the named narrator **Habit** (mostly informative, a few funny everyday analogies), generates 20 hooks and keeps the best, builds an And-But-Therefore story with a re-hook at least every 10 seconds, and bans AI-sounding wording. A director skill storyboards each beat as a drawn, moving world with a sound cue. The voice gets per-line emotion; a sound layer adds whooshes, risers and impacts; the scene library gains maps, drawn props, kinetic type, fast transitions and 2.5D. A stricter quality bar (50-90 s) and review judge it, and a pilot video on Black October (PHP2Shell) proves it. Full plan: vault/Docs/Quality v2 Plan.md.

@@ -81,3 +81,7 @@ The top row is the groundwork. The two rows below are the daily pipeline, from a
 | `publish` | Publish pack, post log | P7 |
 | `feedback` | 48-hour stats and weekly learning | P7 |
 | `launch` | Pilot, cadence week, retrospective | P8 |
+| `writer` | shorts-writer skill: persona, hooks, beat sheet, slop linter, voice markup | P9 |
+| `director` | shorts-director skill: storyboard, metaphor bank, compiler | P9 |
+| `sound` | SFX library v2, cue-sheet mix, energy-curve beds | P9 |
+| `pilot` | Black October pilot video | P9 |
