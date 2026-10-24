@@ -1,5 +1,19 @@
 {
-  "_about": "Frameflow config for the social-upload skill (~/Talha_Khan/Claude/skills/social-upload). Credentials stay in ~/.config/frameflow (mode 600).",
-  "youtube": {"client_file": "~/.config/frameflow/youtube-client.json", "token_file": "~/.config/frameflow/youtube-token.json", "port": 7306},
-  "instagram": {"secrets_file": "~/.config/frameflow/secrets.env", "token_file": "~/.config/frameflow/instagram-token.json", "port": 7307}
+ "_about": "Frameflow config for the social-upload skill (~/Talha_Khan/Claude/skills/social-upload). Credentials stay in ~/.config/frameflow (mode 600).",
+ "youtube": {
+  "client_file": "~/.config/frameflow/youtube-client.json",
+  "token_file": "~/.config/frameflow/youtube-token.json",
+  "port": 7306
+ },
+ "instagram": {
+  "secrets_file": "~/.config/frameflow/secrets.env",
+  "token_file": "~/.config/frameflow/instagram-token.json",
+  "api_version": "v23.0"
+ },
+ "youtube_studio": {
+  "session": "frameflow-yt",
+  "profile": "~/.cache/frameflow/yt-browser-profile"
+ },
+ "youtube_mode": "studio",
+ "_youtube_mode": "studio = upload by The Pilot in YouTube Studio, a human clicks Publish (until the API audit passes); api = youtube.py"
 }

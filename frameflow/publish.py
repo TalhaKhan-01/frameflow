@@ -97,7 +97,11 @@ def upload(video_id, platforms=("youtube", "instagram"), privacy="public"):
         publish(video_id)
     p = json.loads((out / "publish.json").read_text())
     links, results = {}, {}
-    if "youtube" in platforms:
+    mode = json.loads((ROOT / "research" / "social-upload.json").read_text()).get("youtube_mode", "api")
+    if "youtube" in platforms and mode == "studio":
+        results["youtube"] = {"mode": "studio", "next": "upload through YouTube Studio with The Pilot (social-upload "
+                              "references/youtube-studio.md); the human clicks Publish, then: frameflow posted ..."}
+    elif "youtube" in platforms:
         meta = {"title": p["yt_title"], "description": p["yt_description"], "tags": p["yt_tags"], "category": "28",
                 "privacy": privacy, "made_for_kids": False, "synthetic": True}
         (out / "youtube-meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1))
