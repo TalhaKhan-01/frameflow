@@ -1,0 +1,79 @@
+<!doctype html>
+<html><head><meta charset="UTF-8" />
+<link rel="stylesheet" href="../scenes/_shared/theme.css" />
+<link rel="stylesheet" href="../scenes/_shared/themes/paper-press.css" />
+<script src="../scenes/_shared/vendor/rough.min.js"></script>
+<style>
+  html, body { margin: 0; background: var(--ff-bg); width: auto; height: auto; overflow: visible; }
+  .art { position: relative; overflow: hidden; background: var(--ff-bg); }
+  .art .ff-paper { position: absolute; inset: 0; }
+  svg { position: absolute; inset: 0; }
+  .t { position: absolute; font-family: var(--ff-display); color: var(--ff-fg); font-weight: 700; letter-spacing: -0.02em; }
+  .h { position: absolute; font-family: var(--ff-hand); color: var(--ff-fg); font-weight: 700; }
+</style></head>
+<body>
+<!-- profile picture 800x800 (shown as a circle: keep the mark inside the middle 70%) -->
+<div class="art" id="avatar" style="width:800px;height:800px">
+  <div class="ff-paper"></div>
+  <svg id="av" width="800" height="800" viewBox="0 0 800 800"></svg>
+  <div class="t" style="left:0;right:0;top:170px;text-align:center;font-size:400px;line-height:1">h<span style="color:var(--ff-accent-2)">.</span></div>
+</div>
+<!-- YouTube banner 2560x1440, safe area 1546x423 centred (507..2053, 508..931) -->
+<div class="art" id="banner" style="width:2560px;height:1440px">
+  <div class="ff-paper"></div>
+  <svg id="bn" width="2560" height="1440" viewBox="0 0 2560 1440"></svg>
+  <div class="t" style="left:560px;top:572px;font-size:100px;line-height:1.04">Habit explains<br/>tech, AI <span style="font-family:var(--ff-hand);color:var(--ff-accent-2)">&amp;</span> money.</div>
+  <div class="h" style="left:566px;top:822px;font-size:46px">New Shorts most days · <span style="color:var(--ff-accent)">make it a Habit</span></div>
+</div>
+<!-- Facebook cover 1640x624 (mobile crops the sides: keep text in the middle 1200) -->
+<div class="art" id="cover" style="width:1640px;height:624px">
+  <div class="ff-paper"></div>
+  <svg id="cv" width="1640" height="624" viewBox="0 0 1640 624"></svg>
+  <div class="t" style="left:220px;top:180px;font-size:84px;line-height:1.04">Habit explains<br/>tech, AI <span style="font-family:var(--ff-hand);color:var(--ff-accent-2)">&amp;</span> money.</div>
+  <div class="h" style="left:226px;top:385px;font-size:36px">Drawn, sourced, a little goofy · <span style="color:var(--ff-accent)">@madebythirdspace</span></div>
+</div>
+<script>
+  const ink = "#1d1a22", red = "#c8372a", blue = "#1f5fd1", lit = "#f5c84b", fill = "#fbf8f1", fill2 = "#e7dfcf";
+  const o = (seed, extra = {}) => ({ seed, roughness: 1.3, bowing: 1.1, stroke: ink, strokeWidth: 6, ...extra });
+  // avatar: hand-drawn ring + a red underline under the h
+  { const s = document.getElementById("av"), rc = rough.svg(s);
+    s.appendChild(rc.circle(400, 400, 640, o(3, { strokeWidth: 10 })));
+    s.appendChild(rc.curve([[250, 640], [400, 662], [560, 630]], o(4, { stroke: red, strokeWidth: 16 }))); }
+  // a little street of websites with padlocks + a robot, used on banner and cover
+  function street(s, x0, ground, scale, seed) {
+    const rc = rough.svg(s); let n = seed;
+    const B = [["BLOG", 300, red], ["SHOP", 340, fill2], ["NEWS", 420, red], ["GOVT", 380, fill2]];
+    const w = 150 * scale, gap = 18 * scale;
+    B.forEach(([label, h, roof], i) => {
+      h *= scale; const x = x0 + i * (w + gap), y = ground - h;
+      s.appendChild(rc.rectangle(x, y, w, h, o(++n, { fill: fill, fillStyle: "solid", strokeWidth: 5 })));
+      s.appendChild(rc.polygon([[x - 8, y + 4], [x + w / 2, y - 60 * scale], [x + w + 8, y + 4]], o(++n, { fill: roof, fillStyle: "solid", strokeWidth: 5 })));
+      for (let r = 0; r < 2; r++) s.appendChild(rc.rectangle(x + 22 * scale, y + 70 * scale + r * 70 * scale, w - 44 * scale, 44 * scale, o(++n, { fill: lit, fillStyle: "solid", strokeWidth: 4 })));
+      const dx = x + w / 2 - 34 * scale, dy = ground - 110 * scale;
+      s.appendChild(rc.rectangle(dx, dy, 68 * scale, 110 * scale, o(++n, { fill: fill2, fillStyle: "solid", strokeWidth: 4 })));
+      s.appendChild(rc.rectangle(dx + 14 * scale, dy + 30 * scale, 40 * scale, 34 * scale, o(++n, { fill: red, fillStyle: "solid", strokeWidth: 3 })));
+      const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      t.setAttribute("x", x + w / 2); t.setAttribute("y", y + 42 * scale); t.setAttribute("text-anchor", "middle");
+      t.setAttribute("font-family", "FF Hand"); t.setAttribute("font-weight", "700"); t.setAttribute("font-size", 30 * scale); t.setAttribute("fill", ink);
+      t.textContent = label; s.appendChild(t);
+    });
+    s.appendChild(rc.line(x0 - 40 * scale, ground, x0 + 4 * (w + gap) + 30 * scale, ground, o(++n, { strokeWidth: 6 })));
+    // robot with a magnifying glass
+    const rx = x0 + 4 * (w + gap) + 60 * scale, ry = ground;
+    s.appendChild(rc.rectangle(rx - 42 * scale, ry - 170 * scale, 84 * scale, 66 * scale, o(++n, { fill: fill, fillStyle: "solid", strokeWidth: 5 })));
+    s.appendChild(rc.circle(rx - 16 * scale, ry - 138 * scale, 18 * scale, o(++n, { fill: blue, fillStyle: "solid", strokeWidth: 2 })));
+    s.appendChild(rc.circle(rx + 16 * scale, ry - 138 * scale, 18 * scale, o(++n, { fill: blue, fillStyle: "solid", strokeWidth: 2 })));
+    s.appendChild(rc.rectangle(rx - 36 * scale, ry - 100 * scale, 72 * scale, 70 * scale, o(++n, { fill: blue, fillStyle: "solid", strokeWidth: 5 })));
+    s.appendChild(rc.line(rx - 16 * scale, ry - 30 * scale, rx - 22 * scale, ry, o(++n, { strokeWidth: 7 })));
+    s.appendChild(rc.line(rx + 16 * scale, ry - 30 * scale, rx + 22 * scale, ry, o(++n, { strokeWidth: 7 })));
+    s.appendChild(rc.line(rx + 36 * scale, ry - 80 * scale, rx + 80 * scale, ry - 120 * scale, o(++n, { strokeWidth: 7 })));
+    s.appendChild(rc.circle(rx + 100 * scale, ry - 140 * scale, 54 * scale, o(++n, { fill: "#ffffff", fillStyle: "solid", strokeWidth: 6 })));
+  }
+  street(document.getElementById("bn"), 1480, 900, 0.8, 20);
+  { const s = document.getElementById("bn"), rc = rough.svg(s);
+    s.appendChild(rc.curve([[566, 796], [860, 808], [1150, 792]], o(9, { stroke: red, strokeWidth: 10 }))); }
+  street(document.getElementById("cv"), 1110, 540, 0.64, 40);
+  { const s = document.getElementById("cv"), rc = rough.svg(s);
+    s.appendChild(rc.curve([[226, 362], [480, 372], [740, 358]], o(12, { stroke: red, strokeWidth: 9 }))); }
+</script>
+</body></html>
