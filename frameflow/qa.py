@@ -10,12 +10,18 @@ Exit 0 when every gate passes. Writes <out-dir>/qa.json. Gates:
   captions    word error rate of the spoken words against the script under 10%
   voice-start first word within 0.3 s
   licences    every asset ledger row has source, licence, url and author; music and voice rows present
+Version-2 plans (Quality Bar v2) add:
+  length      50-90 s target, 95 s hard limit
+  events      visual events (frame changes) at least 4 per 10 s, and no stretch over 2.5 s without one
+  rehooks     no stretch over 10.5 s between re-hook beats (but/twist/loop or a 'rehook' device) on the real voice timing
 """
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+import numpy as np
 
 from frameflow import captions, media
 
@@ -37,6 +43,46 @@ def black_stretches(path, min_len):
     return [(float(a), float(b)) for a, b in re.findall(r"black_start:([\d.]+) black_end:([\d.]+)", r.stderr)]
 
 
+V2 = {"max_seconds": 95.0, "target_seconds": (50.0, 90.0), "events_per_10s": 4.0, "max_event_gap": 2.5, "max_rehook_gap": 10.5}
+
+
+def visual_events(path, fps=12, changed=0.7, min_sep=0.5):
+    """Times where something visibly happens: at least `changed` % of the pixels above the caption band change by more
+    than 18 grey levels from one frame to the next (96x170 grey, 12 fps). Ongoing motion counts at most every `min_sep`
+    seconds; the slow camera drift stays under the threshold. Calibrated on the drawn-scene samples (2026-10-24)."""
+    w, h = 96, 170
+    raw = subprocess.run([media.FFMPEG, "-loglevel", "error", "-i", str(path), "-vf", f"fps={fps},scale={w}:{h},format=gray",
+                          "-f", "rawvideo", "-"], capture_output=True).stdout
+    frames = np.frombuffer(raw, np.uint8).reshape(-1, h, w).astype(np.float32)[:, : int(h * 0.64)]
+    if len(frames) < 2:
+        return [], 0.0
+    share = (np.abs(np.diff(frames, axis=0)) > 18).mean(axis=(1, 2)) * 100
+    events, last = [], -9.0
+    for i, v in enumerate(share):
+        t = (i + 1) / fps
+        if v >= changed and t - last >= min_sep:
+            events.append(round(t, 2))
+            last = t
+    return events, len(frames) / fps
+
+
+def rehook_gaps(out):
+    """Longest stretch between re-hook moments, on the real voice timing (v2 plans with lines)."""
+    plan = json.loads((out / "plan.json").read_text())
+    dur = json.loads((out / "voice" / "durations.json").read_text())
+    starts = {l["id"]: l["start"] for l in dur["lines"]}
+    marks = [0.0]
+    for i, s in enumerate(plan["scenes"]):
+        for j, line in enumerate(s.get("lines", [])):
+            lid = f"s{i}" if len(s["lines"]) == 1 else f"s{i}.{j}"
+            if line.get("beat") in ("but", "twist", "loop") or "rehook" in line.get("devices", []):
+                if lid in starts:
+                    marks.append(starts[lid])
+    marks.append(dur["total"])
+    gaps = [b - a for a, b in zip(marks, marks[1:])]
+    return max(gaps) if gaps else 0.0
+
+
 def run(out_dir):
     out = Path(out_dir)
     final = out / "final.mp4"
@@ -45,11 +91,23 @@ def run(out_dir):
     def gate(name, ok, detail):
         gates[name] = {"pass": bool(ok), "detail": detail}
 
+    plan = json.loads((out / "plan.json").read_text()) if (out / "plan.json").exists() else {}
+    v2 = plan.get("version", 1) >= 2
+    L = {**LIMITS, **(V2 if v2 else {})}
     secs = media.duration(final)
-    gate("length", secs <= LIMITS["max_seconds"], f"{secs:.2f} s (max {LIMITS['max_seconds']:.0f})")
-    lo, hi = LIMITS["target_seconds"]
+    gate("length", secs <= L["max_seconds"], f"{secs:.2f} s (max {L['max_seconds']:.0f})")
+    lo, hi = L["target_seconds"]
     if not lo <= secs <= hi:
-        warnings.append(f"length {secs:.1f} s is outside the 30-50 s target")
+        warnings.append(f"length {secs:.1f} s is outside the {lo:.0f}-{hi:.0f} s target")
+    if v2:
+        ev, total = visual_events(final)
+        gaps = [b - a for a, b in zip([0.0] + ev, ev + [total])]
+        rate = len(ev) / total * 10 if total else 0
+        gate("events", rate >= V2["events_per_10s"] and max(gaps) <= V2["max_event_gap"],
+             f"{rate:.1f} visual events per 10 s (min {V2['events_per_10s']}), longest gap {max(gaps):.1f} s (max {V2['max_event_gap']}) "
+             f"at {ev[gaps.index(max(gaps)) - 1] if gaps.index(max(gaps)) else 0:.1f} s")
+        rg = rehook_gaps(out)
+        gate("rehooks", rg <= V2["max_rehook_gap"], f"longest stretch without a re-hook {rg:.1f} s (max {V2['max_rehook_gap']})")
     v = [s for s in media.probe(final)["streams"] if s["codec_type"] == "video"][0]
     gate("size", (v["width"], v["height"]) == (1080, 1920), f"{v['width']}x{v['height']}")
     lufs, peak = loudness_and_peak(final)

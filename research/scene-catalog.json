@@ -1,0 +1,205 @@
+{
+ "_about": "Frameflow scene catalog for the shorts-director skill. Templates live in scenes/<name>/scene.html; validation in frameflow/scene_plan.py.",
+ "templates": {
+  "street": {
+   "about": "A drawn street of 2-6 buildings (websites, shops, offices) that share something. Great for 'many things depend on one thing', shutdowns, scanning, a race. Camera can pan down to a shared foundation.",
+   "data": {
+    "buildings": "2-6 of {label (<=14 chars, CAPS reads best), kind: house|shop|tower|school|gov|news|bank}",
+    "lockLabel": "text on each padlock (e.g. PHP)",
+    "foundation": "label on the shared slab",
+    "robotLabel": "tag on the robot (e.g. AI)",
+    "shutterText": "stamp on shutters (default CLOSED)",
+    "beats": "list of verbs below"
+   },
+   "verbs": {
+    "draw": "buildings draw on, staggered",
+    "note": "{text (<=22 chars), until?: cue}: big handwritten line in the sky with a red underline",
+    "lights-off": "{order?: [indexes], stagger?}: windows go dark one by one",
+    "locks": "{stagger?}: the same padlock pops onto every door",
+    "foundation": "camera pans down to reveal the shared slab + label",
+    "crack": "a crack runs through the slab, buildings shake",
+    "robot": "{per?: seconds per door}: a robot walks the street rattling every door handle",
+    "shutters": "{stagger?}: rolling shutters slam down with a stamp",
+    "race": "{door?: index, labels: [left, right], run?: seconds}: two figures race to one door; a red ? lands",
+    "zoom": "{index, scale?}: camera pushes into one building"
+   }
+  },
+  "flow": {
+   "about": "How something works: 2-3 drawn nodes (boxes with icons) with things travelling between them. Great for request/response, a hijack, a pipeline.",
+   "data": {
+    "kicker": "small caps title",
+    "nodes": "2-3 of {label (<=14), icon: phone|kitchen|server|page|database|robot|box, hot?: true}",
+    "beats": "verbs below"
+   },
+   "verbs": {
+    "draw": "nodes draw on",
+    "send": "{from?: 0, to?: 1, token: label}: an envelope travels on an arc above",
+    "work": "{node, dur}: the node works (steam, wobble)",
+    "return": "{from?: 1, to?: 0, token}: a yellow envelope travels back below",
+    "hijack": "{token, result: terminal text (\\n for new line)}: a red envelope arrives, the node turns red, a terminal types the result",
+    "note": "{text, y?}: a big line slams in"
+   }
+  },
+  "stack": {
+   "about": "Isometric 2.5D layers (a tech stack, a layer cake) that build, lift apart, highlight the culprit and get stamped.",
+   "data": {
+    "kicker": "small caps title",
+    "layers": "2-6 of {label (<=22), hot?: true}; item 0 is the top",
+    "stamp": "{text (<=16), sub?: small mono line}",
+    "beats": "verbs below"
+   },
+   "verbs": {
+    "build": "layers drop in from the bottom up",
+    "explode": "layers lift apart",
+    "highlight": "the hot layer slides out and shakes, the rest dim",
+    "stamp": "a stamp slams onto the hot layer",
+    "note": "{text}"
+   }
+  },
+  "meter": {
+   "about": "An escalation: a drawn thermometer fills step by step while each step's words slam in and alert cards pile up behind.",
+   "data": {
+    "kicker": "small caps title",
+    "steps": "2-5 of {when (<=30), what (<=22), level?: 0-1}",
+    "cardText": "text on the alert cards",
+    "cardSub": "second line on the cards",
+    "cards": "how many cards (default 14)",
+    "beats": "one {do: 'step', i} per step"
+   },
+   "verbs": {
+    "step": "{i}: the meter rises to this step, its words slam, more cards pile up",
+    "boil": "the meter shakes"
+   }
+  },
+  "flap": {
+   "about": "A split-flap board rolling from one number (a year) to another, then a caption, then an optional birthday cake with one candle per unit. Great for 'how old', dates, countdowns.",
+   "data": {
+    "kicker": "small caps title",
+    "from": "number",
+    "to": "number",
+    "caption": "<=22 chars",
+    "sub": "small handwritten line under the caption",
+    "beats": "verbs below"
+   },
+   "verbs": {
+    "count": "{dur?}: the board rolls from 'from' to 'to'",
+    "caption": "{text?}: the caption slams in",
+    "cake": "{candles?}: a drawn cake with candles pops in"
+   }
+  },
+  "kinetic": {
+   "about": "Words as the picture: 1-5 lines entering on their own cues, each in a style. For hooks, twists, punchlines. Optional sunburst background.",
+   "data": {
+    "lines": "1-5 of {t (<=24 chars), style: slam|drop|scramble|type|stamp|marker|strike, color?: red|blue|muted, font?: hand|mono, size?}",
+    "burst": "true for drawn sun rays",
+    "kicker": "small caps title",
+    "sub": "small line near the bottom",
+    "subAt": "cue for sub",
+    "beats": "verbs below"
+   },
+   "verbs": {
+    "line": "{i}: line i enters in its style",
+    "circle": "{i}: a red hand-drawn ellipse circles line i",
+    "fade": "{i}: line i fades"
+   }
+  },
+  "stamps": {
+   "about": "Index cards (names) that each get a rubber stamp (OFFLINE, PATCHED, BANNED...). For lists of things affected.",
+   "data": {
+    "kicker": "small caps title",
+    "items": "2-6 of {name (<=22), note?: small line}",
+    "stamp": "stamp text (<=12)",
+    "beats": "verbs below"
+   },
+   "verbs": {
+    "deal": "cards fly in",
+    "stamp": "{i?: one card, stagger?}: stamps land (all in turn when no i)"
+   }
+  },
+  "quote": {
+   "about": "A real quote revealed word by word, one phrase swiped with a highlighter, who said it, and a doodle (fire, bulb, lock, bug).",
+   "data": {
+    "quote": "the exact quote (<=160)",
+    "who": "name",
+    "role": "who they are",
+    "mark": "phrase from the quote to highlight",
+    "doodle": "fire|bulb|lock|bug",
+    "kicker": "optional",
+    "beats": "verbs below"
+   },
+   "verbs": {
+    "words": "{per?}: words appear one by one",
+    "mark": "highlighter swipe",
+    "who": "attribution appears",
+    "doodle": "doodle draws on and wobbles"
+   }
+  },
+  "chat": {
+   "about": "A hand-drawn chat with an AI: the prompt types, the model thinks, the reply types, a stamp lands. The reply is a re-enactment unless quoted from a source, so data.note must say so.",
+   "data": {
+    "title": "window title",
+    "prompt": "<=80",
+    "reply": "<=120 (\\n allowed)",
+    "stamp": "optional stamp text",
+    "note": "required when the reply is invented, e.g. 're-enactment'",
+    "kicker": "optional",
+    "beats": "verbs below"
+   },
+   "verbs": {
+    "ask": "{cps?}: prompt types",
+    "think": "{dur}: thinking dots",
+    "reply": "{cps?}: reply types",
+    "stamp": "stamp slams"
+   }
+  },
+  "news-snapshot": {
+   "about": "A real screenshot of the source article with the key phrase highlighted. Use once for credibility.",
+   "data": {
+    "url": "the article URL",
+    "headline": "short",
+    "source": "publication",
+    "highlight": "exact phrase from the headline"
+   },
+   "verbs": {}
+  }
+ },
+ "sfx": [
+  "whoosh",
+  "whoosh-big",
+  "riser",
+  "riser-long",
+  "impact",
+  "impact-big",
+  "sub-drop",
+  "slam",
+  "stamp",
+  "shutter",
+  "lock",
+  "rattle",
+  "crack",
+  "click",
+  "switch",
+  "pop",
+  "tick",
+  "type",
+  "glitch",
+  "error",
+  "ding",
+  "alarm",
+  "beep",
+  "boom",
+  "footsteps",
+  "scratch"
+ ],
+ "tracks": {
+  "sneaky-snitch": "quirky, sneaky, comic (171 bpm)",
+  "investigations": "curious, quirky (185 bpm)",
+  "hitman": "driving, tense (150 bpm)",
+  "volatile-reaction": "intense, urgent (160 bpm)",
+  "movement-proposition": "thriller, pulsing (126 bpm)",
+  "crypto": "dark electronic, calm (80 bpm)",
+  "spy-glass": "spy, suspense (77 bpm)",
+  "unanswered-questions": "mysterious, steady (120 bpm)",
+  "darkest-child": "dark, brooding (86 bpm)"
+ }
+}

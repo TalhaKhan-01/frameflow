@@ -1,6 +1,8 @@
 """frameflow: command-line entry point. Each step also runs on its own (python -m frameflow.<module>).
 
-    frameflow make <idea-id>                      the whole chain for one idea
+    frameflow make <idea-id>                      the whole chain for one idea (v1)
+    frameflow make2 <brief.json>                  Quality v2 chain: writer + director skills -> render -> qa -> review
+    frameflow direct <brief.json>                 Quality v2 front half only: script, storyboard, plan.json
     frameflow status | approve <id> | reject <id> <why>
     frameflow publish <id> | posted <id> <yt> <ig> | stats <id> ... | learn
     frameflow render <plan.json> [--out DIR] [--quality looks|delivery] [--mood MOOD]
@@ -36,6 +38,13 @@ def main():
     rv.add_argument("out_dir")
     m = sub.add_parser("make", help="idea -> script -> render -> qa -> review (+1 rewrite) -> awaiting approval")
     m.add_argument("idea_id", type=int)
+    for name in ("make2", "direct"):
+        m2 = sub.add_parser(name, help="Quality v2: brief -> script (shorts-writer) -> storyboard (shorts-director) -> plan" + (" -> video" if name == "make2" else ""))
+        m2.add_argument("brief")
+        m2.add_argument("--out")
+        m2.add_argument("--lane", default="how-tech-works")
+        m2.add_argument("--skip-writer", action="store_true", help="reuse <out>/writer/script.json")
+        m2.add_argument("--skip-director", action="store_true", help="reuse <out>/director/storyboard.json")
     sub.add_parser("status", help="list videos")
     ap_ = sub.add_parser("approve", help="Talha approves a video after watching it")
     ap_.add_argument("video_id")
@@ -83,6 +92,12 @@ def main():
     elif a.cmd == "make":
         from frameflow import videos
         print(json.dumps(videos.make(a.idea_id), indent=1))
+    elif a.cmd == "make2":
+        from frameflow import videos
+        print(json.dumps(videos.make2(a.brief, a.lane, a.out, a.skip_writer, a.skip_director), indent=1))
+    elif a.cmd == "direct":
+        from frameflow import direct
+        print(json.dumps(direct.direct(a.brief, a.out, a.lane, a.skip_writer, a.skip_director), indent=1))
     elif a.cmd == "status":
         from frameflow import videos
         for v in videos.listing():

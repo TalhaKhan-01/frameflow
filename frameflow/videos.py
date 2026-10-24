@@ -66,6 +66,28 @@ def make(idea_id):
             "seconds": report["seconds"], "final": report["final"]}
 
 
+def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_director=False, quality="looks"):
+    """Quality v2: brief -> writer + director skills -> plan -> render -> qa -> review v2 -> awaiting approval."""
+    from frameflow import direct
+    d = direct.direct(brief_path, out, lane, skip_writer, skip_director)
+    if d["errors"]:
+        return {"status": "plan-invalid", **d}
+    plan_path = Path(d["plan"])
+    report = pipeline.render(plan_path, plan_path.parent / "render", quality)
+    rout = Path(report["final"]).parent
+    q, r = check(rout)
+    plan = json.loads(plan_path.read_text())
+    status = "awaiting-approval" if q["pass"] and r["pass"] else "needs-work"
+    con = db()
+    con.execute("INSERT OR REPLACE INTO videos (id, idea_id, plan, out_dir, lane, title, qa_pass, review_total, review_pass, status, note, created_at, updated_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (plan["id"], None, str(plan_path), str(rout), plan["lane"], plan["title"], int(q["pass"]), r["total"], int(r["pass"]),
+                 status, f"v2 from {brief_path}", now(), now()))
+    con.commit()
+    return {"video": plan["id"], "status": status, "qa": {k: g["pass"] for k, g in q["gates"].items()},
+            "review": f"{r['total']}/{r.get('max', 12)}", "seconds": report["seconds"], "final": report["final"]}
+
+
 def set_status(video_id, status, note=""):
     con = db()
     row = con.execute("SELECT * FROM videos WHERE id=?", (video_id,)).fetchone()

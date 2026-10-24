@@ -1,0 +1,14 @@
+{
+  "_about": "Frameflow config for the shorts-director skill (~/Talha_Khan/Claude/skills/shorts-director).",
+  "model": "opus",
+  "words_per_second": 3.15,
+  "max_event_gap": 2.5,
+  "house_rules": [
+    "Visual identity: Paper Press (warm paper, ink lines, editorial red for danger, blue for AI/good, yellow for light/highlight)",
+    "Vertical 1080x1920; captions occupy the bottom third, so the drawing lives in the top two thirds",
+    "Brand names as plain words only; no logos",
+    "Every number said is shown on screen",
+    "Use the news-snapshot template at most once, and only with the source URL from the script's fact ids",
+    "Open on a strong visual world, never on a plain title card"
+  ]
+}

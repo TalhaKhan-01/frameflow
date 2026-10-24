@@ -58,8 +58,93 @@ def keyframes(out):
     return sheet, plan
 
 
+ROWS_V2 = ["hook", "story", "persona_humour", "visual_storytelling", "pacing", "sound_plan", "captions", "sources", "honesty", "ending"]
+PASS_V2 = 15   # of 20, and no row at 0
+
+SYSTEM_V2 = """You review Frameflow Shorts (Quality Bar v2) before a human approves them. Be strict, specific and fair.
+Score each row 0 (fails), 1 (weak) or 2 (strong):
+- hook: the first line stops a scrolling thumb within 2 s with a concrete, honest stake or image, and the video pays it off.
+- story: And-But-Therefore shape; an open loop early; a re-hook (twist, question, reveal) at least every ~10 s; the payoff answers the loop.
+- persona_humour: sounds like the named narrator (a sharp, friendly, slightly goofy friend), mostly informative with 3-5 light comic beats
+  that each carry a fact; no AI-sounding phrasing; one line played straight.
+- visual_storytelling: drawn worlds and metaphors that SHOW the idea (not slides of numbers); the metaphor maps onto the real mechanism;
+  something visibly happens every couple of seconds (see the event stats).
+- pacing: no dead stretches, no rush that loses the viewer; scene lengths vary with the beat.
+- sound_plan: judge the cue sheet and energy plan you are given (you can't hear it): risers into reveals, hits on reveals, silence before
+  the twist, music that rises with the stakes; restraint (the voice stays on top).
+- captions: the burned-in captions in the frames are large, high-contrast and readable on a phone; text stays out of the caption band.
+- sources: factual scenes carry a source credit; every number on screen matches the script's facts.
+- honesty: no implied harm the facts don't support; re-enactments labelled; contested points stated as such.
+- ending: a named ending strategy (loop, twist, practical payoff, cliffhanger, callback), not a goodbye.
+For every row below 2, give one concrete fix. Read the key-frame sheet before scoring visual rows."""
+
+SCHEMA_V2 = {"type": "object", "required": ["scores", "fixes", "summary"], "properties": {
+    "scores": {"type": "object", "required": ROWS_V2, "properties": {r: {"type": "integer", "minimum": 0, "maximum": 2} for r in ROWS_V2}},
+    "fixes": {"type": "array", "items": {"type": "object", "required": ["row", "fix"], "properties": {"row": {"type": "string"}, "fix": {"type": "string"}}}},
+    "summary": {"type": "string"}}}
+
+
+def keyframes_v2(out, every=2.0, cols=6):
+    """One frame every `every` seconds, in a grid (6 per row), each labelled with its time."""
+    final = out / "final.mp4"
+    total = media.duration(final)
+    times = [round(t, 2) for t in [i * every + 0.8 for i in range(int(total // every))] if t < total - 0.2]
+    rows, frames = [], []
+    for i, t in enumerate(times):
+        f = out / f"kf{i}.jpg"
+        media.ffmpeg("-ss", f"{t:.2f}", "-i", final, "-frames:v", "1", "-vf",
+                     f"scale=240:-2,drawtext=text='{t:.0f}s':x=8:y=8:fontsize=26:fontcolor=white:box=1:boxcolor=black@0.6", f)
+        frames.append(f)
+    for r in range(0, len(frames), cols):
+        group = frames[r:r + cols]
+        while len(group) < cols:
+            group.append(group[-1])
+        row = out / f"kfrow{r}.jpg"
+        media.ffmpeg(*sum((["-i", g] for g in group), []), "-filter_complex", f"hstack=inputs={cols}", row)
+        rows.append(row)
+    sheet = out / "keyframes.jpg"
+    if len(rows) == 1:
+        rows[0].replace(sheet)
+    else:
+        media.ffmpeg(*sum((["-i", r] for r in rows), []), "-filter_complex", f"vstack=inputs={len(rows)}", sheet)
+    for f in frames + rows:
+        f.unlink(missing_ok=True)
+    return sheet
+
+
+def run_v2(out, plan, model="opus"):
+    from frameflow import qa
+    sheet = keyframes_v2(out)
+    ev, total = qa.visual_events(out / "final.mp4")
+    gaps = [b - a for a, b in zip([0.0] + ev, ev + [total])]
+    sfx = json.loads((out / "project" / "sfx.json").read_text()) if (out / "project" / "sfx.json").exists() else []
+    lines = []
+    for i, s in enumerate(plan["scenes"]):
+        lines.append(f"Scene {i} [{s['type']}; world: {s.get('world', '')}; metaphor: {s.get('metaphor', '')}; enter: {s.get('enter')}; "
+                     f"energy {s.get('energy')}]" + (f" sources: {', '.join(s.get('sources', []))}" if s.get("sources") else ""))
+        for l in s.get("lines", [{"say": s.get("say", ""), "beat": "", "devices": []}]):
+            lines.append(f"    ({l.get('beat', '')}; {', '.join(l.get('devices', []))}) {l['say']}")
+        lines.append(f"    on screen: {json.dumps({k: v for k, v in s['data'].items() if not k.startswith('_')}, ensure_ascii=False)[:300]}")
+    music = json.dumps(plan.get("music", {}))
+    cue_sheet = ", ".join(f"{c['t']:.1f}s {c['name']}" for c in sfx)
+    prompt = (f"Title: {plan['title']}\nHook family: {plan.get('hook_family')}; ending strategy: {plan.get('ending_strategy')}; open loop: "
+              f"{plan.get('open_loop')}\nScript and storyboard:\n" + "\n".join(lines) +
+              f"\n\nMusic plan: {music}\nSound cue sheet: {cue_sheet}\nMeasured: {len(ev) / total * 10:.1f} visual events per 10 s, "
+              f"longest gap {max(gaps):.1f} s, length {total:.1f} s.\n\nKey frames, one every 2 s with the time in the corner, left to right "
+              f"then top to bottom: {sheet}\nScore every row.")
+    r = llm.call(prompt, SYSTEM_V2, SCHEMA_V2, model=model, tools="Read", add_dirs=[out], purpose=f"review2:{plan['id']}", effort="high")
+    total_score = sum(r["scores"].values())
+    r["total"], r["max"] = total_score, 2 * len(ROWS_V2)
+    r["pass"] = total_score >= PASS_V2 and min(r["scores"].values()) > 0
+    (out / "review.json").write_text(json.dumps(r, ensure_ascii=False, indent=1))
+    return r
+
+
 def run(out_dir, model="sonnet"):
     out = Path(out_dir).resolve()
+    plan = json.loads((out / "plan.json").read_text())
+    if plan.get("version", 1) >= 2:
+        return run_v2(out, plan)
     sheet, plan = keyframes(out)
     script = "\n".join(f"{i + 1}. [{s['type']}] {s.get('say', '')}  | on screen: {json.dumps(s.get('data', {}), ensure_ascii=False)[:200]}"
                        f"{'  | sources: ' + ', '.join(s.get('sources', [])) if s.get('sources') else ''}" for i, s in enumerate(plan["scenes"]))
@@ -77,9 +162,9 @@ def main():
     if len(sys.argv) != 2:
         sys.exit("usage: frameflow review <out-dir>")
     r = run(sys.argv[1])
-    for k in ROWS:
+    for k in r["scores"]:
         print(f"{r['scores'][k]}/2  {k}")
-    print(f"total {r['total']}/12 -> {'PASS' if r['pass'] else 'FIX'}\n{r['summary']}")
+    print(f"total {r['total']}/{r.get('max', 12)} -> {'PASS' if r['pass'] else 'FIX'}\n{r['summary']}")
     for f in r["fixes"]:
         print(f"- {f['row']}: {f['fix']}")
     sys.exit(0 if r["pass"] else 1)

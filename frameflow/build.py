@@ -51,19 +51,18 @@ def timings(plan, voice_dir=None):
     scenes = plan["scenes"]
     if voice_dir:
         info = json.loads((Path(voice_dir) / "durations.json").read_text())
-        lines = {l["id"]: l for l in info["lines"]}
-        starts = []
-        for i, s in enumerate(scenes):
-            line = lines.get(f"s{i}")
-            starts.append(line["start"] if line else None)
+        by_scene = {}
+        for l in info["lines"]:   # ids "s3" or "s3.0", "s3.1" (a scene with several lines)
+            by_scene.setdefault(int(l["id"][1:].split(".")[0]), []).append(l)
+        starts = [by_scene[i][0]["start"] if i in by_scene else None for i in range(len(scenes))]
         out = []
         for i, s in enumerate(scenes):
             st = starts[i] if starts[i] is not None else (out[-1][0] + out[-1][1] if out else 0.0)
             if i == 0:
                 st = 0.0
             nxt = next((x for x in starts[i + 1:] if x is not None), None)
-            line = lines.get(f"s{i}")
-            end = nxt if nxt is not None else (line["start"] + line["seconds"] + PAD if line else st + scene_plan.scene_seconds(s))
+            last = by_scene[i][-1] if i in by_scene else None
+            end = nxt if nxt is not None else (last["start"] + last["seconds"] + PAD if last else st + scene_plan.scene_seconds(s))
             out.append((round(st, 3), round(max(end - st, 0.4), 3)))
         return out
     out, t = [], 0.0
@@ -101,8 +100,8 @@ def cue_times(scene, start, dur, words):
 
 
 # transition -> the sound it makes at the cut (library names from frameflow.music / data/library/sfx)
-TRANSITION_SFX = {"whip-left": "whoosh-short", "whip-right": "whoosh-short", "whip-up": "whoosh-up", "glitch": "glitch-1",
-                  "punch": "impact-soft", "drop": "impact-low"}
+TRANSITION_SFX = {"whip-left": "whoosh", "whip-right": "whoosh", "whip-up": "whoosh", "glitch": "glitch",
+                  "punch": "slam", "drop": "impact"}
 
 
 def sfx_sheet(plan, slots, cues_per_scene):
@@ -122,8 +121,20 @@ def sfx_sheet(plan, slots, cues_per_scene):
 
 
 def voice_script(plan):
-    """The voice step's script.json for a plan: one line per scene that has something to say."""
+    """The voice step's script.json for a plan: one line per scene that has something to say. Version-2 plans use
+    the Chatterbox house voice, with each scene's delivery markup (energy 0-1, pause_before seconds)."""
     v = plan.get("voice", {})
+    if plan.get("version", 1) >= 2:
+        lines = []
+        for i, s in enumerate(plan["scenes"]):
+            parts = s.get("lines") or ([{"say": s["say"], "delivery": s.get("delivery", {})}] if s.get("say", "").strip() else [])
+            for j, part in enumerate(parts):   # a scene may carry several lines, each with its own delivery
+                d = part.get("delivery", {})
+                lines.append({"id": f"s{i}" if len(parts) == 1 else f"s{i}.{j}", "say": part["say"],
+                              "energy": d.get("energy", s.get("energy", 0.6)), "pause_before": d.get("pause_before", 0.0)})
+        return {"engine": v.get("engine", "chatterbox"), "model": v.get("model", "standard"), "tempo": v.get("tempo", 1.0),
+                "seed": v.get("seed", 7), "voice": v.get("voice", "af_heart"), "speed": v.get("speed", 1.1), "pad": v.get("pad", 0.12),
+                "lines": lines}
     return {"voice": v.get("voice", "af_heart"), "speed": v.get("speed", 1.1), "pad": PAD,
             "lines": [{"id": f"s{i}", "say": s["say"]} for i, s in enumerate(plan["scenes"]) if s.get("say", "").strip()]}
 

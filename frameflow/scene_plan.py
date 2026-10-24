@@ -294,6 +294,8 @@ def validate(plan):
             errs += [f"{where}: {e}" for e in SCENES[s["type"]][1](s["data"])]
         if "say" in s and not isinstance(s["say"], str):
             errs.append(f"{where}.say must be a string")
+        if "lines" in s and not (isinstance(s["lines"], list) and s["lines"] and all(isinstance(x, dict) and _str(x.get("say")) for x in s["lines"])):
+            errs.append(f"{where}.lines must list objects with a say line")
         if s.get("claim"):
             srcs = s.get("sources")
             if not (isinstance(srcs, list) and srcs and all(isinstance(u, str) and URL.match(u) for u in srcs)):

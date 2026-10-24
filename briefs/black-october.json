@@ -1,0 +1,37 @@
+{
+  "topic": "Black October: two critical bugs in PHP (PHP2Shell), found with AI, leaked early; the internet patched and partly switched itself off - and so far nobody has confirmed a successful break-in",
+  "audience": "Indians aged 18-30 who use the web every day; some code, most don't",
+  "angle_hint": "The software under nearly 7 in 10 websites had a 14-year-old hole; an AI found it; the internet switched parts of itself off on purpose; twist: so far the shutdowns did more visible damage than the hackers",
+  "facts": [
+    {"id": "f1", "text": "Two bugs in PHP, nicknamed PHP2Shell, let an attacker run their own code on a web server without logging in.", "source": "https://www.helpnetsecurity.com/2026/10/21/php2shell-php-vulnerabilities-patched-cve-2026-109618-cve-2026-109619/"},
+    {"id": "f2", "text": "Both bugs are rated 9.2 out of 10 for severity.", "source": "https://www.helpnetsecurity.com/2026/10/21/php2shell-php-vulnerabilities-patched-cve-2026-109618-cve-2026-109619/"},
+    {"id": "f3", "text": "PHP is the programming language behind about 69 percent (nearly 7 in 10) of websites whose server-side language is known; it builds the page each time you open one, and runs WordPress, Drupal and Joomla.", "source": "https://en.wikipedia.org/wiki/PHP2Shell"},
+    {"id": "f4", "text": "Affected versions go back to PHP 5.4, released in 2012: the hole existed for about 14 years.", "source": "https://en.wikipedia.org/wiki/PHP2Shell"},
+    {"id": "f5", "text": "In 2024 a PHP core developer noticed the memory error behind one of the bugs during an audit; it was left unfixed because the team couldn't agree on a fix and no one had shown an exploit.", "source": "https://en.wikipedia.org/wiki/PHP2Shell"},
+    {"id": "f6", "text": "Researchers found the bugs in August 2026 using AI: Ryan Austin of the security firm Calif with an OpenAI model in OpenAI's 'Patch the Planet' project, and Wiz researchers independently with Google and OpenAI models.", "source": "https://en.wikipedia.org/wiki/PHP2Shell"},
+    {"id": "f7", "text": "Chainguard's CEO, Dan Lorenc, says his company found the same bugs by typing 'find bad vulnerabilities in PHP' into a frontier AI model.", "source": "https://www.404media.co/php2shell-black-october-ai-is-changing-everything-about-hacking-no-one-knows-what-happens-next/"},
+    {"id": "f8", "text": "OpenAI said: 'To our knowledge, frontier AI found these vulnerabilities before attackers did.'", "source": "https://www.cnbc.com/2026/10/23/php-vulnerabilities-ai-cybersecurity.html"},
+    {"id": "f9", "text": "News of the bugs leaked a day early, on 20 October; the fixes came out on 21 October 2026.", "source": "https://en.wikipedia.org/wiki/PHP2Shell"},
+    {"id": "f10", "text": "Amazon's honeypots caught an attempt to exploit the bugs on 17 October, four days before they were made public.", "source": "https://aws.amazon.com/blogs/security/amazon-threat-intelligence-identifies-php2shell-exploitation-prior-to-public-disclosure-in-madpot/"},
+    {"id": "f11", "text": "Cloudflare's CEO Matthew Prince: thousands of attempts in the 10 hours before the announcement; tens of thousands within 45 minutes after; hundreds of thousands within 2 hours; millions by 22 October. These are attempts Cloudflare saw (and blocked for its customers), not successful attacks.", "source": "https://securityaffairs.com/201538/hacking/php2shell-millions-of-attacks-no-confirmed-successful-exploits-yet.html"},
+    {"id": "f12", "text": "Taken offline to patch, on purpose: several Wikimedia (Wikipedia's parent) services, the Internet Archive briefly, 4chan, all of Finland's public government web services and all French Interior Ministry websites.", "source": "https://en.wikipedia.org/wiki/PHP2Shell"},
+    {"id": "f13", "text": "Censys counted over 34.4 million PHP services still running vulnerable versions on 23 October.", "source": "https://securityaffairs.com/201538/hacking/php2shell-millions-of-attacks-no-confirmed-successful-exploits-yet.html"},
+    {"id": "f14", "text": "As of 23 October no successful break-in had been confirmed; honeypots saw attempts only. Sophos said attackers appear to be struggling, and one attempt to plant botnet malware was blocked.", "source": "https://securityaffairs.com/201538/hacking/php2shell-millions-of-attacks-no-confirmed-successful-exploits-yet.html"},
+    {"id": "f15", "text": "The security firm Sansec says the public exploits don't work against a default PHP install; an attack needs specific conditions on the server.", "source": "https://sansec.io/research/php2shell"},
+    {"id": "f16", "text": "Trail of Bits CEO Dan Guido said his team built a working exploit in one day with AI, but 'knowing how to turn a bug into a shell still takes expertise.'", "source": "https://www.404media.co/php2shell-black-october-ai-is-changing-everything-about-hacking-no-one-knows-what-happens-next/"},
+    {"id": "f17", "text": "Johns Hopkins cryptographer Matthew Green: 'the whole Internet is dry tinder.'", "source": "https://www.404media.co/php2shell-black-october-ai-is-changing-everything-about-hacking-no-one-knows-what-happens-next/"},
+    {"id": "f18", "text": "The fix: update PHP itself to 8.5.12, 8.4.27, 8.3.36 or 8.2.35 (older versions need a fix from the hosting provider or an upgrade).", "source": "https://www.helpnetsecurity.com/2026/10/21/php2shell-php-vulnerabilities-patched-cve-2026-109618-cve-2026-109619/"},
+    {"id": "f19", "text": "Agencies including the NSA, CERT-EU and the UK's NCSC told administrators to patch now or take servers that can't be patched offline.", "source": "https://www.404media.co/php2shell-black-october-ai-is-changing-everything-about-hacking-no-one-knows-what-happens-next/"},
+    {"id": "f20", "text": "The name 'Black October' came from social media posts calling those 48 hours the worst in cybersecurity history.", "source": "https://www.exchange4media.com/marketing-news/black-october-2026-is-the-internet-under-attack-as-ai-hacking-sparks-global-fears-159427.html"}
+  ],
+  "cautions": [
+    "No confirmed breach victims: never say or imply that sites were hacked; the shutdowns were precautions",
+    "No India-specific impact is known (no Indian shutdowns, no CERT-In advisory found): don't imply one; bring India in only through an 'imagine' moment",
+    "Cloudflare's numbers are attempts, not successful attacks: say 'attempts' or 'tries'",
+    "Humans used AI tools: say researchers found it with AI, not that an AI acted alone",
+    "Attribute the Chainguard 'one sentence' claim to its CEO",
+    "No exploitation how-to, no group names, no fear-mongering",
+    "It's still a developing story: phrase the no-break-in point as 'so far' / 'as of the twenty-third'"
+  ],
+  "notes": "The running joke can be the internet's very bad week / everyone switching off the lights to change a lock. The serious line: thirty-four million servers still unpatched. End with practical advice for anyone who runs a PHP site, then an open question about AI finding holes faster than people can fix them."
+}

@@ -1,0 +1,18 @@
+{
+  "_about": "Frameflow config for the shorts-writer skill (~/Talha_Khan/Claude/skills/shorts-writer).",
+  "persona_file": "vault/Wiki/Concepts/Narrator Habit.md",
+  "length": [50, 90],
+  "words_per_second": 3.15,
+  "humour": true,
+  "writer_model": "opus",
+  "judge_model": "sonnet",
+  "house_rules": [
+    "Indian English for an Indian audience aged 18-30: curious, online, not necessarily developers",
+    "Mostly informative: 3-5 light comic beats (analogies, absurd-but-true comparisons), never jokes about victims or the facts themselves",
+    "Explain any technical word in the same breath with an everyday comparison (what PHP is, what 'run code on a server' means)",
+    "No fear-mongering: big numbers are attempts or exposure unless the brief says they are confirmed harm",
+    "Never say 'in this video', never greet, never end on 'follow for more' or 'thanks for watching'",
+    "Brand names are said plainly (Wikipedia, Cloudflare); no slogans or praise of companies",
+    "Spell numbers for the voice (twenty twelve, thirty-four million); digits are for the screen only"
+  ]
+}
