@@ -14,8 +14,10 @@
           font: 700 52px/1.2 var(--ff-hand); color: var(--ff-fg); white-space: pre-wrap; min-height: 1.2em; }
         .__ID__-me { right: 34px; top: 140px; background: var(--ff-lit); border-bottom-right-radius: 6px; }
         .__ID__-ai { left: 34px; top: 420px; background: var(--ff-bg); border-bottom-left-radius: 6px; opacity: 0; }
-        .__ID__-note { position: absolute; left: 0; right: 0; top: 1262px; text-align: center; font: 400 36px/1 var(--ff-hand); color: var(--ff-muted); }
-        .__ID__-dots { position: absolute; left: 60px; top: 440px; font: 700 70px/1 var(--ff-display); color: var(--ff-muted); opacity: 0; letter-spacing: 0.2em; }
+        .__ID__-note { position: absolute; left: 0; right: 0; top: 1236px; text-align: center; font: 700 46px/1 var(--ff-hand); color: var(--ff-fg); }
+        .__ID__-dots { position: absolute; left: 34px; top: 420px; width: 200px; height: 104px; border: 5px solid var(--ff-ink); border-radius: 30px;
+          border-bottom-left-radius: 6px; background: var(--ff-bg); font: 700 70px/80px var(--ff-display); color: var(--ff-muted); text-align: center;
+          opacity: 0; letter-spacing: 0.15em; }
       </style>
       <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__"><div id="__ID__-host" style="position:absolute;inset:0"></div></div>
       <script>
@@ -45,14 +47,22 @@
           }
           tl.fromTo(win, { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "back.out(1.6)" }, 0.05);
           const stampG = FF.el("g", { opacity: 0 }, s);
+          let askEnd = null;
           sc.beats.forEach((b, i) => {
             const t = sc.when(b, i);
-            if (b.do === "ask") FF.type(tl, me, D.prompt, t, Math.max(b.cps ?? 34, 34));   // slow typing reads as dead air
-            else if (b.do === "think") {
-              tl.set(dots, { opacity: 1 }, t);
-              tl.fromTo(dots, { x: 0 }, { x: 0, duration: 0.6, ease: "none", repeat: Math.max(0, Math.round((b.dur ?? 0.9) / 0.3) - 1),
-                onUpdate: function () { dots.textContent = ".".repeat(1 + (Math.floor(this.time() / 0.2) % 3)); } }, t);
-              tl.set(dots, { opacity: 0 }, t + (b.dur ?? 0.9));
+            if (b.do === "ask") {
+              askEnd = FF.type(tl, me, D.prompt, t, Math.max(b.cps ?? 34, 34));   // slow typing reads as dead air
+              tl.fromTo(me, { scale: 1 }, { scale: 1.06, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: "100% 100%" }, askEnd);   // "sent"
+            } else if (b.do === "think") {
+              // thinking starts as soon as the message is sent and runs until the reply: never a frozen window
+              const from = askEnd !== null ? Math.min(t, askEnd + 0.25) : t;
+              const replyAt = sc.beats.find((x) => x.do === "reply");
+              const until = replyAt ? FF.at(D, replyAt.at, from + (b.dur ?? 0.9)) : from + (b.dur ?? 0.9);
+              const d = Math.max(until - from, 0.3);
+              tl.fromTo(dots, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.18, ease: "back.out(2)", transformOrigin: "0% 100%" }, from);
+              tl.fromTo(dots, { y: 0 }, { y: -6, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: Math.max(1, Math.round(d / 0.3) - 1),
+                onUpdate: function () { dots.textContent = ".".repeat(1 + (Math.floor(this.totalTime() / 0.2) % 3)); } }, from);
+              tl.set(dots, { opacity: 0 }, from + d);
             } else if (b.do === "reply") {
               tl.set(ai, { opacity: 1 }, t);
               FF.type(tl, ai, D.reply, t, Math.max(b.cps ?? 42, 42));

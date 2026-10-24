@@ -2,7 +2,7 @@
   "_about": "Frameflow config for the shorts-writer skill (~/Talha_Khan/Claude/skills/shorts-writer).",
   "persona_file": "vault/Wiki/Concepts/Narrator Habit.md",
   "length": [50, 90],
-  "words_per_second": 3.15,
+  "words_per_second": 3.3,
   "humour": true,
   "writer_model": "opus",
   "judge_model": "sonnet",

@@ -74,7 +74,7 @@ def mix(raw, out, voice_dir, mood, scene_starts, total):
     return out
 
 
-VOICE_DUCK_DB = 10   # music dips this much more while the voice speaks (on top of the energy gain)
+VOICE_DUCK_DB = 7    # music dips this much more while the voice speaks (on top of the energy gain)
 
 
 def duck_envelope(vo, sr=sound.SR):

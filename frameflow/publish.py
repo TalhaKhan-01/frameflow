@@ -61,6 +61,12 @@ def publish(video_id):
                  PACK_SYSTEM, PACK_SCHEMA, model="haiku", purpose=f"publish:{video_id}", effort="low")
     if not all(u in p["yt_description"] for u in sources):
         p["yt_description"] += "\n\nSources:\n" + "\n".join(sources)
+    # CC BY music must be credited where viewers can see it: description (YouTube) and caption (Instagram)
+    assets = json.loads((out / "assets.json").read_text()) if (out / "assets.json").exists() else []
+    credits = [r["credit"] for r in assets if r.get("credit")]
+    if credits:
+        p["yt_description"] += "\n\nMusic:\n" + "\n\n".join(credits)
+        p["ig_caption"] += "\n\nMusic: " + "; ".join(c.splitlines()[0] for c in credits) + " (CC BY 4.0)"
     problems = pack_problems(p)
     md = [f"# Publish pack: {plan['title']}", "", f"Video file: `{out / 'final.mp4'}` ({row['lane']})", "",
           "## YouTube Shorts", f"**Title** ({len(p['yt_title'])} chars): {p['yt_title']}", "", "**Description:**", "", p["yt_description"], "",

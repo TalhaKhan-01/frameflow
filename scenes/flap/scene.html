@@ -36,6 +36,8 @@
           const capText = FF.text(caption, 540, Y + CH + 120, D.caption || "", { size: 104, fill: C.red, font: FF.tok("--ff-display") });
           const capSub = FF.text(caption, 540, Y + CH + 205, D.sub || "", { size: 48, fill: C.ink });
           const cake = FF.el("g", { opacity: 0 }, s);
+          let capShown = false;
+          FF.pivot(capSub, 540, Y + CH + 205);
 
           sc.beats.forEach((b, i) => {
             const t = sc.when(b, i);
@@ -54,7 +56,14 @@
                   });
                 } }, t);
               FF.shake(tl, sc.shaker, t + dur, 0.25, 8, 2);
+            } else if (b.do === "caption" && capShown && b.text) {
+              // a second caption keeps the first (e.g. "OVER 34 MILLION") and lands under it
+              capSub.textContent = b.text;
+              FF.fitText(capSub, 900, 48);
+              capSub.style.color = C.red;
+              tl.fromTo(capSub, { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power4.in" }, t);
             } else if (b.do === "caption") {
+              capShown = true;
               capText.textContent = b.text || D.caption || "";
               FF.fitText(capText, 920, 104);
               FF.fitText(capSub, 900, 48);

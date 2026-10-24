@@ -283,5 +283,8 @@
     return g;
   };
 
-  window.FF = { pivot, scene, kicker, NS, el, svg, originVars, sketcher, text, fitText, colors, rng, draw, hide, pop, slam, shake, wiggle, boil, scramble, type, transitions, at, drift, tok };
+  /* A vertical position given either in pixels or as a fraction of the frame height (0-1). */
+  const ypos = (v, fallback) => (typeof v !== "number" ? fallback : v <= 1 ? v * 1920 : v);
+
+  window.FF = { ypos, pivot, scene, kicker, NS, el, svg, originVars, sketcher, text, fitText, colors, rng, draw, hide, pop, slam, shake, wiggle, boil, scramble, type, transitions, at, drift, tok };
 })();

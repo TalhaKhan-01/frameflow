@@ -1,7 +1,7 @@
 {
   "_about": "Frameflow config for the shorts-director skill (~/Talha_Khan/Claude/skills/shorts-director).",
   "model": "opus",
-  "words_per_second": 3.15,
+  "words_per_second": 3.3,
   "max_event_gap": 2.5,
   "house_rules": [
     "Visual identity: Paper Press (warm paper, ink lines, editorial red for danger, blue for AI/good, yellow for light/highlight)",

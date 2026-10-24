@@ -53,6 +53,14 @@
               k.circle(g, cx - 24, cy - 22, 24, { fill: C.accent, width: 2 });
               k.circle(g, cx + 24, cy - 22, 24, { fill: C.accent, width: 2 });
               k.rect(g, cx - 50, cy + 40, 100, 60, { fill: C.accent, r: 10 });
+            } else if (kind === "stranger") {
+              k.path(g, `M ${cx - 62} ${cy + 90} Q ${cx - 70} ${cy - 40} ${cx} ${cy - 96} Q ${cx + 70} ${cy - 40} ${cx + 62} ${cy + 90} Z`, { fill: C.ink, width: 3 });
+              k.ellipse(g, cx, cy - 22, 64, 74, { fill: C.dark, width: 2 });
+              k.circle(g, cx - 13, cy - 26, 9, { fill: C.lit, width: 1 });
+              k.circle(g, cx + 13, cy - 26, 9, { fill: C.lit, width: 1 });
+            } else if (kind === "door") {
+              k.rect(g, cx - 60, cy - 100, 120, 200, { fill: C.fill2 });
+              k.circle(g, cx + 36, cy, 14, { fill: C.ink, width: 2 });
             } else {
               k.rect(g, cx - 80, cy - 60, 160, 120, { fill: C.fill2 });
             }
@@ -81,7 +89,7 @@
             return g;
           };
           const arc = (a, b, above) => {
-            const lift = above ? -150 : 170;
+            const lift = above ? -100 : 170;
             const ya = Y + (above ? -BOX / 2 - 30 : BOX / 2 + 110);
             return [{ x: a.x, y: ya }, { x: (a.x + b.x) / 2, y: ya + lift }, { x: b.x, y: ya }];
           };
@@ -101,11 +109,11 @@
             return t + (b.dur ?? 0.7);
           };
 
-          let drawn = false;
+          const drawn = sc.beats.some((b) => b.do === "draw");
+          if (drawn) nodes.forEach((n) => gsap.set(n.g, { opacity: 0 }));   // hidden until their draw beat
           sc.beats.forEach((b, i) => {
             const t = sc.when(b, i);
             if (b.do === "draw") {
-              drawn = true;
               nodes.forEach((n, j) => { tl.set(n.g, { opacity: 1 }, t + j * 0.15); FF.draw(tl, n.g, t + j * 0.15, 0.55); });
             } else if (b.do === "send") {
               travel(b, t, C.fill, true);
@@ -119,6 +127,16 @@
               FF.wiggle(tl, n.g, t, d, 2.5, "50% 100%");
             } else if (b.do === "hijack") {
               const z = nodes[b.to ?? 1];
+              const door = FF.el("g", {}, fx);
+              const dx = z.x + BOX / 2 - 96, dy = Y - BOX / 2 + 20;
+              k.rect(door, dx, dy, 76, 130, { fill: C.dark, width: 4 });       // the opening
+              const leaf = FF.el("g", {}, door);
+              k.rect(leaf, dx, dy, 76, 130, { fill: C.fill2, width: 4 });      // the door leaf
+              k.circle(leaf, dx + 58, dy + 70, 12, { fill: C.ink, width: 2 });
+              FF.pivot(leaf, dx, dy + 65);
+              FF.hide(tl, door, 0);
+              tl.set(door, { opacity: 1 }, Math.max(t - 0.5, 0));
+              tl.fromTo(leaf, { scaleX: 1 }, { scaleX: 0.18, duration: 0.3, ease: "back.out(2)" }, Math.max(t - 0.35, 0));
               const end = travel({ from: 0, to: 1, ...b }, t, C.red, true);
               tl.to(z.box.querySelector(".ff-flat"), { attr: { fill: C.red }, duration: 0.08 }, end);
               tl.to(z.lab, { attr: { fill: C.red }, duration: 0.08 }, end);
@@ -135,14 +153,13 @@
               }
             } else if (b.do === "note") {
               const g = FF.el("g", {}, s);
-              const tt = FF.text(g, 540, b.y ?? 440, b.text, { size: 80, font: FF.tok("--ff-display") });
+              const tt = FF.text(g, 540, 405, b.text, { size: 72, font: FF.tok("--ff-display") });   // one row under the kicker
               FF.fitText(tt, 900, 80);
               FF.slam(tl, tt, t, { from: 1.8 });
               if (b.until) tl.to(g, { opacity: 0, duration: 0.15 }, FF.at(D, b.until, t + 2));
             }
           });
           if (!drawn) nodes.forEach((n) => tl.set(n.g, { opacity: 1 }, 0));
-          else nodes.forEach((n) => FF.hide(tl, n.g, 0));
           sc.finish();
         })();
       </script>

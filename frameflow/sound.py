@@ -214,7 +214,7 @@ def ledger():
 # ---- music score ----
 def energy_db(e):
     """Scene energy 0-1 -> music gain in dB before ducking (0 = silence)."""
-    return None if e <= 0.02 else -22 + 12 * min(max(e, 0.0), 1.0)
+    return None if e <= 0.02 else -18 + 12 * min(max(e, 0.0), 1.0)   # first pilot sat ~21 dB under the voice: too quiet
 
 
 def score(plan, slots, total):

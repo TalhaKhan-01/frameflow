@@ -38,7 +38,7 @@ def compile_plan(brief, script, storyboard, lane, plan_id):
         beats = [script["beats"][i] for i in sc["beats"]]
         lines = [{"say": b["say"], "delivery": b["delivery"], "beat": b["beat"], "devices": b["devices"]} for b in beats]
         fact_ids = [f for b in beats for f in b["facts"] if f in facts]
-        sources = list(dict.fromkeys(facts[f]["source"] for f in fact_ids))
+        sources = list(dict.fromkeys(u for f in fact_ids for u in [facts[f]["source"], *facts[f].get("also", [])]))
         data = {**sc["data"], "cues": {k: v for k, v in (sc.get("cues") or {}).items() if isinstance(v, str)}}
         scene = {"type": sc["template"], "say": " ".join(l["say"] for l in lines), "lines": lines, "data": data,
                  "enter": sc["enter"], "energy": round(float(sc["energy"]), 2), "sfx": sc.get("sfx", []),
@@ -53,6 +53,27 @@ def compile_plan(brief, script, storyboard, lane, plan_id):
             "voice": {"engine": "chatterbox", "model": "standard", "tempo": 1.0, "seed": 7, "pad": 0.12},
             "music": music, "hook_family": script["hook_family"], "ending_strategy": script["ending_strategy"],
             "open_loop": script["open_loop"], "concept": storyboard.get("concept", ""), "scenes": scenes}
+
+
+WRITER_ROWS = {"hook", "story", "persona_humour", "honesty", "ending", "sources"}
+DIRECTOR_ROWS = {"visual_storytelling", "pacing", "sound_plan", "captions", "sources", "honesty"}
+
+
+def revise(brief_path, out, review, lane="how-tech-works"):
+    """Send a review's fixes back: words to the writer's doctor, picture/pacing/sound to the director's doctor
+    (which also re-maps the storyboard to the revised beats), then recompile the plan."""
+    out = Path(out)
+    wdir, ddir = out / "writer", out / "director"
+    w_notes = [f"{f['row']}: {f['fix']}" for f in review["fixes"] if f["row"] in WRITER_ROWS]
+    d_notes = [f"{f['row']}: {f['fix']}" for f in review["fixes"] if f["row"] in DIRECTOR_ROWS]
+    n = len(list(out.glob("review*-writer-notes.txt"))) + 1
+    if w_notes:
+        (out / f"review{n}-writer-notes.txt").write_text("\n".join(w_notes))
+        skill([WRITER, "--project", ROOT, "doctor", brief_path, "--out", wdir, "--notes", out / f"review{n}-writer-notes.txt"])
+    (out / f"review{n}-director-notes.txt").write_text("\n".join(d_notes + ["The script may have changed: map every beat once, in order."]))
+    skill([DIRECTOR, "--project", ROOT, "doctor", ddir / "storyboard.json", "--script", wdir / "script.json", "--catalog", CATALOG,
+           "--out", ddir, "--problems", out / f"review{n}-director-notes.txt"])
+    return direct(brief_path, out, lane, skip_writer=True, skip_director=True)
 
 
 def direct(brief_path, out=None, lane="how-tech-works", skip_writer=False, skip_director=False):

@@ -74,7 +74,7 @@
               FF.shake(tl, sc.shaker, t + 0.2, 0.3, 10, 4);
             } else if (b.do === "note") {
               const g = FF.el("g", {}, s);
-              const tt = FF.text(g, 540, b.y ?? 420, b.text, { size: 76, font: FF.tok("--ff-display") });
+              const tt = FF.text(g, 540, Math.max(FF.ypos(b.y, 420), 400), b.text, { size: 76, font: FF.tok("--ff-display") });
               FF.fitText(tt, 900, 76);
               FF.slam(tl, tt, t, { from: 1.8 });
             }

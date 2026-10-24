@@ -7,7 +7,7 @@
     "buildings": "2-6 of {label (<=14 chars, CAPS reads best), kind: house|shop|tower|school|gov|news|bank}",
     "lockLabel": "text on each padlock (e.g. PHP)",
     "foundation": "label on the shared slab",
-    "robotLabel": "tag on the robot (e.g. AI)",
+    "robotLabel": "tag on the robot (e.g. AI, LOCKSMITH); set it per scene",
     "shutterText": "stamp on shutters (default CLOSED)",
     "beats": "list of verbs below"
    },
@@ -28,7 +28,7 @@
    "about": "How something works: 2-3 drawn nodes (boxes with icons) with things travelling between them. Great for request/response, a hijack, a pipeline.",
    "data": {
     "kicker": "small caps title",
-    "nodes": "2-3 of {label (<=14), icon: phone|kitchen|server|page|database|robot|box, hot?: true}",
+    "nodes": "2-3 of {label (<=14), icon: phone|kitchen|server|page|database|robot|stranger|door|box, hot?: true}",
     "beats": "verbs below"
    },
    "verbs": {
@@ -36,8 +36,8 @@
     "send": "{from?: 0, to?: 1, token: label}: an envelope travels on an arc above",
     "work": "{node, dur}: the node works (steam, wobble)",
     "return": "{from?: 1, to?: 0, token}: a yellow envelope travels back below",
-    "hijack": "{token, result: terminal text (\\n for new line)}: a red envelope arrives, the node turns red, a terminal types the result",
-    "note": "{text, y?}: a big line slams in"
+    "hijack": "{token, result: terminal text (\\n for new line)}: a back door on the target swings open, a red envelope arrives, the node turns red, a terminal types the result",
+    "note": "{text, y?: pixels or 0-1 fraction of the frame height (kept below the kicker)}"
    }
   },
   "stack": {

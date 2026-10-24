@@ -147,7 +147,7 @@ def _street(d):
 
 
 FLOW_VERBS = ("draw", "send", "work", "return", "hijack", "note")
-ICONS = ("phone", "kitchen", "server", "page", "database", "robot", "box")
+ICONS = ("phone", "kitchen", "server", "page", "database", "robot", "stranger", "door", "box")
 
 
 def _flow(d):
