@@ -1,0 +1,5 @@
+{
+  "_about": "Frameflow config for the social-upload skill (~/Talha_Khan/Claude/skills/social-upload). Credentials stay in ~/.config/frameflow (mode 600).",
+  "youtube": {"client_file": "~/.config/frameflow/youtube-client.json", "token_file": "~/.config/frameflow/youtube-token.json", "port": 7306},
+  "instagram": {"secrets_file": "~/.config/frameflow/secrets.env", "token_file": "~/.config/frameflow/instagram-token.json", "port": 7307}
+}

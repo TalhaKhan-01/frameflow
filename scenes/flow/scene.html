@@ -152,11 +152,14 @@
                 FF.type(tl, line, b.result, end + 0.35, b.cps ?? 26);
               }
             } else if (b.do === "note") {
+              // one note at a time: it holds until the next beat starts, so tokens and later notes never land on it
               const g = FF.el("g", {}, s);
               const tt = FF.text(g, 540, 405, b.text, { size: 72, font: FF.tok("--ff-display") });   // one row under the kicker
-              FF.fitText(tt, 900, 80);
+              FF.fitText(tt, 900, 72);
               FF.slam(tl, tt, t, { from: 1.8 });
-              if (b.until) tl.to(g, { opacity: 0, duration: 0.15 }, FF.at(D, b.until, t + 2));
+              const later = sc.beats.map((x, j) => sc.when(x, j)).filter((x) => x > t + 0.05);
+              const off = b.until ? FF.at(D, b.until, t + 2) : (later.length ? Math.min(...later) : null);
+              if (off !== null) tl.to(g, { opacity: 0, duration: 0.12 }, Math.max(off - 0.05, t + 0.4));
             }
           });
           if (!drawn) nodes.forEach((n) => tl.set(n.g, { opacity: 1 }, 0));

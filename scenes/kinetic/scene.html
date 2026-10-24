@@ -30,12 +30,13 @@
             FF.pop(tl, rays, 0, { from: 0.6, dur: 0.3, ease: "power3.out" });
           }
           const sizes = lines.map((l) => l.size ?? (l.t.length <= 6 ? 190 : l.t.length <= 10 ? 150 : l.t.length <= 16 ? 112 : 84));
-          const gap = 30;
-          const total = sizes.reduce((a, b) => a + b, 0) + gap * (lines.length - 1);
+          // stamped lines are boxed and tilted: give them extra room so they never cover the next line
+          const gapAfter = (i) => ((lines[i].style === "stamp" || (lines[i + 1] && lines[i + 1].style === "stamp")) ? 80 : 30);
+          const total = sizes.reduce((a, b) => a + b, 0) + lines.slice(0, -1).reduce((a, _, i) => a + gapAfter(i), 0);
           let y = 760 - total / 2;
           const items = lines.map((l, i) => {
             const cy = y + sizes[i] / 2;
-            y += sizes[i] + gap;
+            y += sizes[i] + (i < lines.length - 1 ? gapAfter(i) : 0);
             const g = FF.el("g", { opacity: 0 }, s);
             const back = FF.el("g", {}, g);
             const font = l.font === "hand" ? FF.tok("--ff-hand") : l.font === "mono" ? FF.tok("--ff-mono") : FF.tok("--ff-display");

@@ -85,6 +85,46 @@ def publish(video_id):
     return {"pack": str(out / "publish.md"), "problems": problems}
 
 
+UPLOADER = Path.home() / "Talha_Khan" / "Claude" / "skills" / "social-upload" / "scripts"
+
+
+def upload(video_id, platforms=("youtube", "instagram"), privacy="public"):
+    """Approved videos only: upload with the social-upload skill using the publish pack, then record the links."""
+    import subprocess
+    row = videos.require_approved(video_id)
+    out = Path(row["out_dir"])
+    if not (out / "publish.json").exists():
+        publish(video_id)
+    p = json.loads((out / "publish.json").read_text())
+    links, results = {}, {}
+    if "youtube" in platforms:
+        meta = {"title": p["yt_title"], "description": p["yt_description"], "tags": p["yt_tags"], "category": "28",
+                "privacy": privacy, "made_for_kids": False, "synthetic": True}
+        (out / "youtube-meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1))
+        r = subprocess.run(["python3", "-I", str(UPLOADER / "youtube.py"), "--project", str(ROOT), "upload", str(out / "final.mp4"),
+                            str(out / "youtube-meta.json")], capture_output=True, text=True, timeout=3600)
+        if r.returncode:
+            raise SystemExit(f"YouTube upload failed: {(r.stderr or r.stdout)[-600:]}")
+        results["youtube"] = json.loads(r.stdout[r.stdout.index("{"):])
+        links["youtube"] = results["youtube"]["url"]
+    if "instagram" in platforms:
+        (out / "instagram-caption.txt").write_text(p["ig_caption"])
+        r = subprocess.run(["python3", "-I", str(UPLOADER / "instagram.py"), "--project", str(ROOT), "publish", str(out / "final.mp4"),
+                            str(out / "instagram-caption.txt")], capture_output=True, text=True, timeout=3600)
+        if r.returncode:
+            raise SystemExit(f"Instagram publish failed: {(r.stderr or r.stdout)[-600:]}")
+        results["instagram"] = json.loads(r.stdout[r.stdout.index("{"):])
+        links["instagram"] = results["instagram"]["url"]
+    (out / "upload.json").write_text(json.dumps(results, ensure_ascii=False, indent=1))
+    con = videos.db()
+    con.execute("UPDATE videos SET youtube_url=COALESCE(?, youtube_url), instagram_url=COALESCE(?, instagram_url), updated_at=? WHERE id=?",
+                (links.get("youtube"), links.get("instagram"), videos.now(), video_id))
+    if links.get("youtube") and links.get("instagram"):
+        con.execute("UPDATE videos SET status='posted' WHERE id=?", (video_id,))
+    con.commit()
+    return results
+
+
 def url_ok(url):
     try:
         req = urllib.request.Request(url, headers=ideas.UA, method="GET")

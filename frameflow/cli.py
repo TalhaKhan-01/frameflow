@@ -4,7 +4,7 @@
     frameflow make2 <brief.json>                  Quality v2 chain: writer + director skills -> render -> qa -> review
     frameflow direct <brief.json>                 Quality v2 front half only: script, storyboard, plan.json
     frameflow status | approve <id> | reject <id> <why>
-    frameflow publish <id> | posted <id> <yt> <ig> | stats <id> ... | learn
+    frameflow publish <id> | upload <id> [--only youtube|instagram] | posted <id> <yt> <ig> | stats <id> ... | learn
     frameflow render <plan.json> [--out DIR] [--quality looks|delivery] [--mood MOOD]
     frameflow ideas collect|rank|list
     frameflow script <idea-id>
@@ -53,6 +53,10 @@ def main():
     rj.add_argument("why")
     pb = sub.add_parser("publish", help="publish pack for an approved video")
     pb.add_argument("video_id")
+    up = sub.add_parser("upload", help="approved video -> YouTube and/or Instagram (social-upload skill)")
+    up.add_argument("video_id")
+    up.add_argument("--only", choices=["youtube", "instagram"])
+    up.add_argument("--privacy", default="public", choices=["public", "unlisted", "private"])
     po = sub.add_parser("posted", help="record the live links")
     po.add_argument("video_id")
     po.add_argument("youtube_url")
@@ -109,6 +113,9 @@ def main():
     elif a.cmd == "publish":
         from frameflow import publish
         print(json.dumps(publish.publish(a.video_id), indent=1))
+    elif a.cmd == "upload":
+        from frameflow import publish
+        print(json.dumps(publish.upload(a.video_id, (a.only,) if a.only else ("youtube", "instagram"), a.privacy), indent=1))
     elif a.cmd == "posted":
         from frameflow import publish
         print(json.dumps(publish.posted(a.video_id, a.youtube_url, a.instagram_url), indent=1))
