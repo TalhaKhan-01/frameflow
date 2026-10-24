@@ -1,0 +1,6 @@
+{"type": "flow", "say": "You ask for a page. PHP cooks it fresh. But a sneaky note can take over the kitchen.", "duration": 7.0,
+ "data": {"kicker": "How a website answers you",
+          "nodes": [{"label": "YOU", "icon": "phone"}, {"label": "PHP", "icon": "kitchen", "hot": true}, {"label": "THE PAGE", "icon": "page"}],
+          "beats": [{"do": "draw", "at": 0.1}, {"do": "send", "at": 0.9, "token": "REQUEST"}, {"do": "work", "at": 1.7, "node": 1, "dur": 1.0},
+                    {"do": "return", "at": 2.8, "token": "FRESH PAGE"},
+                    {"do": "hijack", "at": 4.2, "token": "SNEAKY NOTE", "result": "$ run attacker_code\n> ok, boss"}]}}

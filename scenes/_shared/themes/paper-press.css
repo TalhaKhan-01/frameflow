@@ -11,4 +11,6 @@
   --ff-display: "FF Serif", Georgia, serif;
   --ff-cap-font: var(--ff-body); --ff-cap-fill: #16141c; --ff-cap-stroke: rgba(243, 238, 228, 0.95);
   --ff-chip-bg: rgba(255, 252, 245, 0.92);
+  --ff-ink: #1d1a22; --ff-fill: #fbf8f1; --ff-fill-2: #e7dfcf; --ff-lit: #f5c84b; --ff-dark: #3b3743;
+  --ff-marker: rgba(245, 200, 75, 0.55);
 }

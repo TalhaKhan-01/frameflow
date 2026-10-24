@@ -28,10 +28,10 @@ def test_missing_field_is_rejected():
     assert any("data.label" in e for e in validate(p))
 
 
-def test_plan_over_60_seconds_is_rejected():
+def test_plan_over_95_seconds_is_rejected():
     p = plan()
-    p["scenes"] += [copy.deepcopy(p["scenes"][1]) for _ in range(12)]
-    assert any("over 60 s" in e for e in validate(p))
+    p["scenes"] += [copy.deepcopy(p["scenes"][1]) for _ in range(30)]
+    assert any("over 95 s" in e for e in validate(p))
 
 
 def test_claim_without_source_is_rejected():

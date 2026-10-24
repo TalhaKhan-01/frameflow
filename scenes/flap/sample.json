@@ -1,0 +1,3 @@
+{"type": "flap", "say": "The hole had been there since twenty twelve. Fourteen years.", "duration": 6.0,
+ "data": {"kicker": "How old was the hole?", "from": 2012, "to": 2026, "caption": "14 years old", "sub": "older than most Instagram accounts",
+          "beats": [{"do": "count", "at": 0.5}, {"do": "caption", "at": 2.6}, {"do": "cake", "at": 3.4}]}}

@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; }
+        .__ID__-term { position: absolute; left: 130px; right: 130px; top: 1000px; white-space: pre-wrap; padding: 26px 30px; border: 5px solid var(--ff-ink);
+          border-radius: 18px; background: var(--ff-fg); color: #f4efe6; font: 600 40px/1.35 var(--ff-mono); opacity: 0; transform: rotate(-1.5deg); }
+        .__ID__-term b { color: #ff8a7a; font-weight: 700; }
+        .__ID__-term .bar { display: flex; gap: 12px; margin-bottom: 18px; }
+        .__ID__-term .bar i { width: 18px; height: 18px; border-radius: 50%; background: #f4efe6; opacity: 0.5; }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__"><div id="__ID__-host" style="position:absolute;inset:0"></div></div>
+      <script>
+        /* flow: how something works, drawn as 2-3 nodes with things travelling between them.
+           Beats: draw, send, work, return, hijack, note. */
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          const sc = FF.scene("__ID__", D, DUR, { defaultBeats: [{ do: "draw" }], seed: 5 });
+          const { s, k, C, tl, html } = sc;
+          FF.kicker(sc, D.kicker);
+          const N = D.nodes.slice(0, 3);
+          const Y = 760, BOX = 290;
+          const xs = N.length === 2 ? [300, 780] : [200, 540, 880];
+          const layer = FF.el("g", {}, s);
+          const fx = FF.el("g", {}, s);
+
+          const icon = (g, kind, cx, cy) => {
+            if (kind === "phone") {
+              k.rect(g, cx - 55, cy - 95, 110, 190, { fill: C.fill, r: 18 });
+              k.rect(g, cx - 42, cy - 72, 84, 128, { fill: C.lit, width: 3 });
+              k.circle(g, cx, cy + 74, 14, { fill: C.fill2, width: 2.5 });
+            } else if (kind === "kitchen") {
+              k.ellipse(g, cx, cy + 40, 150, 34, { fill: C.dark, width: 3 });
+              k.rect(g, cx - 70, cy - 10, 140, 64, { fill: C.red });
+              k.line(g, cx - 92, cy + 4, cx - 70, cy + 4, { width: 6 });
+              k.line(g, cx + 70, cy + 4, cx + 92, cy + 4, { width: 6 });
+              const steam = FF.el("g", { class: "steam" }, g);
+              [-30, 0, 30].forEach((dx) => k.curve(steam, [[cx + dx, cy - 22], [cx + dx + 12, cy - 50], [cx + dx - 10, cy - 76], [cx + dx + 6, cy - 100]], { width: 4, stroke: C.muted }));
+            } else if (kind === "server") {
+              for (let r = 0; r < 3; r++) { k.rect(g, cx - 80, cy - 90 + r * 62, 160, 50, { fill: C.fill2 }); k.circle(g, cx + 54, cy - 65 + r * 62, 12, { fill: C.lit, width: 2 }); }
+            } else if (kind === "page") {
+              k.rect(g, cx - 70, cy - 95, 140, 190, { fill: C.fill });
+              for (let r = 0; r < 5; r++) k.line(g, cx - 48, cy - 60 + r * 30, cx + (r === 4 ? 10 : 48), cy - 60 + r * 30, { width: 3.5, stroke: C.muted });
+            } else if (kind === "database") {
+              k.ellipse(g, cx, cy - 70, 150, 44, { fill: C.fill2 });
+              k.rect(g, cx - 75, cy - 70, 150, 140, { fill: C.fill2, r: 0 });
+              k.ellipse(g, cx, cy + 70, 150, 44, { fill: C.fill2 });
+            } else if (kind === "robot") {
+              k.rect(g, cx - 60, cy - 70, 120, 100, { fill: C.fill, r: 14 });
+              k.circle(g, cx - 24, cy - 22, 24, { fill: C.accent, width: 2 });
+              k.circle(g, cx + 24, cy - 22, 24, { fill: C.accent, width: 2 });
+              k.rect(g, cx - 50, cy + 40, 100, 60, { fill: C.accent, r: 10 });
+            } else {
+              k.rect(g, cx - 80, cy - 60, 160, 120, { fill: C.fill2 });
+            }
+          };
+
+          const nodes = N.map((n, i) => {
+            const g = FF.el("g", {}, layer);
+            const x = xs[i];
+            const box = k.rect(g, x - BOX / 2, Y - BOX / 2, BOX, BOX, { fill: n.hot ? C.fill2 : C.fill, r: 22, width: 5 });
+            const ig = FF.el("g", { transform: `translate(${x} ${Y}) scale(1.18) translate(${-x} ${-Y})` }, g);
+            icon(ig, n.icon || "box", x, Y);
+            const lab = FF.text(g, x, Y + BOX / 2 + 56, n.label, { size: 58, fill: n.hot ? C.red : C.ink });
+            FF.fitText(lab, 320, 58);
+            return { g, x, box, lab };
+          });
+
+          const envelope = (col, label, below) => {
+            const g = FF.el("g", {}, fx);
+            k.rect(g, -58, -40, 116, 80, { fill: col, r: 6 });
+            k.path(g, "M -58 -40 L 0 6 L 58 -40", { width: 4, fill: "none" });
+            if (label) {
+              const t = FF.text(g, 0, below ? 76 : -72, label, { size: 40, fill: col === C.red ? C.red : C.ink });
+              FF.fitText(t, 330, 40);
+            }
+            gsap.set(g, { opacity: 0 });
+            return g;
+          };
+          const arc = (a, b, above) => {
+            const lift = above ? -150 : 170;
+            const ya = Y + (above ? -BOX / 2 - 30 : BOX / 2 + 110);
+            return [{ x: a.x, y: ya }, { x: (a.x + b.x) / 2, y: ya + lift }, { x: b.x, y: ya }];
+          };
+          const travel = (b, t, col, above) => {
+            const a = nodes[b.from ?? 0], z = nodes[b.to ?? 1];
+            const env = envelope(col, b.token, !above);
+            const pts = arc(a, z, above);
+            const trail = k.curve(fx, pts.map((p) => [p.x, p.y]), { stroke: col === C.red ? C.red : C.muted, width: 4, roughness: 0.8 });
+            gsap.set(trail, { opacity: 0 });
+            tl.set(trail, { opacity: 0.55 }, t);
+            FF.draw(tl, trail, t, b.dur ?? 0.7, { ease: "power1.inOut" });
+            tl.set(env, { opacity: 1 }, t);
+            tl.fromTo(env, { x: pts[0].x, y: pts[0].y, scale: 1.35, transformOrigin: "50% 50%" }, { motionPath: { path: pts, curviness: 1.2 }, duration: b.dur ?? 0.7, ease: "power1.inOut" }, t);
+            tl.to(env, { scale: 0.2, opacity: 0, duration: 0.15, transformOrigin: "50% 70%" }, t + (b.dur ?? 0.7));
+            FF.shake(tl, z.g, t + (b.dur ?? 0.7), 0.2, 6, 11);
+            tl.to(trail, { opacity: 0, duration: 0.3 }, t + (b.dur ?? 0.7) + 0.35);
+            return t + (b.dur ?? 0.7);
+          };
+
+          let drawn = false;
+          sc.beats.forEach((b, i) => {
+            const t = sc.when(b, i);
+            if (b.do === "draw") {
+              drawn = true;
+              nodes.forEach((n, j) => { tl.set(n.g, { opacity: 1 }, t + j * 0.15); FF.draw(tl, n.g, t + j * 0.15, 0.55); });
+            } else if (b.do === "send") {
+              travel(b, t, C.fill, true);
+            } else if (b.do === "return") {
+              travel({ from: 1, to: 0, ...b }, t, C.lit, false);
+            } else if (b.do === "work") {
+              const n = nodes[b.node ?? 1];
+              const steam = n.g.querySelectorAll(".steam .ff-ink path");
+              const d = b.dur ?? 1.0;
+              if (steam.length) tl.fromTo(steam, { drawSVG: "0% 0%" }, { drawSVG: "0% 100%", duration: d / 3, repeat: 2, ease: "none", stagger: 0.08 }, t);
+              FF.wiggle(tl, n.g, t, d, 2.5, "50% 100%");
+            } else if (b.do === "hijack") {
+              const z = nodes[b.to ?? 1];
+              const end = travel({ from: 0, to: 1, ...b }, t, C.red, true);
+              tl.to(z.box.querySelector(".ff-flat"), { attr: { fill: C.red }, duration: 0.08 }, end);
+              tl.to(z.lab, { attr: { fill: C.red }, duration: 0.08 }, end);
+              FF.shake(tl, sc.shaker, end, 0.45, 16, 5);
+              if (b.result) {
+                const term = document.createElement("div");
+                term.className = "__ID__-term";
+                term.innerHTML = '<div class="bar"><i></i><i></i><i></i></div>';
+                const line = document.createElement("div");
+                term.appendChild(line);
+                html().appendChild(term);
+                tl.to(term, { opacity: 1, y: 0, duration: 0.2 }, end + 0.25);
+                FF.type(tl, line, b.result, end + 0.35, b.cps ?? 26);
+              }
+            } else if (b.do === "note") {
+              const g = FF.el("g", {}, s);
+              const tt = FF.text(g, 540, b.y ?? 440, b.text, { size: 80, font: FF.tok("--ff-display") });
+              FF.fitText(tt, 900, 80);
+              FF.slam(tl, tt, t, { from: 1.8 });
+              if (b.until) tl.to(g, { opacity: 0, duration: 0.15 }, FF.at(D, b.until, t + 2));
+            }
+          });
+          if (!drawn) nodes.forEach((n) => tl.set(n.g, { opacity: 1 }, 0));
+          else nodes.forEach((n) => FF.hide(tl, n.g, 0));
+          sc.finish();
+        })();
+      </script>
+    </template>
+  </body>
+</html>

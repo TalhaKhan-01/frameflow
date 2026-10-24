@@ -1,0 +1,7 @@
+{"type": "street", "say": "Seven in ten websites run on the same lock.", "duration": 7.5,
+ "data": {"buildings": [{"label": "BLOG", "kind": "house"}, {"label": "SHOP", "kind": "shop"}, {"label": "NEWS", "kind": "news"},
+                         {"label": "COLLEGE", "kind": "school"}, {"label": "GOVT", "kind": "gov"}],
+          "lockLabel": "PHP", "foundation": "PHP", "robotLabel": "AI",
+          "beats": [{"do": "draw", "at": 0.1}, {"do": "note", "text": "7 in 10 websites", "at": 0.9, "until": 2.4},
+                    {"do": "locks", "at": 1.4}, {"do": "robot", "at": 2.6, "per": 0.36}, {"do": "foundation", "at": 4.9},
+                    {"do": "crack", "at": 5.8}, {"do": "lights-off", "at": 6.4, "stagger": 0.15}]}}

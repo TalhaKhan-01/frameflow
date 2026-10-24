@@ -23,8 +23,8 @@ import sys
 from pathlib import Path
 
 LANES = {"global-tech", "india-tech", "ai-news", "dev-tools", "ai-money", "how-tech-works"}
-MAX_SECONDS = 60.0
-WORDS_PER_SECOND = 2.7   # about 160 words a minute: Kokoro at speed 1.1 (breakout median is 171-175)
+MAX_SECONDS = 95.0       # Quality Bar v2: 50-90 s videos (a little headroom for the voice's own timing)
+WORDS_PER_SECOND = 3.05  # about 183 words a minute: the Chatterbox house voice at tempo ~1.0 (Quality Bar v2: 175-190)
 PAD = 0.25               # silence between scenes, as in the voice step
 URL = re.compile(r"^https?://[^\s/$.?#].[^\s]*$", re.I)
 
@@ -114,7 +114,134 @@ def _explainer(d):
     return errs
 
 
+# Drawn scenes (Quality v2): a world that changes on beats. A beat is {"do": <verb>, "at": seconds or cue name, ...}.
+def _beats(d, verbs):
+    errs = []
+    beats = d.get("beats", [])
+    if not isinstance(beats, list):
+        return ["data.beats must be a list"]
+    for i, b in enumerate(beats):
+        if not (isinstance(b, dict) and b.get("do") in verbs):
+            errs.append(f"data.beats[{i}].do must be one of {', '.join(verbs)}")
+        elif "at" in b and not (_num(b["at"]) or _str(b["at"], 40)):
+            errs.append(f"data.beats[{i}].at must be seconds or a cue name")
+    return errs
+
+
+def _cues(d):
+    c = d.get("cues", {})
+    if not isinstance(c, dict) or not all(_str(k, 40) and _str(v, 80) for k, v in c.items()):
+        return ["data.cues must map cue names to words or phrases from the scene's say line"]
+    return []
+
+
+STREET_VERBS = ("draw", "note", "lights-off", "locks", "foundation", "crack", "robot", "shutters", "race", "zoom")
+
+
+def _street(d):
+    errs = _beats(d, STREET_VERBS) + _cues(d)
+    b = d.get("buildings")
+    if not (isinstance(b, list) and 2 <= len(b) <= 6 and all(isinstance(x, dict) and _str(x.get("label"), 14) for x in b)):
+        errs.append("data.buildings must list 2-6 buildings, each with a label of at most 14 characters")
+    return errs
+
+
+FLOW_VERBS = ("draw", "send", "work", "return", "hijack", "note")
+ICONS = ("phone", "kitchen", "server", "page", "database", "robot", "box")
+
+
+def _flow(d):
+    errs = _beats(d, FLOW_VERBS) + _cues(d)
+    n = d.get("nodes")
+    if not (isinstance(n, list) and 2 <= len(n) <= 3 and all(isinstance(x, dict) and _str(x.get("label"), 14) and x.get("icon", "box") in ICONS for x in n)):
+        errs.append(f"data.nodes must list 2-3 nodes, each with a label (at most 14 characters) and an icon from {', '.join(ICONS)}")
+    return errs
+
+
+def _labels(d, key, lo, hi, field, n):
+    v = d.get(key)
+    if not (isinstance(v, list) and lo <= len(v) <= hi and all(isinstance(x, dict) and _str(x.get(field), n) for x in v)):
+        return [f"data.{key} must list {lo}-{hi} items, each with {field} (at most {n} characters)"]
+    return []
+
+
+def _stack(d):
+    errs = _beats(d, ("build", "explode", "highlight", "stamp", "note")) + _cues(d) + _labels(d, "layers", 2, 6, "label", 22)
+    st = d.get("stamp")
+    if st is not None and not (isinstance(st, dict) and _str(st.get("text"), 16)):
+        errs.append("data.stamp must be {text (at most 16 characters), sub (optional)}")
+    return errs
+
+
+def _meter(d):
+    errs = _beats(d, ("step", "boil")) + _cues(d)
+    st = d.get("steps")
+    if not (isinstance(st, list) and 2 <= len(st) <= 5 and all(isinstance(x, dict) and _str(x.get("when"), 30) and _str(x.get("what"), 22) for x in st)):
+        errs.append("data.steps must list 2-5 steps, each with when (at most 30 characters) and what (at most 22)")
+    return errs
+
+
+def _flap(d):
+    errs = _beats(d, ("count", "caption", "cake")) + _cues(d)
+    if not (_num(d.get("from")) and _num(d.get("to"))):
+        errs.append("data.from and data.to must be numbers")
+    if "caption" in d and not _str(d["caption"], 22):
+        errs.append("data.caption must be at most 22 characters")
+    return errs
+
+
+KINETIC_STYLES = ("slam", "drop", "scramble", "type", "stamp", "marker", "strike")
+
+
+def _kinetic(d):
+    errs = _beats(d, ("line", "circle", "fade")) + _cues(d)
+    ls = d.get("lines")
+    if not (isinstance(ls, list) and 1 <= len(ls) <= 5 and all(isinstance(x, dict) and _str(x.get("t"), 24) and x.get("style", "slam") in KINETIC_STYLES for x in ls)):
+        errs.append(f"data.lines must list 1-5 lines, each with t (at most 24 characters) and a style from {', '.join(KINETIC_STYLES)}")
+    return errs
+
+
+def _stamps(d):
+    errs = _beats(d, ("deal", "stamp")) + _cues(d) + _labels(d, "items", 2, 6, "name", 22)
+    if "stamp" in d and not _str(d["stamp"], 12):
+        errs.append("data.stamp must be at most 12 characters")
+    return errs
+
+
+def _quote(d):
+    errs = _beats(d, ("words", "mark", "who", "doodle")) + _cues(d)
+    if not _str(d.get("quote"), 160):
+        errs.append("data.quote must be a real quote of at most 160 characters")
+    if not _str(d.get("who"), 40):
+        errs.append("data.who (who said it) is required")
+    if d.get("mark") and d["mark"].lower() not in d.get("quote", "").lower():
+        errs.append("data.mark must be a phrase from the quote")
+    if d.get("doodle", "fire") not in ("fire", "bulb", "lock", "bug"):
+        errs.append("data.doodle must be fire, bulb, lock or bug")
+    return errs
+
+
+def _chat(d):
+    errs = _beats(d, ("ask", "think", "reply", "stamp")) + _cues(d)
+    if not _str(d.get("prompt"), 80):
+        errs.append("data.prompt must be at most 80 characters")
+    if not _str(d.get("reply"), 120):
+        errs.append("data.reply must be at most 120 characters")
+    if d.get("reply") and not _str(d.get("note"), 30):
+        errs.append("data.note is required (e.g. \"re-enactment\"): an invented reply must be labelled on screen")
+    return errs
+
+
 SCENES = {
+    "street": (2.0, _street),
+    "flow": (2.0, _flow),
+    "stack": (2.0, _stack),
+    "meter": (2.0, _meter),
+    "flap": (2.0, _flap),
+    "kinetic": (1.2, _kinetic),
+    "stamps": (2.0, _stamps),
+    "quote": (2.5, _quote),
+    "chat": (2.5, _chat),
     "headline-reveal": (2.0, _headline),
     "stat-counter": (2.5, _stat),
     "comparison": (3.0, _comparison),

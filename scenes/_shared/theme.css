@@ -16,6 +16,15 @@
   unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
 @font-face { font-family: "FF Mono"; font-weight: 100 800; font-display: block;
   src: url("vendor/fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2"); }
+/* Kalam (Indian Type Foundry, OFL-1.1): hand-lettered labels in drawn scenes */
+@font-face { font-family: "FF Hand"; font-weight: 400; font-display: block;
+  src: url("vendor/fonts/kalam-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "FF Hand"; font-weight: 700; font-display: block;
+  src: url("vendor/fonts/kalam-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "FF Hand"; font-weight: 700; font-display: block;
+  src: url("vendor/fonts/kalam-latin-ext-700-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+20A0-20AB,U+20AD-20C0,U+2C60-2C7F,U+A720-A7FF; }
 
 :root {
   /* colour */
@@ -38,6 +47,14 @@
   --ff-display: "FF Display", ui-sans-serif, system-ui, sans-serif;
   --ff-body: "FF Body", ui-sans-serif, system-ui, sans-serif;
   --ff-mono: "FF Mono", ui-monospace, monospace;
+  --ff-hand: "FF Hand", "Comic Sans MS", cursive;
+  /* drawn scenes (ff-kit.js): ink lines, flat fills under rough outlines */
+  --ff-ink: #f2f3f5;
+  --ff-fill: #1f2433;        /* default body fill of drawn objects */
+  --ff-fill-2: #2a3145;
+  --ff-lit: #f6c177;         /* lit windows, lamps */
+  --ff-dark: #0f1219;        /* lights out */
+  --ff-marker: rgba(246, 193, 119, 0.45);   /* highlighter behind words */
   /* layout: safe zones keep text clear of the Shorts/Reels interface (top bar, right-hand buttons, bottom caption area) */
   --ff-safe-top: 230px;
   --ff-safe-x: 80px;
@@ -61,3 +78,10 @@ html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; backgro
 .ff-kicker::before { content: ""; display: block; width: 56px; height: 6px; background: var(--ff-accent); }
 .ff-title { font: 700 72px/1.05 var(--ff-display); letter-spacing: -0.03em; color: var(--ff-fg); margin-bottom: 48px; }
 .ff-num { font-family: var(--ff-display); font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+
+/* Paper background for drawn scenes: flat paper + fixed grain + soft vignette (a static image: deterministic) */
+.ff-paper { position: absolute; inset: 0; background-color: var(--ff-bg);
+  background-image: radial-gradient(120% 80% at 50% 35%, transparent 55%, rgba(0, 0, 0, 0.10) 100%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 0.10 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>"); }
+.ff-svg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: visible; }
+.ff-hand { font-family: var(--ff-hand); font-weight: 700; }

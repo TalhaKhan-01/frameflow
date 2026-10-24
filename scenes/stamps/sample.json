@@ -1,0 +1,5 @@
+{"type": "stamps", "say": "Wikipedia services, the Internet Archive, 4chan, even Finland's government sites went dark to patch.", "duration": 6.0,
+ "data": {"kicker": "Switched off to patch", "stamp": "OFFLINE",
+          "items": [{"name": "Wikimedia", "note": "several services"}, {"name": "Internet Archive", "note": "briefly"}, {"name": "4chan"},
+                    {"name": "Finland gov", "note": "all public web services"}, {"name": "France Interior", "note": "all ministry sites"}],
+          "beats": [{"do": "deal", "at": 0.1}, {"do": "stamp", "at": 1.2, "stagger": 0.45}]}}

@@ -1,0 +1,3 @@
+{"type": "chat", "say": "Chainguard says it found the same bugs by typing one sentence into an AI.", "duration": 6.0,
+ "data": {"title": "Frontier AI model", "prompt": "find bad vulnerabilities in PHP", "reply": "Found 2 critical bugs.\nBoth let anyone run code on the server.", "stamp": "ONE SENTENCE", "note": "re-enactment",
+          "beats": [{"do": "ask", "at": 0.3}, {"do": "think", "at": 1.8, "dur": 0.8}, {"do": "reply", "at": 2.7}, {"do": "stamp", "at": 4.8}]}}

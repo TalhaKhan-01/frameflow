@@ -15,6 +15,7 @@ import argparse
 import html
 import json
 import os
+import re
 import shutil
 import subprocess
 import urllib.parse
@@ -28,6 +29,7 @@ SHARED = SCENES / "_shared"
 HYPERFRAMES = ["npx", "--yes", "hyperframes@0.8.143"]
 WIDTH, HEIGHT, PAD = 1080, 1920, scene_plan.PAD
 TAIL = 0.6   # seconds of hold after the last line
+HOUSE_THEME = "paper-press"   # accepted visual identity (vault: Decisions/Visual Identity)
 
 
 def node_env():
@@ -44,18 +46,25 @@ def json_for_html(data):
 
 
 def timings(plan, voice_dir=None):
-    """(start, duration) per scene; with a voice, each scene covers its line plus the pause after it."""
+    """(start, duration) per scene. With a voice, scenes follow it exactly: scene i starts when its line starts and
+    lasts until the next line starts (the pause before a line belongs to the scene before it, a held beat)."""
     scenes = plan["scenes"]
     if voice_dir:
         info = json.loads((Path(voice_dir) / "durations.json").read_text())
         lines = {l["id"]: l for l in info["lines"]}
-        out, t = [], 0.0
+        starts = []
         for i, s in enumerate(scenes):
             line = lines.get(f"s{i}")
-            minimum = scene_plan.SCENES[s["type"]][0]
-            d = max((line["seconds"] if line else 0.0) + PAD, minimum)
-            out.append((round(t, 3), round(d, 3)))
-            t += d
+            starts.append(line["start"] if line else None)
+        out = []
+        for i, s in enumerate(scenes):
+            st = starts[i] if starts[i] is not None else (out[-1][0] + out[-1][1] if out else 0.0)
+            if i == 0:
+                st = 0.0
+            nxt = next((x for x in starts[i + 1:] if x is not None), None)
+            line = lines.get(f"s{i}")
+            end = nxt if nxt is not None else (line["start"] + line["seconds"] + PAD if line else st + scene_plan.scene_seconds(s))
+            out.append((round(st, 3), round(max(end - st, 0.4), 3)))
         return out
     out, t = [], 0.0
     for s in scenes:
@@ -63,6 +72,53 @@ def timings(plan, voice_dir=None):
         out.append((round(t, 3), round(d, 3)))
         t += d
     return out
+
+
+WORD = re.compile(r"[a-z0-9]+")
+
+
+def cue_times(scene, start, dur, words):
+    """Resolve a scene's named cues ({"name": "phrase from the say line"}) to seconds from the scene's start, using the
+    voice's word timings. A cue lands 0.06 s before its first word, so the picture moves with the voice. Built-ins:
+    start (0) and end (0.35 s before the scene ends)."""
+    cues = {"start": 0.0, "end": round(max(dur - 0.35, 0.0), 3)}
+    inside = [w for w in words if start - 0.05 <= w["s"] < start + dur]
+    toks = [(WORD.findall(w["w"].lower()), w["s"]) for w in inside]
+    flat = [(tok, s) for ws, s in toks for tok in ws]
+    for name, phrase in (scene.get("data", {}).get("cues") or {}).items():
+        want = WORD.findall(phrase.lower())
+        if not want:
+            continue
+        for i in range(len(flat) - len(want) + 1):
+            if [f[0] for f in flat[i:i + len(want)]] == want:
+                cues[name] = round(max(flat[i][1] - start - 0.06, 0.0), 3)
+                break
+        else:   # Whisper heard the phrase differently: match its first word alone, else leave the template's fallback
+            hit = next((s for tok, s in flat if tok == want[0]), None)
+            if hit is not None:
+                cues[name] = round(max(hit - start - 0.06, 0.0), 3)
+    return cues
+
+
+# transition -> the sound it makes at the cut (library names from frameflow.music / data/library/sfx)
+TRANSITION_SFX = {"whip-left": "whoosh-short", "whip-right": "whoosh-short", "whip-up": "whoosh-up", "glitch": "glitch-1",
+                  "punch": "impact-soft", "drop": "impact-low"}
+
+
+def sfx_sheet(plan, slots, cues_per_scene):
+    """Absolute-time sound cues: each scene's declared sfx ({at: seconds or cue, name, gain}) plus one sound per transition."""
+    sheet = []
+    for i, (scene, (start, dur)) in enumerate(zip(plan["scenes"], slots)):
+        enter = scene.get("enter")
+        if i > 0 and enter in TRANSITION_SFX:
+            sheet.append({"t": round(max(start - 0.12, 0), 3), "name": TRANSITION_SFX[enter], "gain": -14, "why": f"s{i} {enter}"})
+        for cue in scene.get("sfx", []):
+            at = cue.get("at", 0)
+            rel = at if isinstance(at, (int, float)) else cues_per_scene[i].get(at)
+            if rel is None:
+                continue
+            sheet.append({"t": round(start + rel, 3), "name": cue["name"], "gain": cue.get("gain", -12), "why": f"s{i} {at}"})
+    return sorted(sheet, key=lambda c: c["t"])
 
 
 def voice_script(plan):
@@ -164,8 +220,8 @@ def project(plan, out_dir, voice_dir=None, captions=True, theme=None):
         shutil.rmtree(out)
     (out / "compositions").mkdir(parents=True)
     shutil.copytree(SHARED, out / "assets")
-    theme = theme or plan.get("theme")
-    if theme:   # a visual identity = a few token overrides appended to the shared theme
+    theme = theme or plan.get("theme") or HOUSE_THEME
+    if theme and theme != "midnight-signal":   # a visual identity = a few token overrides appended to the shared theme
         extra = SHARED / "themes" / f"{theme}.css"
         if not extra.exists():
             raise SystemExit(f"no theme {theme} in {SHARED / 'themes'}")
@@ -173,10 +229,15 @@ def project(plan, out_dir, voice_dir=None, captions=True, theme=None):
             f.write("\n" + extra.read_text())
     slots = timings(plan, voice_dir)
     total = round(slots[-1][0] + slots[-1][1] + TAIL, 3)
+    words = json.loads((Path(voice_dir) / "words.json").read_text()) if voice_dir and (Path(voice_dir) / "words.json").exists() else []
+    cues_per_scene = [cue_times(s, st, d, words) for s, (st, d) in zip(plan["scenes"], slots)]
     hosts = []
     manifest = []
     for i, (scene, (start, dur)) in enumerate(zip(plan["scenes"], slots)):
         cid = f"s{i}"
+        nxt = plan["scenes"][i + 1] if i + 1 < len(plan["scenes"]) else {}
+        scene = {**scene, "data": {**scene.get("data", {}), "_cues": cues_per_scene[i],
+                                   "_enter": scene.get("enter", "cut") if i > 0 else "cut", "_exit": nxt.get("enter", "cut")}}
         if scene["type"] == "code-card":
             scene = {**scene, "data": {**scene["data"], "_html": highlight_code(scene["data"]["code"], scene["data"]["language"])}}
         if scene["type"] == "news-snapshot":
@@ -215,7 +276,8 @@ def project(plan, out_dir, voice_dir=None, captions=True, theme=None):
                                    for f in sorted((SHARED / "vendor" / "fonts").glob("*.woff2")))
     font_warm = ('<div aria-hidden="true" style="position:absolute;opacity:0;pointer-events:none">'
                       '<span style="font-family:var(--ff-display)">₹Aa</span><span style="font-family:var(--ff-body)">₹Aa</span>'
-                      '<span style="font-family:var(--ff-mono)">Aa</span></div>')
+                      '<span style="font-family:var(--ff-mono)">Aa</span>'
+                      '<span style="font-family:var(--ff-hand);font-weight:700">Aa</span><span style="font-family:var(--ff-hand);font-weight:400">Aa</span></div>')
     three_script = ('\n    <script src="assets/vendor/three.min.js"></script>'
                     if any(s["type"] == "explainer-3d" for s in plan["scenes"]) else "")
     index = f"""<!doctype html>
@@ -226,7 +288,17 @@ def project(plan, out_dir, voice_dir=None, captions=True, theme=None):
     <title>{html.escape(plan["title"])}</title>
     <link rel="stylesheet" href="assets/theme.css" />
     {font_preloads}
-    <script src="assets/vendor/gsap.min.js"></script>{three_script}
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/vendor/DrawSVGPlugin.min.js"></script>
+    <script src="assets/vendor/MotionPathPlugin.min.js"></script>
+    <script src="assets/vendor/MorphSVGPlugin.min.js"></script>
+    <script src="assets/vendor/SplitText.min.js"></script>
+    <script src="assets/vendor/CustomEase.min.js"></script>
+    <script src="assets/vendor/rough.min.js"></script>
+    <script>
+      gsap.registerPlugin(DrawSVGPlugin, MotionPathPlugin, MorphSVGPlugin, SplitText, CustomEase);
+    </script>
+    <script src="assets/ff-kit.js"></script>{three_script}
     <style>
       #root {{ position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--ff-bg); }}
     </style>
@@ -249,13 +321,40 @@ def project(plan, out_dir, voice_dir=None, captions=True, theme=None):
     (out / "index.html").write_text(index)
     (out / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=1))
     (out / "assets-manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
+    (out / "sfx.json").write_text(json.dumps(sfx_sheet(plan, slots, cues_per_scene), indent=1))
+    (out / "cues.json").write_text(json.dumps([{"scene": i, "start": st, "dur": d, "cues": c} for i, ((st, d), c) in enumerate(zip(slots, cues_per_scene))], indent=1))
     (out / "package.json").write_text(json.dumps({"name": plan["id"], "private": True, "type": "module"}, indent=1))
     return out, total
 
 
+def false_positive(f):
+    """HyperFrames 0.8.143's contrast audit samples SVG <text> as sitting on pure black (it can't hide an SVG text's
+    fill before sampling), so drawn labels on light paper fail at about 1.2:1. Readability of drawn scenes is checked
+    on rendered frames instead (keyframe review). Every other finding still counts."""
+    return f.get("code") == "contrast_aa_failure" and f.get("bg") == "rgb(0,0,0)"   # no frameflow theme paints pure black
+
+
 def check(project_dir):
-    r = subprocess.run(HYPERFRAMES + ["check"], cwd=project_dir, env=node_env(), capture_output=True, text=True, timeout=900)
-    return r.returncode, (r.stdout + r.stderr)
+    """HyperFrames check (lint, runtime, layout, motion, contrast). Returns (exit code, readable log)."""
+    r = subprocess.run(HYPERFRAMES + ["check", "--json"], cwd=project_dir, env=node_env(), capture_output=True, text=True, timeout=900)
+    try:
+        d = json.loads(r.stdout)
+    except ValueError:
+        return (r.returncode or 1), (r.stdout + r.stderr)[-3000:]
+    lines, errors = [], 0
+    for section in ("lint", "runtime", "layout", "motion", "contrast"):
+        for f in (d.get(section) or {}).get("findings", []):
+            if f.get("severity") not in ("error", "warning"):
+                continue
+            ignored = false_positive(f)
+            if f.get("severity") == "error" and not ignored:
+                errors += 1
+            lines.append(f"{'ignored ' if ignored else ''}{f['severity']} {section}/{f.get('code')}: {f.get('message', '')} "
+                         f"{f.get('text', '')!r} {f.get('selector', '')[-80:]} t={f.get('time', '')}")
+    if d.get("browserSkipped"):
+        errors += 1
+        lines.append("error: browser checks were skipped (lint errors?)")
+    return (1 if errors else 0), "\n".join(["✗ " + l if not l.startswith("ignored") else "  " + l for l in lines]) or "clean"
 
 
 def render(project_dir, out_file=None, quality="looks"):

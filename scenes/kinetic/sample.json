@@ -1,0 +1,4 @@
+{"type": "kinetic", "say": "Plot twist. So far, nobody has confirmed a single break-in.", "duration": 4.5,
+ "data": {"burst": true, "lines": [{"t": "PLOT", "style": "slam"}, {"t": "TWIST", "style": "stamp", "color": "red"}, {"t": "no confirmed break-ins", "style": "marker", "font": "hand"}],
+          "sub": "as of 23 hours after the fix",
+          "beats": [{"do": "line", "i": 0, "at": 0.1}, {"do": "line", "i": 1, "at": 0.5}, {"do": "line", "i": 2, "at": 1.6}, {"do": "circle", "i": 1, "at": 2.6}]}}

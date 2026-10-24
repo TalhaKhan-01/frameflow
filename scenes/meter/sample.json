@@ -1,0 +1,5 @@
+{"type": "meter", "say": "Thousands of attempts. Then tens of thousands. Then millions.", "duration": 6.5,
+ "data": {"kicker": "Attack attempts seen by Cloudflare", "cardText": "Exploit attempt", "cardSub": "blocked",
+          "steps": [{"when": "10 hours before", "what": "thousands"}, {"when": "45 minutes after", "what": "tens of thousands"},
+                    {"when": "2 hours after", "what": "hundreds of thousands"}, {"when": "then", "what": "millions"}],
+          "beats": [{"do": "step", "i": 0, "at": 0.4}, {"do": "step", "i": 1, "at": 1.8}, {"do": "step", "i": 2, "at": 3.2}, {"do": "step", "i": 3, "at": 4.6}]}}

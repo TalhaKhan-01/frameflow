@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; }
+        #__ID__-wrap, #__ID__-stage, #__ID__-shake, #__ID__-cam { position: absolute; inset: 0; }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__">
+        <div id="__ID__-wrap"><div id="__ID__-stage"><div class="ff-paper"></div><div id="__ID__-shake"><div id="__ID__-cam"></div></div></div></div>
+      </div>
+      <script>
+        /* street: a row of drawn buildings (websites, shops, offices) that share something.
+           Beats: draw, note, lights-off, locks, foundation, crack, robot, shutters, race, zoom. */
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          const wrap = document.getElementById("__ID__-wrap");
+          const cam = document.getElementById("__ID__-cam");
+          const shaker = document.getElementById("__ID__-shake");
+          const stage = document.getElementById("__ID__-stage");
+          const s = FF.svg(cam, "__ID__-svg");
+          const k = FF.sketcher(s, D.seed || 3);
+          const C = k.C;
+          const tl = gsap.timeline({ paused: true });
+          const GROUND = 1150, LEFT = 46, RIGHT = 1034;
+          const B = D.buildings.slice(0, 6);
+          const gap = 22;
+          const bw = (RIGHT - LEFT - gap * (B.length - 1)) / B.length;
+          const HEIGHT = { house: 440, shop: 470, tower: 640, school: 540, gov: 560, news: 510, bank: 540 };
+
+          const world = FF.el("g", { id: "__ID__-world" }, s);
+          const slabG = FF.el("g", {}, world);
+          const bldLayer = FF.el("g", {}, world);
+          const fx = FF.el("g", {}, world);
+          const sky = FF.el("g", {}, s);
+          k.line(world, 20, GROUND, 1060, GROUND, { width: 5 });
+
+          const items = B.map((b, i) => {
+            const kind = b.kind || "shop";
+            const h = HEIGHT[kind] || 340;
+            const x = LEFT + i * (bw + gap), y = GROUND - h;
+            const g = FF.el("g", { class: "bld" }, bldLayer);
+            const body = k.rect(g, x, y, bw, h, { fill: C.fill });
+            // roofs and toppers
+            if (kind === "house" || kind === "gov") k.poly(g, [[x - 10, y + 4], [x + bw / 2, y - (kind === "gov" ? 70 : 90)], [x + bw + 10, y + 4]], { fill: kind === "gov" ? C.fill2 : C.red });
+            if (kind === "tower" || kind === "news") { k.line(g, x + bw / 2, y, x + bw / 2, y - 70); k.circle(g, x + bw / 2, y - 76, 18, { fill: C.red }); }
+            if (kind === "school") { k.line(g, x + 18, y, x + 18, y - 90); k.poly(g, [[x + 18, y - 90], [x + 70, y - 76], [x + 18, y - 60]], { fill: C.accent }); }
+            if (kind === "gov") for (let c = 0; c < 3; c++) k.rect(g, x + 14 + c * (bw - 44) / 2, y + 70, 16, h - 90, { fill: C.fill2, width: 3 });
+            // sign
+            const sy = y + 18;
+            const sign = k.rect(g, x + 8, sy, bw - 16, 66, { fill: C.fill2, width: 3.5 });
+            const st = FF.text(g, x + bw / 2, sy + 36, b.label, { size: 42 });
+            FF.fitText(st, bw - 30, 42);
+            // windows
+            const wins = [];
+            const rows = Math.max(1, Math.floor((h - 260) / 84));
+            const cols = bw > 150 ? 2 : 1;
+            for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+              const ww = cols === 2 ? (bw - 60) / 2 : bw - 50;
+              const wx = x + 20 + c * (ww + 20), wy = y + 108 + r * 84;
+              if (kind === "gov" && cols === 2) continue;
+              const wg = k.rect(g, wx, wy, ww, 56, { fill: C.lit, width: 3 });
+              wins.push(wg.querySelector(".ff-flat"));
+            }
+            // door
+            const dw = Math.min(100, bw * 0.46), dh = 160;
+            const dx = x + bw / 2 - dw / 2, dy = GROUND - dh;
+            if (kind === "shop") for (let a = 0; a < 4; a++) k.rect(g, x + 8 + a * (bw - 16) / 4, dy - 44, (bw - 16) / 4, 30, { fill: a % 2 ? C.fill : C.red, width: 2.5, r: 2 });
+            const door = k.rect(g, dx, dy, dw, dh, { fill: C.fill2 });
+            const knob = FF.el("g", {}, g);
+            k.circle(knob, dx + dw - 18, dy + dh / 2 + 6, 14, { fill: C.ink, width: 2 });
+            // lock (hidden until "locks")
+            const lock = FF.el("g", { opacity: 0 }, fx);
+            const lx = dx + dw / 2, ly = dy + 54;
+            k.path(lock, `M ${lx - 17} ${ly} L ${lx - 17} ${ly - 22} Q ${lx} ${ly - 48} ${lx + 17} ${ly - 22} L ${lx + 17} ${ly}`, { width: 6, fill: "none" });
+            k.rect(lock, lx - 28, ly - 4, 56, 46, { fill: C.red, r: 8 });
+            k.circle(lock, lx, ly + 16, 10, { fill: C.ink, width: 2 });
+            if (D.lockLabel) FF.text(lock, lx, ly + 74, D.lockLabel, { size: 30, fill: C.red });
+            // shutter (hidden until "shutters")
+            const shut = FF.el("g", { opacity: 0 }, fx);
+            const shTop = sy + 76;
+            k.rect(shut, x + 4, shTop, bw - 8, GROUND - shTop, { fill: C.fill2, width: 4 });
+            for (let yy = shTop + 26; yy < GROUND - 8; yy += 26) k.line(shut, x + 10, yy, x + bw - 10, yy, { width: 2.5, roughness: 0.8 });
+            const stamp = FF.text(shut, x + bw / 2, shTop + (GROUND - shTop) / 2, D.shutterText || "CLOSED",
+              { size: 40, fill: C.red, font: FF.tok("--ff-display"), rotate: -14 });
+            FF.fitText(stamp, bw - 20, 40);
+            FF.pivot(stamp, x + bw / 2, shTop + (GROUND - shTop) / 2);
+            return { g, x, y, h, wins, sign, st, knob, door, dx, dw, dy, lock, shut, stamp, body };
+          });
+
+          // shared foundation slab (hidden until "foundation")
+          const slab = k.rect(slabG, 30, GROUND, 1020, 130, { hachure: C.red, gap: 16, fill: C.fill2, width: 5 });
+          // the label sits on a paper plate so it stays readable over the hatching
+          const plate = k.rect(slabG, 540 - 170, GROUND + 22, 340, 92, { fill: C.bg, width: 4 });
+          const slabLabel = FF.text(slabG, 540, GROUND + 70, D.foundation || "", { size: 72, fill: C.red, font: FF.tok("--ff-display") });
+          FF.fitText(slabLabel, 310, 72);
+          gsap.set(slabG, { opacity: 0 });
+          const crack = FF.el("g", { opacity: 0 }, slabG);
+          const r = FF.rng(41);
+          let cx = 40, cy = GROUND + 30, dpath = `M ${cx} ${cy}`;
+          while (cx < 1040) { cx += 40 + r() * 50; cy = GROUND + 18 + r() * 96; dpath += ` L ${cx} ${cy}`; }
+          k.path(crack, dpath, { width: 7, stroke: C.ink, roughness: 0.6 });
+
+          // sky note (big handwritten line + drawn underline)
+          const note = FF.el("g", { opacity: 0 }, sky);
+          const noteText = FF.text(note, 540, 330, "", { size: 92, font: FF.tok("--ff-display"), weight: 700 });
+          const under = FF.el("g", {}, note);
+
+          // robot (AI) and the second figure for "race"
+          const mkRobot = (parent, tag, col) => {
+            const g = FF.el("g", {}, parent);
+            k.line(g, 0, -170, 0, -200, { width: 4 });
+            k.circle(g, 0, -206, 16, { fill: col });
+            k.rect(g, -42, -170, 84, 66, { fill: C.fill, r: 12 });
+            const eyes = FF.el("g", {}, g);
+            k.circle(eyes, -16, -138, 16, { fill: col, width: 2 });
+            k.circle(eyes, 16, -138, 16, { fill: col, width: 2 });
+            k.rect(g, -36, -100, 72, 70, { fill: col, r: 10 });
+            const legL = FF.el("g", {}, g), legR = FF.el("g", {}, g);
+            k.line(legL, -16, -30, -22, 0, { width: 6 });
+            k.line(legR, 16, -30, 22, 0, { width: 6 });
+            k.line(g, -36, -86, -62, -54, { width: 6 });
+            k.line(g, 36, -86, 62, -54, { width: 6 });
+            if (tag) FF.text(g, 0, -64, tag, { size: 30, fill: C.fill });
+            return { g, eyes, legL, legR };
+          };
+          const mkHood = (parent, tag) => {
+            const g = FF.el("g", {}, parent);
+            k.path(g, "M -44 -110 Q -48 -200 0 -206 Q 48 -200 44 -110 Z", { fill: C.ink, width: 3 });
+            k.ellipse(g, 0, -150, 50, 56, { fill: C.dark, width: 2 });
+            k.rect(g, -40, -112, 80, 82, { fill: C.ink, r: 12 });
+            const legL = FF.el("g", {}, g), legR = FF.el("g", {}, g);
+            k.line(legL, -16, -30, -22, 0, { width: 6 });
+            k.line(legR, 16, -30, 22, 0, { width: 6 });
+            if (tag) FF.text(g, 0, -66, tag, { size: 26, fill: C.fill });
+            return { g, legL, legR };
+          };
+          const robot = mkRobot(fx, D.robotLabel || "AI", C.accent);
+          gsap.set(robot.g, { x: -160, y: GROUND, scale: 1.4, opacity: 0, svgOrigin: "0 0" });
+          const walk = (who, from, to) => {
+            for (let t = from; t < to - 0.01; t += 0.16) {
+              const sgn = Math.round((t - from) / 0.16) % 2 ? 1 : -1;
+              tl.to(who.legL, { rotation: 18 * sgn, duration: 0.16, ease: "sine.inOut", transformOrigin: "50% 0%" }, t);
+              tl.to(who.legR, { rotation: -18 * sgn, duration: 0.16, ease: "sine.inOut", transformOrigin: "50% 0%" }, t);
+            }
+          };
+
+          // ---- beats ----
+          const beats = D.beats && D.beats.length ? D.beats : [{ do: "draw" }];
+          const t0 = (b, i) => FF.at(D, b.at, i === 0 ? 0.05 : (DUR * i) / beats.length);
+          items.forEach((it) => FF.hide(tl, [it.g], 0));
+          let drawn = false;
+          beats.forEach((b, i) => {
+            const t = t0(b, i);
+            if (b.do === "draw") {
+              drawn = true;
+              items.forEach((it, j) => { tl.set(it.g, { opacity: 1 }, t + j * 0.12); FF.draw(tl, it.g, t + j * 0.12, 0.55); });
+            } else if (b.do === "note") {
+              noteText.textContent = b.text;
+              FF.fitText(noteText, 900, 92);
+              tl.set(note, { opacity: 1 }, t);
+              FF.slam(tl, noteText, t, { from: 1.8 });
+              under.innerHTML = "";
+              const len = Math.min(noteText.getComputedTextLength(), 900);
+              const u = k.curve(under, [[540 - len / 2, 386], [540, 400], [540 + len / 2, 380]], { stroke: C.red, width: 8 });
+              FF.draw(tl, u, t + 0.2, 0.35);
+              if (b.until) tl.to(note, { opacity: 0, duration: 0.2 }, FF.at(D, b.until, t + 2));
+            } else if (b.do === "lights-off") {
+              const order = b.order || items.map((_, j) => j);
+              order.forEach((j, n) => {
+                const it = items[j];
+                if (!it) return;
+                const tt = t + n * (b.stagger ?? 0.22);
+                tl.to(it.wins, { attr: { fill: C.dark }, duration: 0.06, ease: "none" }, tt);
+                tl.to(it.body.querySelector(".ff-flat"), { attr: { fill: C.fill2 }, duration: 0.06 }, tt);
+                tl.to(it.st, { attr: { fill: C.muted }, duration: 0.06 }, tt);
+              });
+            } else if (b.do === "locks") {
+              items.forEach((it, j) => FF.pop(tl, it.lock, t + j * (b.stagger ?? 0.12), { from: 0.2 }));
+            } else if (b.do === "foundation") {
+              tl.to(cam, { y: -150, scale: 0.94, duration: 0.7, ease: "power3.inOut", transformOrigin: "50% 40%" }, t);
+              tl.set(slabG, { opacity: 1 }, t + 0.25);
+              FF.draw(tl, slab, t + 0.25, 0.45);
+              FF.slam(tl, [plate, slabLabel], t + 0.6, { from: 2 });
+            } else if (b.do === "crack") {
+              tl.set(crack, { opacity: 1 }, t);
+              FF.draw(tl, crack, t, 0.35, { ease: "power1.in" });
+              FF.shake(tl, shaker, t + 0.2, 0.55, 18, 7);
+              items.forEach((it, j) => tl.to(it.g, { rotation: (j % 2 ? 1 : -1) * 2.5, duration: 0.3, ease: "power2.out", transformOrigin: "50% 100%" }, t + 0.3));
+            } else if (b.do === "robot") {
+              tl.set(robot.g, { opacity: 1 }, t);
+              let tt = t;
+              const per = b.per ?? 0.42;
+              items.forEach((it, j) => {
+                const x = it.dx + it.dw / 2 - 70;
+                tl.to(robot.g, { x, duration: j === 0 ? 0.3 : per * 0.45, ease: "power2.inOut" }, tt);
+                walk(robot, tt, tt + (j === 0 ? 0.3 : per * 0.45));
+                tt += j === 0 ? 0.3 : per * 0.45;
+                FF.wiggle(tl, it.knob, tt, per * 0.5, 40, "50% 50%");
+                tl.to(it.door.querySelector(".ff-flat"), { attr: { fill: C.lit }, duration: 0.05, yoyo: true, repeat: 1 }, tt + 0.05);
+                tt += per * 0.55;
+              });
+            } else if (b.do === "shutters") {
+              items.forEach((it, j) => {
+                const tt = t + j * (b.stagger ?? 0.16);
+                tl.set(it.shut, { opacity: 1 }, tt);
+                tl.fromTo(it.shut, { scaleY: 0 }, { scaleY: 1, duration: 0.16, ease: "power4.in", transformOrigin: "50% 0%" }, tt);
+                tl.fromTo(it.stamp, { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.14, ease: "power4.in" }, tt + 0.18);
+              });
+              FF.shake(tl, shaker, t + 0.16, 0.25 + items.length * (b.stagger ?? 0.16), 6, 3);
+            } else if (b.do === "race") {
+              const target = items[b.door ?? Math.floor(items.length / 2)];
+              const doorX = target.dx + target.dw / 2;
+              const hood = mkHood(fx, (b.labels && b.labels[1]) || "?");
+              tl.set(robot.g, { opacity: 1, x: -160 }, t);
+              gsap.set(hood.g, { x: 1240, y: GROUND, opacity: 0 });
+              tl.set(hood.g, { opacity: 1 }, t);
+              const run = b.run ?? 1.6;
+              tl.to(robot.g, { x: doorX - 120, duration: run, ease: "power1.inOut" }, t);
+              tl.to(hood.g, { x: doorX + 120, duration: run, ease: "power1.inOut" }, t);
+              walk(robot, t, t + run);
+              walk(hood, t, t + run);
+              if (b.labels) {
+                const la = FF.text(sky, 290, 420, b.labels[0], { size: 54, fill: C.accent });
+                const lb = FF.text(sky, 790, 420, b.labels[1], { size: 54, fill: C.ink });
+                FF.pop(tl, la, t + 0.2);
+                FF.pop(tl, lb, t + 0.35);
+              }
+              const q = FF.text(sky, doorX, 760, "?", { size: 190, fill: C.red, font: FF.tok("--ff-display") });
+              FF.slam(tl, q, t + run, { from: 2.4 });
+            } else if (b.do === "zoom") {
+              const it = items[b.index ?? 0];
+              const ox = it.x + bw / 2, oy = it.y + it.h / 2;
+              tl.to(cam, { scale: b.scale ?? 1.8, x: (540 - ox) * (b.scale ?? 1.8) * 0.55, y: (760 - oy) * 0.9, duration: 0.6, ease: "power3.inOut", transformOrigin: "50% 50%" }, t);
+            }
+          });
+          if (!drawn) items.forEach((it) => tl.set(it.g, { opacity: 1 }, 0));
+          FF.drift(tl, stage, DUR, { to: 1.03 });
+          FF.transitions(tl, wrap, D, DUR);
+          window.__timelines["__ID__"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

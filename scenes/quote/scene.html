@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; }
+        .__ID__-q { position: absolute; left: 120px; right: 110px; top: 470px; font: 700 76px/1.14 var(--ff-display); color: var(--ff-fg);
+          letter-spacing: -0.01em; }
+        .__ID__-q span { opacity: 0; }
+        .__ID__-q .mk { background-image: linear-gradient(var(--ff-marker), var(--ff-marker)); background-repeat: no-repeat;
+          background-position: 0 70%; background-size: 0% 62%; padding: 0 4px; }
+        .__ID__-who { position: absolute; left: 120px; right: 110px; font: 700 50px/1.2 var(--ff-hand); color: var(--ff-fg); opacity: 0; }
+        .__ID__-who i { display: block; font: 400 38px/1.25 var(--ff-hand); color: var(--ff-muted); font-style: normal; }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__"><div id="__ID__-host" style="position:absolute;inset:0"></div></div>
+      <script>
+        /* quote: a real quote on paper, revealed word by word, one phrase swiped with a highlighter, who said it,
+           and an optional doodle (fire, bulb, lock, bug). Beats: words, mark, who, doodle. */
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          const sc = FF.scene("__ID__", D, DUR, { seed: 44, defaultBeats: [{ do: "words" }, { do: "mark" }, { do: "who" }, { do: "doodle" }] });
+          const { s, k, C, tl } = sc;
+          FF.kicker(sc, D.kicker);
+          const marks = FF.el("g", {}, s);
+          k.path(marks, "M 120 430 q -30 -60 30 -90 M 190 430 q -30 -60 30 -90", { stroke: C.red, width: 12, fill: "none" });
+          const q = document.createElement("div");
+          q.className = "__ID__-q";
+          const words = D.quote.split(/\s+/);
+          const mark = (D.mark || "").toLowerCase();
+          // wrap each word in a span; the marked phrase becomes one span
+          let i = 0;
+          const spans = [];
+          while (i < words.length) {
+            const rest = words.slice(i).join(" ").toLowerCase();
+            const sp = document.createElement("span");
+            if (mark && rest.startsWith(mark)) {
+              const n = mark.split(/\s+/).length;
+              sp.textContent = words.slice(i, i + n).join(" ");
+              sp.className = "mk";
+              i += n;
+            } else { sp.textContent = words[i]; i += 1; }
+            q.append(sp, " ");
+            spans.push(sp);
+          }
+          sc.html().appendChild(q);
+          const size = D.quote.length > 110 ? 62 : D.quote.length > 70 ? 74 : D.quote.length > 40 ? 90 : 112;
+          q.style.fontSize = size + "px";
+          const who = document.createElement("div");
+          who.className = "__ID__-who";
+          who.innerHTML = `— ${D.who}<i>${D.role || ""}</i>`;
+          sc.html().appendChild(who);
+          const place = () => { who.style.top = (q.offsetTop + q.offsetHeight + 50) + "px"; };
+          place();
+          const doodle = FF.el("g", { opacity: 0 }, s);
+          const dx = 860, dy = 1140;
+          if (D.doodle === "fire") {
+            k.path(doodle, `M ${dx} ${dy + 60} C ${dx - 90} ${dy + 40} ${dx - 70} ${dy - 50} ${dx - 20} ${dy - 110} C ${dx - 10} ${dy - 50} ${dx + 30} ${dy - 60} ${dx + 20} ${dy - 130} C ${dx + 90} ${dy - 70} ${dx + 100} ${dy + 40} ${dx} ${dy + 60} Z`, { fill: "#f59e0b", width: 5 });
+            k.path(doodle, `M ${dx} ${dy + 50} C ${dx - 40} ${dy + 30} ${dx - 30} ${dy - 20} ${dx} ${dy - 50} C ${dx + 30} ${dy - 10} ${dx + 40} ${dy + 30} ${dx} ${dy + 50} Z`, { fill: C.red, width: 3 });
+            for (let j = 0; j < 4; j++) k.line(doodle, dx - 110 + j * 70, dy + 80, dx - 60 + j * 70, dy + 70, { width: 9, stroke: "#8a5a2b" });
+          } else if (D.doodle === "bulb") {
+            k.circle(doodle, dx, dy - 30, 130, { fill: C.lit });
+            k.rect(doodle, dx - 30, dy + 34, 60, 46, { fill: C.fill2 });
+          } else if (D.doodle === "lock") {
+            k.path(doodle, `M ${dx - 40} ${dy} L ${dx - 40} ${dy - 50} Q ${dx} ${dy - 110} ${dx + 40} ${dy - 50} L ${dx + 40} ${dy}`, { width: 10, fill: "none" });
+            k.rect(doodle, dx - 70, dy - 6, 140, 110, { fill: C.red, r: 14 });
+          } else if (D.doodle === "bug") {
+            k.ellipse(doodle, dx, dy, 110, 150, { fill: C.red });
+            k.circle(doodle, dx, dy - 90, 60, { fill: C.ink });
+            for (let j = -1; j <= 1; j++) { k.line(doodle, dx - 55, dy + j * 40, dx - 110, dy + j * 50); k.line(doodle, dx + 55, dy + j * 40, dx + 110, dy + j * 50); }
+          }
+          sc.beats.forEach((b, j) => {
+            const t = sc.when(b, j);
+            if (b.do === "words") {
+              FF.draw(tl, marks, t, 0.3);
+              const per = b.per ?? Math.min(0.12, 1.6 / spans.length);
+              spans.forEach((sp, n) => tl.fromTo(sp, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.18, ease: "power2.out", onUpdate: place }, t + n * per));
+            } else if (b.do === "mark") {
+              const m = q.querySelector(".mk");
+              if (m) tl.to(m, { backgroundSize: "100% 62%", duration: 0.45, ease: "power2.inOut" }, t);
+            } else if (b.do === "who") {
+              tl.fromTo(who, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, onUpdate: place }, t);
+            } else if (b.do === "doodle" && D.doodle) {
+              tl.set(doodle, { opacity: 1 }, t);
+              FF.draw(tl, doodle, t, 0.6);
+              FF.wiggle(tl, doodle, t + 0.6, Math.max(0.4, DUR - t - 0.7), 3, "50% 100%");
+            }
+          });
+          sc.finish();
+        })();
+      </script>
+    </template>
+  </body>
+</html>

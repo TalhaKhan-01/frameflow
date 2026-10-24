@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>#__ID__-root { position: absolute; inset: 0; overflow: hidden; }</style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__"><div id="__ID__-host" style="position:absolute;inset:0"></div></div>
+      <script>
+        /* stack: isometric layers (2.5D) that lift apart to show what sits under what.
+           Beats: build, explode, highlight, stamp, note. */
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          const sc = FF.scene("__ID__", D, DUR, { defaultBeats: [{ do: "build" }, { do: "explode" }], seed: 8 });
+          const { s, k, C, tl } = sc;
+          FF.kicker(sc, D.kicker);
+          const L = D.layers.slice(0, 6);
+          const CX = 540, HW = 330, HH = 92, TH = 42;
+          const closed = 58, open = Math.min(178, 700 / Math.max(L.length - 1, 1));
+          const baseY = 1160;
+          const layers = L.map((l, i) => {
+            const g = FF.el("g", {}, s);
+            const y = 0;
+            const top = [[CX - HW, y], [CX, y - HH], [CX + HW, y], [CX, y + HH]];
+            const hot = l.hot;
+            k.poly(g, [[CX - HW, y], [CX, y + HH], [CX, y + HH + TH], [CX - HW, y + TH]], { fill: hot ? C.red : C.fill2 });
+            k.poly(g, [[CX, y + HH], [CX + HW, y], [CX + HW, y + TH], [CX, y + HH + TH]], { fill: hot ? C.red : C.dark, hachure: hot ? null : null });
+            const face = k.poly(g, top, { fill: hot ? C.fill : C.fill });
+            const lab = FF.text(g, CX, y + 4, l.label, { size: 50, fill: hot ? C.red : C.ink, font: FF.tok("--ff-hand") });
+            FF.fitText(lab, HW * 1.1, 50);
+            lab.setAttribute("data-layout-allow-overlap", "");   // the closed stack and the stamp cover labels on purpose
+            // layers stack from the bottom up: item 0 is the top of the stack
+            const restY = baseY - (L.length - 1 - i) * closed;
+            const openY = baseY - (L.length - 1 - i) * open;
+            gsap.set(g, { y: restY, opacity: 0 });
+            return { g, face, lab, restY, openY, hot };
+          });
+          // draw order: bottom layer last in DOM paints on top; reorder so upper layers paint over lower ones
+          layers.slice().reverse().forEach((ly) => s.appendChild(ly.g));
+          const stampG = FF.el("g", { opacity: 0 }, s);
+
+          let built = false;
+          sc.beats.forEach((b, i) => {
+            const t = sc.when(b, i);
+            if (b.do === "build") {
+              built = true;
+              layers.slice().reverse().forEach((ly, j) => {
+                tl.set(ly.g, { opacity: 1 }, t + j * 0.12);
+                tl.fromTo(ly.g, { y: ly.restY - 260 }, { y: ly.restY, duration: 0.42, ease: "bounce.out" }, t + j * 0.12);
+              });
+            } else if (b.do === "explode") {
+              layers.forEach((ly, j) => tl.to(ly.g, { y: ly.openY, duration: 0.6, ease: "back.out(1.6)" }, t + j * 0.04));
+            } else if (b.do === "highlight") {
+              layers.forEach((ly) => {
+                if (ly.hot) {
+                  tl.to(ly.g, { x: 46, duration: 0.25, ease: "power3.out" }, t);
+                  FF.shake(tl, ly.g, t + 0.25, 0.4, 8, 13);
+                } else tl.to(ly.lab, { attr: { fill: C.muted }, duration: 0.2 }, t);
+              });
+            } else if (b.do === "stamp") {
+              const hot = layers.find((ly) => ly.hot) || layers[0];
+              const sy = hot.openY;
+              const st = D.stamp || { text: "FIXED" };
+              stampG.innerHTML = "";
+              const h = st.sub ? 170 : 120;
+              k.rect(stampG, 340, sy - h / 2, 400, h, { fill: C.bg, stroke: C.accent, width: 7, r: 10 });
+              stampG.setAttribute("data-layout-allow-overlap", "");
+              const tt = FF.text(stampG, 540, sy - (st.sub ? 28 : 0), st.text, { size: 64, fill: C.accent, font: FF.tok("--ff-display") });
+              FF.fitText(tt, 360, 64);
+              if (st.sub) { const ss = FF.text(stampG, 540, sy + 42, st.sub, { size: 30, fill: C.accent, font: FF.tok("--ff-mono"), weight: 600 }); FF.fitText(ss, 370, 30); }
+              tl.set(stampG, { opacity: 1 }, t);
+              FF.pivot(stampG, 540, sy);
+              tl.fromTo(stampG, { scale: 2.2, rotation: -24, opacity: 0 }, { scale: 1, rotation: -8, opacity: 1, duration: 0.2, ease: "power4.in" }, t);
+              FF.shake(tl, sc.shaker, t + 0.2, 0.3, 10, 4);
+            } else if (b.do === "note") {
+              const g = FF.el("g", {}, s);
+              const tt = FF.text(g, 540, b.y ?? 420, b.text, { size: 76, font: FF.tok("--ff-display") });
+              FF.fitText(tt, 900, 76);
+              FF.slam(tl, tt, t, { from: 1.8 });
+            }
+          });
+          if (!built) layers.forEach((ly) => tl.set(ly.g, { opacity: 1 }, 0));
+          sc.finish();
+        })();
+      </script>
+    </template>
+  </body>
+</html>

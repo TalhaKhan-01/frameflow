@@ -1,0 +1,5 @@
+{"type": "stack", "say": "Every website is a stack. The hole was in the PHP layer.", "duration": 6.0,
+ "data": {"kicker": "What a website is made of",
+          "layers": [{"label": "YOUR BROWSER"}, {"label": "WEB SERVER"}, {"label": "PHP ENGINE", "hot": true}, {"label": "WORDPRESS / APP"}, {"label": "DATABASE"}],
+          "stamp": {"text": "PATCHED", "sub": "8.5.12 · 8.4.27 · 8.3.36"},
+          "beats": [{"do": "build", "at": 0.1}, {"do": "explode", "at": 1.4}, {"do": "highlight", "at": 2.6}, {"do": "stamp", "at": 4.0}]}}

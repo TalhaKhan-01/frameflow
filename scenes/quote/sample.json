@@ -1,0 +1,3 @@
+{"type": "quote", "say": "One cryptographer put it simply: the whole internet is dry tinder.", "duration": 5.5,
+ "data": {"quote": "The whole Internet is dry tinder.", "who": "Matthew Green", "role": "cryptographer, Johns Hopkins", "mark": "dry tinder", "doodle": "fire",
+          "beats": [{"do": "words", "at": 0.2}, {"do": "mark", "at": 1.6}, {"do": "who", "at": 2.2}, {"do": "doodle", "at": 2.8}]}}

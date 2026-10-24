@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>#__ID__-root { position: absolute; inset: 0; overflow: hidden; }</style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__"><div id="__ID__-host" style="position:absolute;inset:0"></div></div>
+      <script>
+        /* kinetic: words as the picture. Each line enters on its own cue with a style:
+           slam, drop, scramble, type, stamp, marker (highlighter swipe), strike (crossed out).
+           Optional background "burst" (drawn rays) and a doodle (circle around a line, arrow). */
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          const lines = D.lines.slice(0, 5);
+          const sc = FF.scene("__ID__", D, DUR, { seed: 21, defaultBeats: lines.map((_, i) => ({ do: "line", i })) });
+          const { s, k, C, tl } = sc;
+          FF.kicker(sc, D.kicker);
+          if (D.burst) {
+            const rays = FF.el("g", { opacity: 0.32 }, s);
+            const r = FF.rng(3);
+            for (let i = 0; i < 28; i++) {
+              const a = (i / 28) * Math.PI * 2 + r() * 0.08;
+              k.line(rays, 540 + Math.cos(a) * 260, 760 + Math.sin(a) * 260, 540 + Math.cos(a) * 1300, 760 + Math.sin(a) * 1300,
+                { stroke: i % 2 ? C.fill2 : C.lit, width: 26, roughness: 0.6 });
+            }
+            FF.pivot(rays, 540, 760);
+            tl.fromTo(rays, { rotation: 0 }, { rotation: 14, duration: DUR, ease: "none" }, 0);
+            FF.pop(tl, rays, 0, { from: 0.6, dur: 0.3, ease: "power3.out" });
+          }
+          const sizes = lines.map((l) => l.size ?? (l.t.length <= 6 ? 190 : l.t.length <= 10 ? 150 : l.t.length <= 16 ? 112 : 84));
+          const gap = 30;
+          const total = sizes.reduce((a, b) => a + b, 0) + gap * (lines.length - 1);
+          let y = 760 - total / 2;
+          const items = lines.map((l, i) => {
+            const cy = y + sizes[i] / 2;
+            y += sizes[i] + gap;
+            const g = FF.el("g", { opacity: 0 }, s);
+            const back = FF.el("g", {}, g);
+            const font = l.font === "hand" ? FF.tok("--ff-hand") : l.font === "mono" ? FF.tok("--ff-mono") : FF.tok("--ff-display");
+            const col = l.color === "red" ? C.red : l.color === "blue" ? C.accent : l.color === "muted" ? C.muted : C.ink;
+            const t = FF.text(g, 540, cy, l.t, { size: sizes[i], fill: col, font, weight: l.font === "mono" ? 700 : 700 });
+            FF.fitText(t, 920, sizes[i]);
+            return { g, back, t, cy, l, size: sizes[i] };
+          });
+          const width = (it) => Math.min(it.t.getComputedTextLength(), 920);
+
+          sc.beats.forEach((b, i) => {
+            const at = sc.when(b, i);
+            if (b.do === "line") {
+              const it = items[b.i ?? i];
+              if (!it) return;
+              const st = it.l.style || "slam";
+              tl.set(it.g, { opacity: 1 }, at);
+              if (st === "slam") { FF.slam(tl, it.t, at, { from: 2.6 }); FF.shake(tl, sc.shaker, at + 0.22, 0.25, 12, 5 + i); }
+              else if (st === "drop") tl.fromTo(it.t, { y: -300, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "bounce.out" }, at);
+              else if (st === "scramble") FF.scramble(tl, it.t, it.l.t, at, it.l.dur ?? 0.6, 9 + i);
+              else if (st === "type") FF.type(tl, it.t, it.l.t, at, it.l.cps ?? 18);
+              else if (st === "stamp") {
+                const w = width(it);
+                k.rect(it.back, 540 - w / 2 - 30, it.cy - it.size * 0.62, w + 60, it.size * 1.2, { fill: "none", stroke: C.red, width: 9, r: 10 });
+                it.t.style.color = C.red;
+                FF.pivot(it.g, 540, it.cy);
+                tl.fromTo(it.g, { scale: 2.2, rotation: -20, opacity: 0 }, { scale: 1, rotation: -7, opacity: 1, duration: 0.2, ease: "power4.in" }, at);
+                FF.shake(tl, sc.shaker, at + 0.2, 0.3, 14, 7);
+              } else if (st === "marker") {
+                const w = width(it);
+                const m = FF.el("rect", { x: 540 - w / 2 - 16, y: it.cy - it.size * 0.36, width: w + 32, height: it.size * 0.72, fill: C.marker, rx: 8 }, it.back);
+                tl.fromTo(it.t, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.25 }, at);
+                FF.pivot(m, 540 - w / 2 - 16, it.cy);
+                tl.fromTo(m, { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.out" }, at + 0.15);
+              } else if (st === "strike") {
+                const w = width(it);
+                tl.fromTo(it.t, { opacity: 0 }, { opacity: 1, duration: 0.2 }, at);
+                const ln = k.line(it.g, 540 - w / 2 - 20, it.cy + 6, 540 + w / 2 + 20, it.cy - 10, { stroke: C.red, width: 12 });
+                FF.draw(tl, ln, at + (it.l.strikeDelay ?? 0.5), 0.25);
+              }
+            } else if (b.do === "circle") {
+              const it = items[b.i ?? 0];
+              const w = width(it);
+              const c = k.ellipse(s, 540, it.cy, w + 120, it.size * 1.5, { fill: "none", stroke: C.red, width: 8, roughness: 2 });
+              FF.draw(tl, c, at, 0.45);
+            } else if (b.do === "fade") {
+              const it = items[b.i ?? 0];
+              tl.to(it.g, { opacity: 0, duration: 0.2 }, at);
+            }
+          });
+          if (D.sub) {
+            const sub = FF.text(s, 540, 1160, D.sub, { size: 52, fill: C.muted });
+            FF.fitText(sub, 900, 52);
+            tl.fromTo(sub, { opacity: 0 }, { opacity: 1, duration: 0.3 }, FF.at(D, D.subAt, Math.min(DUR * 0.5, 1.2)));
+          }
+          sc.finish();
+        })();
+      </script>
+    </template>
+  </body>
+</html>

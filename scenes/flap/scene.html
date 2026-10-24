@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>#__ID__-root { position: absolute; inset: 0; overflow: hidden; }</style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__"><div id="__ID__-host" style="position:absolute;inset:0"></div></div>
+      <script>
+        /* flap: a split-flap board that rolls from one number (a year) to another, then a caption and an optional
+           birthday cake with one candle per unit. Beats: count, caption, cake. */
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          const sc = FF.scene("__ID__", D, DUR, { seed: 14, defaultBeats: [{ do: "count" }, { do: "caption" }] });
+          const { s, k, C, tl } = sc;
+          FF.kicker(sc, D.kicker);
+          const from = Math.round(D.from), to = Math.round(D.to);
+          const digits = String(Math.max(from, to)).length;
+          const CW = 200, CH = 270, GAP = 24, Y = 420;
+          const x0 = 540 - (digits * CW + (digits - 1) * GAP) / 2;
+          const cells = Array.from({ length: digits }, (_, i) => {
+            const g = FF.el("g", {}, s);
+            const x = x0 + i * (CW + GAP);
+            k.rect(g, x, Y, CW, CH, { fill: C.ink, stroke: C.ink, r: 14 });
+            const flipper = FF.el("g", {}, g);
+            const t = FF.text(flipper, x + CW / 2, Y + CH / 2 + 8, "0", { size: 210, fill: C.bg, font: FF.tok("--ff-display") });
+            k.line(g, x + 6, Y + CH / 2, x + CW - 6, Y + CH / 2, { stroke: C.bg, width: 4, roughness: 0.4 });
+            FF.pivot(flipper, x + CW / 2, Y + CH / 2);
+            return { g, flipper, t, cx: x + CW / 2 };
+          });
+          const pad = (n) => String(n).padStart(digits, "0");
+          const show = (n) => pad(n).split("").forEach((d, i) => { cells[i].t.textContent = d; });
+          show(from);
+          cells.forEach((c, i) => FF.draw(tl, c.g, 0.05 + i * 0.08, 0.4));
+          const caption = FF.el("g", { opacity: 0 }, s);
+          const capText = FF.text(caption, 540, Y + CH + 120, D.caption || "", { size: 104, fill: C.red, font: FF.tok("--ff-display") });
+          const capSub = FF.text(caption, 540, Y + CH + 205, D.sub || "", { size: 48, fill: C.ink });
+          const cake = FF.el("g", { opacity: 0 }, s);
+
+          sc.beats.forEach((b, i) => {
+            const t = sc.when(b, i);
+            if (b.do === "count") {
+              const dur = b.dur ?? Math.min(2.2, 0.12 * Math.abs(to - from) + 0.4);
+              const proxy = { v: from };
+              tl.fromTo(proxy, { v: from }, { v: to, duration: dur, ease: "power1.in", immediateRender: false,
+                onUpdate: () => {
+                  const n = Math.floor(proxy.v + 1e-6);
+                  show(n);
+                  const f = proxy.v - n;   // 0 just after a change: squash the flipping cells
+                  const prev = pad(Math.max(n - 1, Math.min(from, to)));
+                  pad(n).split("").forEach((d, j) => {
+                    const flipping = d !== prev[j] && n !== to;
+                    gsap.set(cells[j].flipper, { scaleY: flipping ? 0.55 + 0.45 * Math.min(1, f * 3) : 1 });
+                  });
+                } }, t);
+              FF.shake(tl, sc.shaker, t + dur, 0.25, 8, 2);
+            } else if (b.do === "caption") {
+              capText.textContent = b.text || D.caption || "";
+              FF.fitText(capText, 920, 104);
+              FF.fitText(capSub, 900, 48);
+              tl.set(caption, { opacity: 1 }, t);
+              FF.slam(tl, capText, t, { from: 2.2 });
+              tl.fromTo(capSub, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, t + 0.3);
+            } else if (b.do === "cake") {
+              const n = Math.min(b.candles ?? Math.abs(to - from), 20);
+              const cy = 1150;
+              cake.innerHTML = "";
+              k.rect(cake, 340, cy - 80, 400, 130, { fill: C.lit });
+              k.rect(cake, 300, cy + 50, 480, 30, { fill: C.fill2 });
+              k.curve(cake, [[340, cy - 40], [400, cy - 10], [470, cy - 45], [540, cy - 12], [610, cy - 45], [680, cy - 10], [740, cy - 40]], { stroke: C.red, width: 6 });
+              const flames = [];
+              for (let c = 0; c < n; c++) {
+                const x = 360 + (c + 0.5) * (360 / n);
+                k.line(cake, x, cy - 80, x, cy - 150, { stroke: c % 2 ? C.accent : C.red, width: 7 });
+                const fl = FF.el("g", {}, cake);
+                k.ellipse(fl, x, cy - 168, 16, 30, { fill: "#f59e0b", width: 2 });
+                flames.push(fl);
+              }
+              tl.set(cake, { opacity: 1 }, t);
+              FF.draw(tl, cake, t, 0.5);
+              flames.forEach((fl, j) => FF.pop(tl, fl, t + 0.3 + j * 0.03));
+            }
+          });
+          sc.finish();
+        })();
+      </script>
+    </template>
+  </body>
+</html>

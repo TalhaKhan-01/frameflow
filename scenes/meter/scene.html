@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #__ID__-root { position: absolute; inset: 0; overflow: hidden; }
+        .__ID__-card { position: absolute; width: 300px; padding: 14px 18px; border: 4px solid var(--ff-ink); border-radius: 14px;
+          background: var(--ff-fill); font: 700 30px/1.15 var(--ff-hand); color: var(--ff-ink); opacity: 0; }
+        .__ID__-card i { display: block; font: 400 24px/1.2 var(--ff-hand); color: var(--ff-muted); font-style: normal; }
+      </style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__"><div id="__ID__-host" style="position:absolute;inset:0"></div></div>
+      <script>
+        /* meter: an escalation. A drawn thermometer fills step by step while each step's words slam in and
+           alert cards pile up behind. Beats: one "step" per entry in data.steps (at: cue), optional "boil" (overflow). */
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          const steps = D.steps.slice(0, 5);
+          const sc = FF.scene("__ID__", D, DUR, { seed: 12, defaultBeats: steps.map((_, i) => ({ do: "step", i })) });
+          const { s, k, C, tl } = sc;
+          FF.kicker(sc, D.kicker);
+          // alert cards (HTML, wrapped text), piled up behind the meter
+          const cards = [];
+          const r = FF.rng(77);
+          const nCards = D.cards ?? 14;
+          for (let i = 0; i < nCards; i++) {
+            const c = document.createElement("div");
+            c.className = "__ID__-card";
+            c.setAttribute("data-layout-ignore", "");   // set dressing behind the words
+            c.innerHTML = `${D.cardText || "Attack attempt"}<i>${D.cardSub || "blocked"}</i>`;
+            c.style.left = `${380 + r() * 330}px`;
+            c.style.top = `${430 + r() * 600}px`;
+            c.style.transform = `rotate(${(r() * 2 - 1) * 9}deg)`;
+            sc.back().appendChild(c);
+            cards.push(c);
+          }
+          // thermometer
+          const TX = 200, TOP = 420, BOT = 1080, W = 110;
+          const tube = FF.el("g", {}, s);
+          k.rect(tube, TX - W / 2, TOP, W, BOT - TOP, { fill: C.fill, r: 50 });
+          const fillRect = FF.el("rect", { x: TX - W / 2 + 16, y: TOP + 16, width: W - 32, height: BOT - TOP - 16, rx: 30, fill: C.red }, tube);
+          k.circle(tube, TX, BOT + 40, 180, { fill: C.red });
+          for (let i = 1; i < 6; i++) k.line(tube, TX + W / 2, TOP + i * (BOT - TOP) / 6, TX + W / 2 + 30, TOP + i * (BOT - TOP) / 6, { width: 4 });
+          gsap.set(fillRect, { scaleY: 0.04, transformOrigin: "50% 100%" });
+          FF.draw(tl, tube, 0.05, 0.5);
+          // step words on the right
+          const words = FF.el("g", {}, s);
+          const items = steps.map((st, i) => {
+            const g = FF.el("g", { opacity: 0 }, words);
+            const plate = FF.el("rect", { x: 360, y: -34, width: 680, height: 150, rx: 14, fill: C.bg, opacity: 0.94 }, g);
+            const when = FF.text(g, 380, 0, st.when, { size: 44, anchor: "start", fill: C.muted });
+            FF.fitText(when, 620, 44);
+            const what = FF.text(g, 380, 70, st.what, { size: 88, anchor: "start", fill: i === steps.length - 1 ? C.red : C.ink, font: FF.tok("--ff-display") });
+            FF.fitText(what, 640, 88);
+            return { g, what, level: st.level ?? (i + 1) / steps.length };
+          });
+          const rowY = (n) => 470 + n * 170;
+          sc.beats.forEach((b, i) => {
+            const t = sc.when(b, i);
+            if (b.do === "step") {
+              const n = b.i ?? i;
+              const it = items[n];
+              if (!it) return;
+              gsap.set(it.g, { y: rowY(n) });
+              tl.to(fillRect, { scaleY: Math.max(0.04, it.level), duration: 0.45, ease: "power2.out", transformOrigin: "50% 100%" }, t);
+              tl.set(it.g, { opacity: 1 }, t);
+              FF.slam(tl, it.what, t, { from: 2 });
+              items.slice(0, n).forEach((p) => tl.to(p.what, { attr: { fill: C.muted }, duration: 0.2 }, t));
+              // cards: more per step, faster each time
+              const from = Math.round((n / steps.length) * cards.length), to = Math.round(((n + 1) / steps.length) * cards.length);
+              cards.slice(from, to).forEach((c, j) => tl.fromTo(c, { opacity: 0, scale: 1.4 }, { opacity: 0.5, scale: 1, duration: 0.14, ease: "power3.out" }, t + 0.1 + j * (0.22 / (n + 1))));
+              FF.shake(tl, sc.shaker, t + 0.2, 0.18 + n * 0.06, 3 + n * 3, 20 + n);
+            } else if (b.do === "boil") {
+              FF.shake(tl, tube, t, 0.8, 10, 31);
+            }
+          });
+          sc.finish();
+        })();
+      </script>
+    </template>
+  </body>
+</html>
