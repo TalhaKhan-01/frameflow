@@ -47,7 +47,7 @@
           const stampG = FF.el("g", { opacity: 0 }, s);
           sc.beats.forEach((b, i) => {
             const t = sc.when(b, i);
-            if (b.do === "ask") FF.type(tl, me, D.prompt, t, b.cps ?? 24);
+            if (b.do === "ask") FF.type(tl, me, D.prompt, t, Math.max(b.cps ?? 34, 34));   // slow typing reads as dead air
             else if (b.do === "think") {
               tl.set(dots, { opacity: 1 }, t);
               tl.fromTo(dots, { x: 0 }, { x: 0, duration: 0.6, ease: "none", repeat: Math.max(0, Math.round((b.dur ?? 0.9) / 0.3) - 1),
@@ -55,7 +55,7 @@
               tl.set(dots, { opacity: 0 }, t + (b.dur ?? 0.9));
             } else if (b.do === "reply") {
               tl.set(ai, { opacity: 1 }, t);
-              FF.type(tl, ai, D.reply, t, b.cps ?? 30);
+              FF.type(tl, ai, D.reply, t, Math.max(b.cps ?? 42, 42));
             } else if (b.do === "stamp" && D.stamp) {
               stampG.innerHTML = "";
               k.rect(stampG, 300, 1150, 480, 120, { fill: C.bg, stroke: C.red, width: 8, r: 10 });

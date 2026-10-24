@@ -11,3 +11,4 @@ spikes/**/out*.mp4
 spikes/**/render*.log
 data/measure-*.log
 out/
+vault/

@@ -17,7 +17,8 @@
           const { s, k, C, tl } = sc;
           FF.kicker(sc, D.kicker);
           if (D.burst) {
-            const rays = FF.el("g", { opacity: 0.32 }, s);
+            const rays = FF.el("g", { opacity: 0.32 });
+            s.insertBefore(rays, s.firstChild);   // behind the kicker and the words
             const r = FF.rng(3);
             for (let i = 0; i < 28; i++) {
               const a = (i / 28) * Math.PI * 2 + r() * 0.08;

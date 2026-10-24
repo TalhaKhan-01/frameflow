@@ -20,7 +20,7 @@ LANE_MOOD = {"global-tech": "upbeat", "ai-news": "news", "india-tech": "warm", "
              "dev-tools": "calm-tech", "ai-money": "tense"}
 MUSIC_DB = -8    # bed gain before ducking; aim: music about 15-20 dB under the voice
 SFX_DB = -16
-TARGET_LUFS, TRUE_PEAK = -14.0, -1.5
+TARGET_LUFS, TRUE_PEAK = -14.0, -2.0   # -2 leaves room for AAC overshoot (measured -0.9 dBTP at -1.5)
 
 
 def ledger_rows(plan, mood, sfx_used, project_dir=None):
@@ -89,7 +89,8 @@ def duck_envelope(vo, sr=sound.SR):
     for i in range(n):
         acc += (a if on[i] > acc else r) * (on[i] - acc)
         env[i] = acc
-    return np.repeat(env, w)[: len(vo)] if n else np.zeros(len(vo), np.float32)
+    out = np.repeat(env, w) if n else np.zeros(0, np.float32)
+    return np.pad(out, (0, max(len(vo) - len(out), 0)), mode="edge" if len(out) else "constant")[: len(vo)]
 
 
 def mix_v2(raw, out, voice_dir, plan, slots, total, sheet):

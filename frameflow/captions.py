@@ -100,6 +100,35 @@ def chunks(words):
     return out
 
 
+def respell(words, script_text):
+    """Captions show the script's words, not Whisper's guesses ("dal", not "doll"; "Censys", not "Sensi's"): align the
+    two token lists (numbers and years normalised as for WER) and give each script word the timing of the heard words it
+    matches. Script words with no match share the time span of their neighbours."""
+    import difflib
+    script = script_text.split()
+    def key(tok):
+        n = norm(tok)
+        return " ".join(n) if n else tok.lower()
+    a = [key(w["w"]) for w in words]
+    b = [key(s) for s in script]
+    out = []
+    sm = difflib.SequenceMatcher(a=a, b=b, autojunk=False)
+    for op, i1, i2, j1, j2 in sm.get_opcodes():
+        if op == "equal" or (op == "replace" and i2 - i1 == j2 - j1):
+            for k in range(j2 - j1):
+                w = words[i1 + k]
+                out.append({"w": script[j1 + k], "s": w["s"], "e": w["e"]})
+        elif op in ("replace", "insert") and j2 > j1:
+            # spread the script words over the heard span (or a short slot after the previous word)
+            s0 = words[i1]["s"] if i2 > i1 else (out[-1]["e"] if out else 0.0)
+            e0 = words[i2 - 1]["e"] if i2 > i1 else s0 + 0.18 * (j2 - j1)
+            step = (e0 - s0) / (j2 - j1)
+            for k in range(j2 - j1):
+                out.append({"w": script[j1 + k], "s": round(s0 + k * step, 3), "e": round(s0 + (k + 1) * step, 3)})
+        # "delete": Whisper heard a word that isn't in the script; drop it from the captions
+    return out
+
+
 def composition(words, total):
     """HyperFrames sub-composition (id 'captions') with the word-pop layer."""
     groups = chunks(words)

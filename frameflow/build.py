@@ -279,7 +279,11 @@ def project(plan, out_dir, voice_dir=None, captions=True, theme=None):
     caption_host = ""
     if captions and voice_dir and (Path(voice_dir) / "words.json").exists():
         from frameflow import captions as cap
-        (out / "compositions" / "captions.html").write_text(cap.composition(json.loads((Path(voice_dir) / "words.json").read_text()), total))
+        heard = json.loads((Path(voice_dir) / "words.json").read_text())
+        script_text = " ".join(l["say"] for l in voice_script(plan)["lines"])
+        shown = cap.respell(heard, script_text)   # script spelling, Whisper timing
+        (Path(voice_dir) / "words-shown.json").write_text(json.dumps(shown, ensure_ascii=False, indent=0))
+        (out / "compositions" / "captions.html").write_text(cap.composition(shown, total))
         caption_host = (f'<div id="captions" data-composition-id="captions" data-composition-src="compositions/captions.html" '
                         f'data-start="0" data-duration="{total}" data-track-index="2" data-width="{WIDTH}" data-height="{HEIGHT}"></div>')
     # Load every bundled font with the page (not when a scene first uses it), so no render worker draws a fallback font.
