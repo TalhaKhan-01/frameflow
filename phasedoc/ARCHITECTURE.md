@@ -85,6 +85,8 @@ The top row is the groundwork. The two rows below are the daily pipeline, from a
 | `director` | shorts-director skill: storyboard, metaphor bank, compiler | P9 |
 | `sound` | SFX library v2, cue-sheet mix, energy-curve beds | P9 |
 | `pilot` | Black October pilot video | P9 |
+| `automation` | Telegram bot (approvals, /status, /pause, /ab), evening topic run with lane rotation, make-and-approve loop, 11:30 post queue | P10 |
+| `learning` | Lessons ledger fed by reviews, Talha's notes and 48 h stats; lessons injected into writer/director; weekly promotion | P11 |
 
 ## The v2 pipeline as it runs today (2026-10-25)
 One command per video, `frameflow make2 <brief.json>`, then Talha's approval, then `frameflow publish` / `upload`:
@@ -97,4 +99,7 @@ One command per video, `frameflow make2 <brief.json>`, then Talha's approval, th
 6. **Checks**: 9 QA gates (length, visual events, re-hooks, size, loudness, black frames, caption WER, voice start, licences), then review v2 (Opus, 10 rows, pass at 15/20 with no row at 0). On a fail, the fixes go back to the writer and director (at most 2 rounds).
 7. **Approval**: Talha watches and says approve (`frameflow approve`). This is the only human step.
 8. **Publish**: pack (titles, description with sources and CC BY music credits, tags, caption). YouTube is uploaded and published by The Pilot in Studio; Instagram goes by API, or by The Pilot for Reels the API won't take. Then `frameflow posted` records the links.
-9. **Feedback**: 48-hour stats and the weekly learnings report (P7.3, P7.4: still to build).
+9. **Feedback**: 48-hour stats and the weekly learnings report (now P11).
+
+## Next: the daily loop (P10, P11; design in vault Decisions/Daily Automation.md)
+20:00 the day before: topic card on Telegram (3 stories in the lane's rotation tech → AI → money) → pick (auto-pick at 22:30) → make2 → video card (Approve / Revise / Reject) → posted at 11:30, or right away if approved later → links → 48 h stats card → lessons ledger → the next video's prompts.
