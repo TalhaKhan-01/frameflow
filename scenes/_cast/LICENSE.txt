@@ -1,0 +1,3 @@
+Drawn cast: Open Peeps by Pablo Stanley (https://www.openpeeps.com/), CC0 1.0
+(https://creativecommons.org/publicdomain/zero/1.0/). Rendered through DiceBear's open-peeps style
+(@dicebear/open-peeps 9.4.2, code MIT, Florian Körner). Regenerate with scripts/peeps.mjs.

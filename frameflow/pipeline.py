@@ -34,6 +34,9 @@ def ledger_rows(plan, mood, sfx_used, project_dir=None):
     for i, s in enumerate(plan["scenes"]):
         for a in s.get("assets", []):  # scene-specific assets declared in the plan carry their own ledger rows
             rows.append({"asset": f"scene {i}", **a})
+        if s.get("type") == "cast":   # drawn people from scenes/_cast
+            rows.append({"asset": f"scene {i}", "source": "Open Peeps by Pablo Stanley, via DiceBear open-peeps 9.4.2",
+                         "licence": "CC0 1.0", "url": "https://www.openpeeps.com/", "author": "Pablo Stanley"})
     manifest = Path(project_dir or "") / "assets-manifest.json"
     if project_dir and manifest.exists():    # assets the build step created (page snapshots)
         rows += json.loads(manifest.read_text())

@@ -161,6 +161,22 @@
     "highlight": "exact phrase from the headline"
    },
    "verbs": {}
+  },
+  "cast": {
+   "about": "1-3 drawn people (Open Peeps, CC0: student, friend, techie, uncle, auntie, neighbour, elder) who react to the story with speech bubbles, face changes, a ring, an arrow with a label. For the human side: who is affected, what an ordinary person says or feels, before/after reactions.",
+   "data": {
+    "kicker": "small caps title (optional)",
+    "people": "1-3 of {who: student|friend|techie|uncle|auntie|neighbour|elder, face?: smile|explaining|concerned|awe|suspicious|serious|fear|smileLOL (start face), label?: name tag (<=16)}",
+    "beats": "verbs below"
+   },
+   "verbs": {
+    "enter": "{stagger?}: the people bounce in and the ground line draws",
+    "face": "{i, face}: person i changes expression (same face list)",
+    "say": "{i, text (<=40), until?}: a drawn speech bubble pops above person i",
+    "circle": "{i}: a red ring is drawn around person i",
+    "arrow": "{i, text (<=24)}: a red label with a drawn arrow pointing at person i",
+    "note": "{text (<=24), until?}: a big handwritten line with an underline at the top"
+   }
   }
  },
  "sfx": [

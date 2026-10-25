@@ -15,6 +15,7 @@ Every state change regenerates BUILDPLAN.md: commit it together with plan.db.
 """
 import datetime as dt
 import json
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -329,11 +330,16 @@ def is_leaf(con, task_id):
     return not con.execute("SELECT 1 FROM tasks WHERE parent=?", (task_id,)).fetchone()
 
 
+def id_key(task_id):
+    """Natural order for task ids: P2 before P10 (SQL text order puts P10 between P1 and P2)."""
+    return [(0, int(x), "") if x.isdigit() else (1, 0, x) for x in re.split(r"(\d+)", task_id) if x]
+
+
 def leaves_under(con, task_id):
     if is_leaf(con, task_id):
         return [task_id]
     out = []
-    for (kid,) in con.execute("SELECT id FROM tasks WHERE parent=? ORDER BY id", (task_id,)).fetchall():
+    for (kid,) in sorted(con.execute("SELECT id FROM tasks WHERE parent=?", (task_id,)).fetchall(), key=lambda r: id_key(r[0])):
         out += leaves_under(con, kid)
     return out
 
@@ -371,7 +377,7 @@ MARK = {"done": "[x]", "partial": "[~]", "open": "[ ]", "cancelled": "[-]"}
 
 def lines(con, parent="", depth=0):
     out = []
-    for r in con.execute("SELECT * FROM tasks WHERE parent=? ORDER BY id", (parent,)).fetchall():
+    for r in sorted(con.execute("SELECT * FROM tasks WHERE parent=?", (parent,)).fetchall(), key=lambda r: id_key(r["id"])):
         leaf = is_leaf(con, r["id"])
         if leaf:
             out.append(("  " * depth) + f"- {MARK[r['status']]} **{r['id']}** {r['title']}  \n"

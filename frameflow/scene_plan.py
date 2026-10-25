@@ -201,6 +201,33 @@ def _kinetic(d):
     return errs
 
 
+CAST = json.loads((Path(__file__).resolve().parent.parent / "scenes" / "_cast" / "cast.json").read_text())
+
+
+def _cast(d):
+    errs = _beats(d, ("enter", "face", "say", "circle", "arrow", "note")) + _cues(d)
+    people = d.get("people")
+    if not (isinstance(people, list) and 1 <= len(people) <= 3 and all(isinstance(x, dict) and x.get("who") in CAST["people"] for x in people)):
+        return errs + [f"data.people must list 1-3 people, each with who from {', '.join(CAST['people'])}"]
+    for i, x in enumerate(people):
+        if x.get("face", "smile") not in CAST["faces"]:
+            errs.append(f"data.people[{i}].face must be one of {', '.join(CAST['faces'])}")
+        if "label" in x and not _str(x["label"], 16):
+            errs.append(f"data.people[{i}].label must be at most 16 characters")
+    for i, b in enumerate(d.get("beats", []) if isinstance(d.get("beats"), list) else []):
+        if not isinstance(b, dict):
+            continue
+        if b.get("do") in ("face", "say", "circle", "arrow") and not (isinstance(b.get("i"), int) and 0 <= b["i"] < len(people)):
+            errs.append(f"data.beats[{i}].i must point at one of the {len(people)} people")
+        if b.get("do") == "face" and b.get("face") not in CAST["faces"]:
+            errs.append(f"data.beats[{i}].face must be one of {', '.join(CAST['faces'])}")
+        if b.get("do") == "say" and not _str(b.get("text"), 40):
+            errs.append(f"data.beats[{i}].text (the speech bubble) must be 1-40 characters")
+        if b.get("do") in ("arrow", "note") and not _str(b.get("text"), 24):
+            errs.append(f"data.beats[{i}].text must be 1-24 characters")
+    return errs
+
+
 def _stamps(d):
     errs = _beats(d, ("deal", "stamp")) + _cues(d) + _labels(d, "items", 2, 6, "name", 22)
     if "stamp" in d and not _str(d["stamp"], 12):
@@ -255,6 +282,7 @@ SCENES = {
     "flap": (2.0, _flap),
     "kinetic": (1.2, _kinetic),
     "stamps": (2.0, _stamps),
+    "cast": (2.0, _cast),
     "quote": (2.5, _quote),
     "chat": (2.5, _chat),
     "headline-reveal": (2.0, _headline),

@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>#__ID__-root { position: absolute; inset: 0; overflow: hidden; }</style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__"><div id="__ID__-host" style="position:absolute;inset:0"></div></div>
+      <script>
+        /* cast: 1-3 drawn people (Open Peeps, CC0) who react to the story: speech bubbles, face changes,
+           a ring around one of them, a pointing arrow with a label, a big handwritten note.
+           Beats: enter, face (i, face), say (i, text, until?), circle (i), arrow (i, text), note (text, until?).
+           The build inlines every face a scene uses as D._peeps["<who>-<face>"] (SVG markup). */
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          const P = D.people.slice(0, 3);
+          const sc = FF.scene("__ID__", D, DUR, { seed: 71, defaultBeats: [{ do: "enter" }] });
+          const { s, k, C, tl } = sc;
+          FF.kicker(sc, D.kicker);
+          const BASE = 1240;                                   // feet line, just above the caption band
+          const SIZE = [620, 470, 340][P.length - 1];
+          const XS = [[540], [300, 780], [200, 540, 880]][P.length - 1];
+          const parser = new DOMParser();
+          const inline = (parent, key, x, y, size) => {
+            const src = (D._peeps || {})[key];
+            if (!src) return null;
+            const node = document.importNode(parser.parseFromString(src, "image/svg+xml").documentElement, true);
+            node.setAttribute("x", x); node.setAttribute("y", y);
+            node.setAttribute("width", size); node.setAttribute("height", size);
+            parent.appendChild(node);
+            return node;
+          };
+          const ground = FF.el("g", {}, s);
+          const groundLine = k.line(ground, 70, BASE, 1010, BASE, { width: 5 });
+          const people = P.map((p, i) => {
+            const cx = XS[i], top = BASE - SIZE;
+            const g = FF.el("g", { opacity: 0 }, s);
+            const faces = {};
+            const want = [p.face || "smile", ...sc.beats.filter((b) => b.do === "face" && b.i === i).map((b) => b.face)];
+            for (const f of want) if (!faces[f]) {
+              const n = inline(g, `${p.who}-${f}`, cx - SIZE / 2, top, SIZE);
+              if (n) { faces[f] = n; gsap.set(n, { opacity: f === want[0] ? 1 : 0 }); }
+            }
+            if (p.label) {
+              const tw = Math.min(SIZE * 0.8, 300);
+              const tag = FF.el("g", {}, g);
+              tag.setAttribute("data-layout-allow-overlap", "");
+              k.rect(tag, cx - tw / 2, BASE - 78, tw, 62, { fill: C.fill, width: 3.5, r: 8 });
+              const t = FF.text(tag, cx, BASE - 45, p.label, { size: 38 });
+              FF.fitText(t, tw - 24, 38);
+            }
+            FF.pivot(g, cx, BASE);
+            return { g, faces, cx, top, current: want[0] };
+          });
+
+          // bubbles, rings, arrows and notes are made on demand by their beats
+          const fx = FF.el("g", {}, s);
+          const bubble = (i, str) => {
+            const p = people[i];
+            // long lines wrap onto two rows at the space nearest the middle, so the type stays phone-sized
+            const words = str.split(" ");
+            let rows = [str];
+            if (str.length > 20 && words.length > 1) {
+              let best = 1;
+              for (let j = 1; j < words.length; j++)
+                if (Math.abs(words.slice(0, j).join(" ").length - str.length / 2) < Math.abs(words.slice(0, best).join(" ").length - str.length / 2)) best = j;
+              rows = [words.slice(0, best).join(" "), words.slice(best).join(" ")];
+            }
+            const w = P.length === 1 ? 800 : 560, h = rows.length === 2 ? 200 : 140;
+            const bx = Math.max(60, Math.min(1020 - w, p.cx - w / 2));
+            const by = Math.max(D.kicker ? 370 : 240, p.top - h - 70);
+            const g = FF.el("g", { opacity: 0 }, fx);
+            g.setAttribute("data-layout-allow-overlap", "");
+            const tipX = Math.max(bx + 60, Math.min(bx + w - 60, p.cx));
+            k.path(g, `M ${bx + 20} ${by} L ${bx + w - 20} ${by} Q ${bx + w} ${by} ${bx + w} ${by + 20} L ${bx + w} ${by + h - 20} Q ${bx + w} ${by + h} ${bx + w - 20} ${by + h}
+                       L ${tipX + 34} ${by + h} L ${tipX} ${by + h + 56} L ${tipX - 10} ${by + h} L ${bx + 20} ${by + h} Q ${bx} ${by + h} ${bx} ${by + h - 20}
+                       L ${bx} ${by + 20} Q ${bx} ${by} ${bx + 20} ${by} Z`, { fill: C.fill, width: 4.5 });
+            rows.forEach((row, j) => {
+              const t = FF.text(g, bx + w / 2, by + h / 2 + 4 + (rows.length === 2 ? (j ? 36 : -36) : 0), row, { size: 60 });
+              FF.fitText(t, w - 60, 60);
+            });
+            FF.pivot(g, tipX, by + h + 56);
+            return g;
+          };
+
+          sc.beats.forEach((b, n) => {
+            const t = sc.when(b, n);
+            if (b.do === "enter") {
+              people.forEach((p, j) => {
+                const tt = t + j * (b.stagger ?? 0.18);
+                tl.set(p.g, { opacity: 1 }, tt);
+                tl.fromTo(p.g, { y: 260, rotation: j % 2 ? 4 : -4 }, { y: 0, rotation: 0, duration: 0.42, ease: "back.out(1.6)" }, tt);
+              });
+              FF.draw(tl, groundLine, t, 0.4);
+            } else if (b.do === "face") {
+              const p = people[b.i];
+              if (!p || !p.faces[b.face] || b.face === p.current) return;
+              tl.set(p.faces[p.current], { opacity: 0 }, t);
+              tl.set(p.faces[b.face], { opacity: 1 }, t);
+              tl.fromTo(p.g, { scaleY: 0.94 }, { scaleY: 1, duration: 0.22, ease: "back.out(3)" }, t);   // a small bounce sells the change
+              p.current = b.face;
+            } else if (b.do === "say") {
+              if (!people[b.i]) return;
+              const g = bubble(b.i, b.text);
+              FF.pop(tl, g, t, { from: 0.3 });
+              if (b.until !== undefined) tl.to(g, { opacity: 0, duration: 0.18 }, FF.at(D, b.until, t + 2));
+            } else if (b.do === "circle") {
+              const p = people[b.i];
+              if (!p) return;
+              const ring = k.ellipse(fx, p.cx, p.top + SIZE * 0.42, SIZE * 0.98, SIZE * 0.92, { fill: "none", stroke: C.red, width: 8, roughness: 1.8 });
+              ring.setAttribute("data-layout-allow-overlap", "");
+              FF.draw(tl, ring, t, 0.45);
+            } else if (b.do === "arrow") {
+              const p = people[b.i];
+              if (!p) return;
+              const g = FF.el("g", {}, fx);
+              g.setAttribute("data-layout-allow-overlap", "");
+              const left = p.cx > 540;   // the label sits on the side with more room
+              const lx = left ? 300 : 780, ly = Math.max(D.kicker ? 420 : 300, p.top - 210);
+              const label = FF.text(g, lx, ly, b.text || "", { size: 60, fill: C.red, font: FF.tok("--ff-display") });
+              FF.fitText(label, 440, 60);
+              const hx = p.cx + (left ? -SIZE * 0.32 : SIZE * 0.32), hy = p.top + SIZE * 0.22;
+              const arrow = k.curve(g, [[lx, ly + 44], [(lx + hx) / 2 + (left ? -40 : 40), (ly + hy) / 2], [hx, hy]], { stroke: C.red, width: 7 });
+              const ang = Math.atan2(hy - (ly + hy) / 2, hx - ((lx + hx) / 2 + (left ? -40 : 40)));
+              const head = k.path(g, `M ${hx - 42 * Math.cos(ang - 0.45)} ${hy - 42 * Math.sin(ang - 0.45)} L ${hx} ${hy} L ${hx - 42 * Math.cos(ang + 0.45)} ${hy - 42 * Math.sin(ang + 0.45)}`, { stroke: C.red, width: 7 });
+              tl.fromTo(label, { opacity: 0 }, { opacity: 1, duration: 0.15 }, t);
+              FF.slam(tl, label, t, { from: 1.8 });
+              FF.draw(tl, arrow, t + 0.15, 0.35);
+              FF.draw(tl, head, t + 0.48, 0.12);
+            } else if (b.do === "note") {
+              const g = FF.el("g", { opacity: 0 }, fx);
+              const y = D.kicker ? 430 : 330;
+              const txt = FF.text(g, 540, y, b.text || "", { size: 92, font: FF.tok("--ff-display"), weight: 700 });
+              FF.fitText(txt, 900, 92);
+              tl.set(g, { opacity: 1 }, t);
+              FF.slam(tl, txt, t, { from: 1.8 });
+              const len = Math.min(txt.getComputedTextLength(), 900);
+              const u = k.curve(g, [[540 - len / 2, y + 56], [540, y + 70], [540 + len / 2, y + 50]], { stroke: C.red, width: 8 });
+              FF.draw(tl, u, t + 0.2, 0.35);
+              if (b.until !== undefined) tl.to(g, { opacity: 0, duration: 0.2 }, FF.at(D, b.until, t + 2));
+            }
+          });
+          if (!sc.beats.some((b) => b.do === "enter")) people.forEach((p) => tl.set(p.g, { opacity: 1 }, 0));
+          sc.finish();
+        })();
+      </script>
+    </template>
+  </body>
+</html>

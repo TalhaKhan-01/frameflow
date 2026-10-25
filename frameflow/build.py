@@ -257,6 +257,11 @@ def project(plan, out_dir, voice_dir=None, captions=True, theme=None):
         nxt = plan["scenes"][i + 1] if i + 1 < len(plan["scenes"]) else {}
         scene = {**scene, "data": {**scene.get("data", {}), "_cues": cues_per_scene[i],
                                    "_enter": scene.get("enter", "cut") if i > 0 else "cut", "_exit": nxt.get("enter", "cut")}}
+        if scene["type"] == "cast":   # inline only the faces this scene shows (Open Peeps SVGs, CC0)
+            d = scene["data"]
+            keys = {f"{x['who']}-{x.get('face', 'smile')}" for x in d["people"]}
+            keys |= {f"{d['people'][b['i']]['who']}-{b['face']}" for b in d.get("beats", []) if b.get("do") == "face"}
+            scene = {**scene, "data": {**d, "_peeps": {key: (SCENES / "_cast" / f"{key}.svg").read_text() for key in sorted(keys)}}}
         if scene["type"] == "code-card":
             scene = {**scene, "data": {**scene["data"], "_html": highlight_code(scene["data"]["code"], scene["data"]["language"])}}
         if scene["type"] == "news-snapshot":
