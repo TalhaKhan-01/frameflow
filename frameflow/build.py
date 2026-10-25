@@ -55,6 +55,8 @@ def timings(plan, voice_dir=None):
         for l in info["lines"]:   # ids "s3" or "s3.0", "s3.1" (a scene with several lines)
             by_scene.setdefault(int(l["id"][1:].split(".")[0]), []).append(l)
         starts = [by_scene[i][0]["start"] if i in by_scene else None for i in range(len(scenes))]
+        # a scene's "lead": it starts that many seconds before its first line (the end card's silent cover moment)
+        starts = [st - scenes[i].get("lead", 0) if st is not None and i else st for i, st in enumerate(starts)]
         out = []
         for i, s in enumerate(scenes):
             st = starts[i] if starts[i] is not None else (out[-1][0] + out[-1][1] if out else 0.0)
@@ -81,10 +83,14 @@ def cue_times(scene, start, dur, words):
     voice's word timings. A cue lands 0.06 s before its first word, so the picture moves with the voice. Built-ins:
     start (0) and end (0.35 s before the scene ends)."""
     cues = {"start": 0.0, "end": round(max(dur - 0.35, 0.0), 3)}
+    named = dict(scene.get("data", {}).get("cues") or {})
+    for c in scene.get("sfx", []):   # a sound cued on an undeclared name: try the name itself as a word of the line
+        if isinstance(c.get("at"), str) and c["at"] not in named and c["at"] not in cues:
+            named[c["at"]] = c["at"]
     inside = [w for w in words if start - 0.05 <= w["s"] < start + dur]
     toks = [(WORD.findall(w["w"].lower()), w["s"]) for w in inside]
     flat = [(tok, s) for ws, s in toks for tok in ws]
-    for name, phrase in (scene.get("data", {}).get("cues") or {}).items():
+    for name, phrase in named.items():
         want = WORD.findall(phrase.lower())
         if not want:
             continue
@@ -346,7 +352,8 @@ def false_positive(f):
     """HyperFrames 0.8.143's contrast audit samples SVG <text> as sitting on pure black (it can't hide an SVG text's
     fill before sampling), so drawn labels on light paper fail at about 1.2:1. Readability of drawn scenes is checked
     on rendered frames instead (keyframe review). Every other finding still counts."""
-    return f.get("code") == "contrast_aa_failure" and f.get("bg") == "rgb(0,0,0)"   # no frameflow theme paints pure black
+    # rgb(135,110,41) is the same artefact under a highlighter swipe: --ff-marker (rgba(245,200,75,.55)) over pure black
+    return f.get("code") == "contrast_aa_failure" and f.get("bg") in ("rgb(0,0,0)", "rgb(135,110,41)")   # no frameflow theme paints pure black
 
 
 def check(project_dir):

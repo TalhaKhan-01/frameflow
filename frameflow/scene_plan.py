@@ -24,7 +24,7 @@ from pathlib import Path
 
 LANES = {"global-tech", "india-tech", "ai-news", "dev-tools", "ai-money", "how-tech-works"}
 MAX_SECONDS = 95.0       # Quality Bar v2: 50-90 s videos (a little headroom for the voice's own timing)
-WORDS_PER_SECOND = 3.05  # about 183 words a minute: the Chatterbox house voice at tempo ~1.0 (Quality Bar v2: 175-190)
+WORDS_PER_SECOND = 3.3   # about 198 words a minute: measured on the Black October render (Chatterbox house voice, tempo 1.0)
 PAD = 0.25               # silence between scenes, as in the voice step
 URL = re.compile(r"^https?://[^\s/$.?#].[^\s]*$", re.I)
 
@@ -232,7 +232,22 @@ def _chat(d):
     return errs
 
 
+def _endcard(d):
+    errs = _cues(d)
+    if not (isinstance(d.get("title"), list) and 1 <= len(d["title"]) <= 3 and all(_str(l, 16) for l in d["title"])):
+        errs.append("data.title must be 1-3 lines of at most 16 characters (the cover title)")
+    if "mark" in d and not (isinstance(d["mark"], int) and 0 <= d["mark"] < len(d.get("title") or [])):
+        errs.append("data.mark must be the index of a title line")
+    if not (isinstance(d.get("art", []), list) and len(d.get("art", [])) <= 2 and all(a in ICONS for a in d.get("art", []))):
+        errs.append(f"data.art must list at most 2 icons from {', '.join(ICONS)}")
+    for key, n in (("stat", 28), ("tagline", 28), ("handle", 30), ("narrator", 16)):
+        if key in d and not _str(d[key], n):
+            errs.append(f"data.{key} must be at most {n} characters")
+    return errs
+
+
 SCENES = {
+    "endcard": (2.5, _endcard),
     "street": (2.0, _street),
     "flow": (2.0, _flow),
     "stack": (2.0, _stack),

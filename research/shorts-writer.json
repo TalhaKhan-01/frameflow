@@ -1,7 +1,8 @@
 {
   "_about": "Frameflow config for the shorts-writer skill (~/Talha_Khan/Claude/skills/shorts-writer).",
   "persona_file": "vault/Wiki/Concepts/Narrator Habit.md",
-  "length": [50, 90],
+  "length": [50, 86],
+  "_length": "86 s, not 90: the pipeline appends the ~3 s house end card (spoken follow line) after the script",
   "words_per_second": 3.3,
   "humour": true,
   "writer_model": "opus",
@@ -11,7 +12,7 @@
     "Mostly informative: 3-5 light comic beats (analogies, absurd-but-true comparisons), never jokes about victims or the facts themselves",
     "Explain any technical word in the same breath with an everyday comparison (what PHP is, what 'run code on a server' means)",
     "No fear-mongering: big numbers are attempts or exposure unless the brief says they are confirmed harm",
-    "Never say 'in this video', never greet, never end on 'follow for more' or 'thanks for watching'",
+    "Never say 'in this video', never greet, never end on 'follow for more' or 'thanks for watching': the pipeline adds Habit's own follow outro after your last line, so end on the story",
     "Brand names are said plainly (Wikipedia, Cloudflare); no slogans or praise of companies",
     "Spell numbers for the voice (twenty twelve, thirty-four million); digits are for the screen only"
   ]

@@ -68,14 +68,18 @@ def publish(video_id):
         p["yt_description"] += "\n\nMusic:\n" + "\n\n".join(credits)
         p["ig_caption"] += "\n\nMusic: " + "; ".join(c.splitlines()[0] for c in credits) + " (CC BY 4.0)"
     problems = pack_problems(p)
+    report = json.loads((out / "report.json").read_text()) if (out / "report.json").exists() else {}
+    p["cover"], p["cover_at"] = report.get("cover"), report.get("cover_at")
     md = [f"# Publish pack: {plan['title']}", "", f"Video file: `{out / 'final.mp4'}` ({row['lane']})", "",
+          *([f"Cover: `{p['cover']}` (frame at {p['cover_at']:.2f} s)", ""] if p.get("cover") else []),
           "## YouTube Shorts", f"**Title** ({len(p['yt_title'])} chars): {p['yt_title']}", "", "**Description:**", "", p["yt_description"], "",
           f"**Tags:** {', '.join(p['yt_tags'])}", "", f"**Pinned comment:** {p['pinned_comment']}", "",
           "## Instagram Reels", "**Caption:**", "", p["ig_caption"], "",
           "## Upload checklist",
           "- [ ] YouTube Studio → Create → Upload → final.mp4; paste title, description, tags; audience: not made for kids",
           "- [ ] 'Altered or synthetic content': the narration voice is AI-generated; tick it if YouTube's question applies to this video",
-          "- [ ] Instagram → New Reel → final.mp4; paste caption; turn on 'Also share to feed'; add the cover frame from the first scene",
+          "- [ ] YouTube thumbnail: cover.png (or pick the cover frame in Studio)",
+          "- [ ] Instagram → New Reel → final.mp4; paste caption; turn on 'Also share to feed'; cover: the end card's cover frame",
           "- [ ] Pin the comment on both platforms",
           f"- [ ] Then record the links: `uv run frameflow posted {video_id} <youtube-url> <instagram-url>`"]
     if problems:
@@ -113,8 +117,11 @@ def upload(video_id, platforms=("youtube", "instagram"), privacy="public"):
         links["youtube"] = results["youtube"]["url"]
     if "instagram" in platforms:
         (out / "instagram-caption.txt").write_text(p["ig_caption"])
-        r = subprocess.run(["python3", "-I", str(UPLOADER / "instagram.py"), "--project", str(ROOT), "publish", str(out / "final.mp4"),
-                            str(out / "instagram-caption.txt")], capture_output=True, text=True, timeout=3600)
+        cmd = ["python3", "-I", str(UPLOADER / "instagram.py"), "--project", str(ROOT), "publish", str(out / "final.mp4"),
+               str(out / "instagram-caption.txt")]
+        if p.get("cover_at"):   # the Reel's cover = the end card's cover frame
+            cmd += ["--thumb-offset", str(int(p["cover_at"] * 1000))]
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
         if r.returncode:
             raise SystemExit(f"Instagram publish failed: {(r.stderr or r.stdout)[-600:]}")
         results["instagram"] = json.loads(r.stdout[r.stdout.index("{"):])

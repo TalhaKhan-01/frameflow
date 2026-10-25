@@ -283,8 +283,50 @@
     return g;
   };
 
+  /* Drawn icons shared by templates (flow nodes, end card art): phone, kitchen, server, page, database, robot,
+     stranger, door; anything else draws a plain box. k is the scene's sketcher. */
+  const icon = (k, g, kind, cx, cy) => {
+    const C = k.C;
+    if (kind === "phone") {
+      k.rect(g, cx - 55, cy - 95, 110, 190, { fill: C.fill, r: 18 });
+      k.rect(g, cx - 42, cy - 72, 84, 128, { fill: C.lit, width: 3 });
+      k.circle(g, cx, cy + 74, 14, { fill: C.fill2, width: 2.5 });
+    } else if (kind === "kitchen") {
+      k.ellipse(g, cx, cy + 40, 150, 34, { fill: C.dark, width: 3 });
+      k.rect(g, cx - 70, cy - 10, 140, 64, { fill: C.red });
+      k.line(g, cx - 92, cy + 4, cx - 70, cy + 4, { width: 6 });
+      k.line(g, cx + 70, cy + 4, cx + 92, cy + 4, { width: 6 });
+      const steam = el("g", { class: "steam" }, g);
+      [-30, 0, 30].forEach((dx) => k.curve(steam, [[cx + dx, cy - 22], [cx + dx + 12, cy - 50], [cx + dx - 10, cy - 76], [cx + dx + 6, cy - 100]], { width: 4, stroke: C.muted }));
+    } else if (kind === "server") {
+      for (let r = 0; r < 3; r++) { k.rect(g, cx - 80, cy - 90 + r * 62, 160, 50, { fill: C.fill2 }); k.circle(g, cx + 54, cy - 65 + r * 62, 12, { fill: C.lit, width: 2 }); }
+    } else if (kind === "page") {
+      k.rect(g, cx - 70, cy - 95, 140, 190, { fill: C.fill });
+      for (let r = 0; r < 5; r++) k.line(g, cx - 48, cy - 60 + r * 30, cx + (r === 4 ? 10 : 48), cy - 60 + r * 30, { width: 3.5, stroke: C.muted });
+    } else if (kind === "database") {
+      k.ellipse(g, cx, cy - 70, 150, 44, { fill: C.fill2 });
+      k.rect(g, cx - 75, cy - 70, 150, 140, { fill: C.fill2, r: 0 });
+      k.ellipse(g, cx, cy + 70, 150, 44, { fill: C.fill2 });
+    } else if (kind === "robot") {
+      k.rect(g, cx - 60, cy - 70, 120, 100, { fill: C.fill, r: 14 });
+      k.circle(g, cx - 24, cy - 22, 24, { fill: C.accent, width: 2 });
+      k.circle(g, cx + 24, cy - 22, 24, { fill: C.accent, width: 2 });
+      k.rect(g, cx - 50, cy + 40, 100, 60, { fill: C.accent, r: 10 });
+    } else if (kind === "stranger") {
+      k.path(g, `M ${cx - 62} ${cy + 90} Q ${cx - 70} ${cy - 40} ${cx} ${cy - 96} Q ${cx + 70} ${cy - 40} ${cx + 62} ${cy + 90} Z`, { fill: C.ink, width: 3 });
+      k.ellipse(g, cx, cy - 22, 64, 74, { fill: C.dark, width: 2 });
+      k.circle(g, cx - 13, cy - 26, 9, { fill: C.lit, width: 1 });
+      k.circle(g, cx + 13, cy - 26, 9, { fill: C.lit, width: 1 });
+    } else if (kind === "door") {
+      k.rect(g, cx - 60, cy - 100, 120, 200, { fill: C.fill2 });
+      k.circle(g, cx + 36, cy, 14, { fill: C.ink, width: 2 });
+    } else {
+      k.rect(g, cx - 80, cy - 60, 160, 120, { fill: C.fill2 });
+    }
+  };
+
   /* A vertical position given either in pixels or as a fraction of the frame height (0-1). */
   const ypos = (v, fallback) => (typeof v !== "number" ? fallback : v <= 1 ? v * 1920 : v);
 
-  window.FF = { ypos, pivot, scene, kicker, NS, el, svg, originVars, sketcher, text, fitText, colors, rng, draw, hide, pop, slam, shake, wiggle, boil, scramble, type, transitions, at, drift, tok };
+  window.FF = { icon, ypos, pivot, scene, kicker, NS, el, svg, originVars, sketcher, text, fitText, colors, rng, draw, hide, pop, slam, shake, wiggle, boil, scramble, type, transitions, at, drift, tok };
 })();

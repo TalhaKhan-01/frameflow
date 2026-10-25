@@ -170,7 +170,12 @@ def render(plan_path, out_dir=None, quality="looks", mood=None, theme=None):
         final = mix(raw, out / "final.mp4", vdir, mood, starts, total)
         rows = ledger_rows(plan, mood, ["whoosh-short"] * (len(starts) > 1), proj)
     (out / "assets.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1))
-    report = {"id": plan["id"], "final": str(final), "seconds": round(media.duration(final), 2), "lufs": media.loudness(final),
+    cover_at = None
+    for s, (st, _) in zip(plan["scenes"], slots):   # the end card opens as the cover: save that frame as the thumbnail
+        if s["type"] == "endcard":
+            cover_at = round(st + s["data"].get("coverAt", 0.7), 3)
+            media.ffmpeg("-ss", f"{cover_at:.3f}", "-i", str(final), "-frames:v", "1", out / "cover.png")
+    report = {"id": plan["id"], "final": str(final), "cover": str(out / "cover.png") if cover_at else None, "cover_at": cover_at, "seconds": round(media.duration(final), 2), "lufs": media.loudness(final),
               "voice_lufs": info["lufs"], "voice_engine": info.get("engine"), "wpm": info.get("wpm"),
               "music_lufs_premix": media.loudness(out / "music-stem.wav"), "words": len(words), "wer": round(word_error, 4), "mood": mood, "quality": quality}
     (out / "report.json").write_text(json.dumps(report, indent=1))

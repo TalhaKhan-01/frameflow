@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>#__ID__-root { position: absolute; inset: 0; overflow: hidden; }</style>
+      <div id="__ID__-root" data-composition-id="__ID__" data-width="1080" data-height="1920" data-duration="__DUR__"><div id="__ID__-host" style="position:absolute;inset:0"></div></div>
+      <script>
+        /* endcard: the house outro, added by the pipeline after the last story beat. It opens as the video's cover
+           (Habit mark, the cover title, the key drawing and a stat: the thumbnail frame, before data.coverAt), then on
+           the "follow" cue the drawing gives way to the call to action: tagline, a Follow button a drawn finger taps
+           (it flips to Following) and the handle. Everything stays above the caption band. */
+        (() => {
+          const D = __DATA__;
+          const DUR = __DUR__;
+          const sc = FF.scene("__ID__", D, DUR, { seed: 61, drift: 1.02 });
+          const { s, k, C, tl } = sc;
+          const serif = FF.tok("--ff-display"), body = FF.tok("--ff-body"), hand = FF.tok("--ff-hand");
+          const follow = FF.at(D, "follow", Math.min(1.0, DUR * 0.4));
+
+          // Habit mark (as on the channel avatar): "h" in a ring, red dot, smile line
+          const mark = FF.el("g", {}, s);
+          k.circle(mark, 150, 300, 124, { fill: C.fill, width: 5 });
+          FF.text(mark, 142, 296, "h", { size: 92, font: serif, weight: 800 });
+          k.circle(mark, 178, 322, 18, { fill: C.red, stroke: C.red, width: 2 });
+          k.curve(mark, [[118, 338], [146, 352], [170, 346]], { width: 3.5, stroke: C.ink });
+          const name = FF.text(mark, 236, 302, D.narrator || "Habit", { size: 60, anchor: "start", font: serif, weight: 700 });
+          FF.pop(tl, mark, 0.02, { from: 0.7, dur: 0.3 });
+
+          // cover title, one line marked
+          const lines = (D.title || []).slice(0, 3);
+          const size = lines.length === 1 ? 170 : lines.length === 2 ? 150 : 124;
+          const top = 600 - ((lines.length - 1) * size * 1.02) / 2;
+          lines.forEach((t, i) => {
+            const y = top + i * size * 1.02;
+            const g = FF.el("g", {}, s);
+            const back = FF.el("g", {}, g);
+            const tx = FF.text(g, 540, y, t, { size, font: serif, weight: 800, fill: i === D.mark ? C.red : C.ink });
+            FF.fitText(tx, 900, size);
+            if (i === D.mark) {
+              const w = Math.min(tx.getComputedTextLength(), 900);
+              const m = FF.el("rect", { x: 540 - w / 2 - 18, y: y - size * 0.34, width: w + 36, height: size * 0.7, fill: C.marker, rx: 8 }, back);
+              FF.pivot(m, 540 - w / 2 - 18, y);
+              tl.fromTo(m, { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power2.out" }, 0.2);
+            }
+            FF.slam(tl, tx, 0.04 + i * 0.07, { from: 1.8, dur: 0.18 });
+          });
+
+          // the key drawing (1-2 icons) and a stat: the cover's picture, replaced by the call to action on "follow"
+          const art = FF.el("g", {}, s);
+          const icons = (D.art || []).slice(0, 2);
+          const xs = icons.length === 2 ? [370, 710] : [540];
+          icons.forEach((kind, i) => {
+            const g = FF.el("g", {}, art);
+            FF.icon(k, g, kind, xs[i], 960);
+            FF.pivot(g, xs[i], 960);
+            gsap.set(g, { scale: 1.5 });
+            FF.draw(tl, g, 0.12 + i * 0.12, 0.4);
+          });
+          if (D.stat) {
+            const st = FF.text(art, 540, 1200, D.stat, { size: 80, fill: C.red, font: hand });
+            FF.fitText(st, 900, 80);
+            FF.pop(tl, st, 0.42, { from: 0.5, dur: 0.25 });
+          }
+          tl.to(art, { opacity: 0, y: -30, duration: 0.22, ease: "power2.in" }, follow);
+
+          // call to action
+          const cta = FF.el("g", { opacity: 0 }, s);
+          const tag = FF.text(cta, 540, 880, D.tagline || "New habit every day", { size: 70, font: hand });
+          FF.fitText(tag, 860, 70);
+          const btn = FF.el("g", {}, cta);
+          const BW = 520, BH = 136, BY = 1050;
+          const R = BH / 2, L = 540 - BW / 2 + R, Rx = 540 + BW / 2 - R;
+          const pill = `M ${L} ${BY - R} L ${Rx} ${BY - R} A ${R} ${R} 0 0 1 ${Rx} ${BY + R} L ${L} ${BY + R} A ${R} ${R} 0 0 1 ${L} ${BY - R} Z`;
+          const on = k.path(btn, pill, { fill: C.red, width: 4.5 });
+          const off = k.path(btn, pill, { fill: C.fill2, width: 4.5 });
+          gsap.set(off, { opacity: 0 });
+          const label = FF.text(btn, 540, BY + 4, "+ " + (D.button || "Follow"), { size: 64, fill: C.fill, font: body, weight: 800 });
+          const done = FF.text(btn, 540, BY + 4, "✓ Following", { size: 60, fill: C.ink, font: body, weight: 800 });
+          gsap.set(done, { opacity: 0 });
+          const handle = FF.text(cta, 540, 1200, D.handle || "", { size: 46, fill: C.muted, font: body, weight: 600 });
+          FF.fitText(handle, 860, 46);
+          tl.set(cta, { opacity: 1 }, follow + 0.12);
+          FF.pop(tl, tag, follow + 0.12, { from: 0.6, dur: 0.3 });
+          FF.pivot(btn, 540, BY);
+          FF.pop(tl, btn, follow + 0.24, { from: 0.3, dur: 0.36 });
+          tl.fromTo(handle, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.25 }, follow + 0.4);
+
+          // a drawn finger taps the button, which flips to Following
+          const tap = Math.min(follow + 1.0, DUR - 0.7);
+          const finger = FF.el("g", { opacity: 0 }, s);
+          const hand_ = FF.el("g", {}, finger);
+          gsap.set(hand_, { scale: 1.6, transformOrigin: "0 0" });
+          k.path(hand_, "M 0 0 L 0 -70 Q 0 -86 16 -86 Q 32 -86 32 -70 L 32 -18 L 78 -10 Q 100 -6 98 18 L 92 70 L 8 70 L -26 26 Q -36 10 -20 4 Z",
+            { fill: C.lit, width: 4 });
+          tl.fromTo(finger, { opacity: 0, x: 860, y: 1330 }, { opacity: 1, x: 590, y: BY + 20, duration: 0.4, ease: "power2.out" }, tap - 0.42);
+          tl.to(btn, { scale: 0.92, duration: 0.08 }, tap);
+          tl.to(btn, { scale: 1, duration: 0.18, ease: "back.out(3)" }, tap + 0.08);
+          tl.set([on, label], { opacity: 0 }, tap + 0.05);
+          tl.set([off, done], { opacity: 1 }, tap + 0.05);
+          tl.to(finger, { x: 760, y: 1250, opacity: 0, duration: 0.3, ease: "power1.in" }, tap + 0.3);
+          sc.finish();
+        })();
+      </script>
+    </template>
+  </body>
+</html>

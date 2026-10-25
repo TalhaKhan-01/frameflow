@@ -129,6 +129,9 @@ def run_v2(out, plan, model="opus"):
     cue_sheet = ", ".join(f"{c['t']:.1f}s {c['name']}" for c in sfx)
     prompt = (f"Title: {plan['title']}\nHook family: {plan.get('hook_family')}; ending strategy: {plan.get('ending_strategy')}; open loop: "
               f"{plan.get('open_loop')}\nScript and storyboard:\n" + "\n".join(lines) +
+              ("\nThe last scene is the channel's fixed house end card (cover title, a spoken follow line, Follow button), added "
+                 "after the story on purpose: judge the ending and the story on the last scene before it, and don't mark the "
+                 "end card down as a goodbye." if plan["scenes"][-1]["type"] == "endcard" else "") +
               f"\n\nMusic plan: {music}\nSound cue sheet: {cue_sheet}\nMeasured: {len(ev) / total * 10:.1f} visual events per 10 s, "
               f"longest gap {max(gaps):.1f} s, length {total:.1f} s.\n\nKey frames, one every 2 s with the time in the corner, left to right "
               f"then top to bottom: {sheet}\nScore every row.")

@@ -13,7 +13,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from frameflow import scene_plan
+from frameflow import cover, scene_plan
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILLS = Path.home() / "Talha_Khan" / "Claude" / "skills"
@@ -31,7 +31,7 @@ def skill(args, timeout=3600):
     return r.stdout
 
 
-def compile_plan(brief, script, storyboard, lane, plan_id):
+def compile_plan(brief, script, storyboard, lane, plan_id, cover_data=None):
     facts = {f["id"]: f for f in brief["facts"]}
     scenes = []
     for sc in storyboard["scenes"]:
@@ -48,6 +48,8 @@ def compile_plan(brief, script, storyboard, lane, plan_id):
         if any(b["beat"] == "payoff" for b in beats):
             scene["payoff"] = True
         scenes.append(scene)
+    if cover_data:   # the house outro: cover frame, spoken follow line, Follow button (frameflow.cover)
+        scenes.append(cover.endcard(cover_data, plan_id))
     music = {"cues": [{"scene": m["from_scene"], "track": m["track"], "offset": m.get("offset", 0)} for m in storyboard["music"]]}
     return {"id": plan_id, "version": 2, "lane": lane, "title": script["title"], "theme": "paper-press",
             "voice": {"engine": "chatterbox", "model": "standard", "tempo": 1.0, "seed": 7, "pad": 0.12},
@@ -87,13 +89,14 @@ def direct(brief_path, out=None, lane="how-tech-works", skip_writer=False, skip_
     if not skip_director:
         skill([DIRECTOR, "--project", ROOT, "run", wdir / "script.json", "--catalog", CATALOG, "--out", ddir])
     plan_id = f"{dt.date.today().isoformat()}-{slug}"
-    plan = compile_plan(brief, script, json.loads((ddir / "storyboard.json").read_text()), lane, plan_id)
+    cover_data = cover.make(out)
+    plan = compile_plan(brief, script, json.loads((ddir / "storyboard.json").read_text()), lane, plan_id, cover_data)
     errs = scene_plan.validate(plan)
     if errs:   # one round back to the director with the validator's exact errors
         (ddir / "validator-problems.txt").write_text("\n".join(errs))
         skill([DIRECTOR, "--project", ROOT, "doctor", ddir / "storyboard.json", "--script", wdir / "script.json",
                "--catalog", CATALOG, "--out", ddir, "--problems", ddir / "validator-problems.txt"])
-        plan = compile_plan(brief, script, json.loads((ddir / "storyboard.json").read_text()), lane, plan_id)
+        plan = compile_plan(brief, script, json.loads((ddir / "storyboard.json").read_text()), lane, plan_id, cover_data)
         errs = scene_plan.validate(plan)
     (out / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=1))
     return {"plan": str(out / "plan.json"), "scenes": len(plan["scenes"]), "errors": errs,

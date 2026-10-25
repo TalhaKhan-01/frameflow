@@ -12,7 +12,8 @@
  },
  "youtube_studio": {
   "session": "frameflow-yt",
-  "profile": "~/.cache/frameflow/yt-browser-profile"
+  "profile": "~/.cache/frameflow/yt-browser-profile",
+  "port": 7307
  },
  "youtube_mode": "studio",
  "_youtube_mode": "studio = upload by The Pilot in YouTube Studio, a human clicks Publish (until the API audit passes); api = youtube.py"

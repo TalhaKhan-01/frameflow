@@ -1,0 +1,15 @@
+{
+ "_about": "House outro and cover: the pipeline appends an end card (scenes/endcard) after every script's last beat. The cover title comes from frameflow.cover; the outro line rotates by video id.",
+ "narrator": "Habit",
+ "handle": "@madebythirdspace",
+ "tagline": "New habit every day",
+ "button": "Follow",
+ "outro_lines": [
+  "Follow, and tomorrow you learn the next one."
+ ],
+ "outro_energy": 0.7,
+ "lead_seconds": 0.8,
+ "cover_at": 0.7,
+ "hold_before": 1.2,
+ "_hold_before": "seconds the story's last frame holds (music only) before the end card, so a closing question lands"
+}
