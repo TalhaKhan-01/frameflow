@@ -10,5 +10,6 @@
     "Every number said is shown on screen",
     "Use the news-snapshot template at most once, and only with the source URL from the script's fact ids",
     "Open on a strong visual world, never on a plain title card"
-  ]
+  ],
+  "lessons_file": "research/lessons-director.txt"
 }

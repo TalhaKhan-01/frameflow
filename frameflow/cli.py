@@ -55,7 +55,7 @@ def main():
     pb.add_argument("video_id")
     up = sub.add_parser("upload", help="approved video -> YouTube and/or Instagram (social-upload skill)")
     up.add_argument("video_id")
-    up.add_argument("--only", choices=["youtube", "instagram"])
+    up.add_argument("--only", choices=["youtube", "instagram", "facebook"])
     up.add_argument("--privacy", default="public", choices=["public", "unlisted", "private"])
     po = sub.add_parser("posted", help="record the live links")
     po.add_argument("video_id")
@@ -115,7 +115,7 @@ def main():
         print(json.dumps(publish.publish(a.video_id), indent=1))
     elif a.cmd == "upload":
         from frameflow import publish
-        print(json.dumps(publish.upload(a.video_id, (a.only,) if a.only else ("youtube", "instagram"), a.privacy), indent=1))
+        print(json.dumps(publish.upload(a.video_id, (a.only,) if a.only else ("youtube", "instagram", "facebook"), a.privacy), indent=1))
     elif a.cmd == "posted":
         from frameflow import publish
         print(json.dumps(publish.posted(a.video_id, a.youtube_url, a.instagram_url), indent=1))

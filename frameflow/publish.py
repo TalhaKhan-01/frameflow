@@ -92,45 +92,62 @@ def publish(video_id):
 UPLOADER = Path.home() / "Talha_Khan" / "Claude" / "skills" / "social-upload" / "scripts"
 
 
-def upload(video_id, platforms=("youtube", "instagram"), privacy="public"):
-    """Approved videos only: upload with the social-upload skill using the publish pack, then record the links."""
+def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="public"):
+    """Approved videos only: post with the social-upload skill (API) or The Pilot (frameflow.pilot), record the links.
+    Each platform is tried on its own, so one failure doesn't block the others; results say what happened."""
     import subprocess
     row = videos.require_approved(video_id)
     out = Path(row["out_dir"])
     if not (out / "publish.json").exists():
         publish(video_id)
     p = json.loads((out / "publish.json").read_text())
-    links, results = {}, {}
+    (out / "instagram-caption.txt").write_text(p["ig_caption"])
+    report = json.loads((out / "report.json").read_text()) if (out / "report.json").exists() else {}
     mode = json.loads((ROOT / "research" / "social-upload.json").read_text()).get("youtube_mode", "api")
-    if "youtube" in platforms and mode == "studio":
-        results["youtube"] = {"mode": "studio", "next": "upload through YouTube Studio with The Pilot (social-upload "
-                              "references/youtube-studio.md); the human clicks Publish, then: frameflow posted ..."}
-    elif "youtube" in platforms:
-        meta = {"title": p["yt_title"], "description": p["yt_description"], "tags": p["yt_tags"], "category": "28",
-                "privacy": privacy, "made_for_kids": False, "synthetic": True}
-        (out / "youtube-meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1))
-        r = subprocess.run(["python3", "-I", str(UPLOADER / "youtube.py"), "--project", str(ROOT), "upload", str(out / "final.mp4"),
-                            str(out / "youtube-meta.json")], capture_output=True, text=True, timeout=3600)
+    results = {}
+
+    def run(cmd, timeout=3600):
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=ROOT)
         if r.returncode:
-            raise SystemExit(f"YouTube upload failed: {(r.stderr or r.stdout)[-600:]}")
-        results["youtube"] = json.loads(r.stdout[r.stdout.index("{"):])
-        links["youtube"] = results["youtube"]["url"]
-    if "instagram" in platforms:
-        (out / "instagram-caption.txt").write_text(p["ig_caption"])
-        cmd = ["python3", "-I", str(UPLOADER / "instagram.py"), "--project", str(ROOT), "publish", str(out / "final.mp4"),
-               str(out / "instagram-caption.txt")]
-        if p.get("cover_at"):   # the Reel's cover = the end card's cover frame
-            cmd += ["--thumb-offset", str(int(p["cover_at"] * 1000))]
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
-        if r.returncode:
-            raise SystemExit(f"Instagram publish failed: {(r.stderr or r.stdout)[-600:]}")
-        results["instagram"] = json.loads(r.stdout[r.stdout.index("{"):])
-        links["instagram"] = results["instagram"]["url"]
+            raise RuntimeError((r.stderr or r.stdout).strip()[-600:])
+        return json.loads(r.stdout[r.stdout.rindex("{"):])
+
+    pilot = ["uv", "run", "python", "-m", "frameflow.pilot"]
+    for platform in platforms:
+        try:
+            if platform == "youtube" and mode == "studio":
+                results["youtube"] = run(pilot + ["youtube", video_id])
+            elif platform == "youtube":
+                meta = {"title": p["yt_title"], "description": p["yt_description"], "tags": p["yt_tags"], "category": "28",
+                        "privacy": privacy, "made_for_kids": False, "synthetic": True}
+                (out / "youtube-meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1))
+                results["youtube"] = run(["python3", "-I", str(UPLOADER / "youtube.py"), "--project", str(ROOT), "upload",
+                                          str(out / "final.mp4"), str(out / "youtube-meta.json")])
+            elif platform == "instagram":
+                cmd = ["python3", "-I", str(UPLOADER / "instagram.py"), "--project", str(ROOT), "publish", str(out / "final.mp4"),
+                       str(out / "instagram-caption.txt")]
+                if report.get("cover_at"):
+                    cmd += ["--thumb-offset", str(int(report["cover_at"] * 1000))]
+                try:
+                    results["instagram"] = run(cmd)
+                except RuntimeError as e:   # the API refuses long Reels (ProcessingFailedError over ~40 s): post on the web
+                    results["instagram_api_error"] = str(e)[-300:]
+                    results["instagram"] = run(pilot + ["instagram", video_id])
+            elif platform == "facebook":
+                results["facebook"] = run(["python3", "-I", str(UPLOADER / "facebook.py"), "--project", str(ROOT), "publish",
+                                           str(out / "final.mp4"), str(out / "instagram-caption.txt")])
+        except Exception as e:
+            results[platform] = {"error": str(e)[-600:]}
     (out / "upload.json").write_text(json.dumps(results, ensure_ascii=False, indent=1))
+    links = {k: v["url"] for k, v in results.items() if isinstance(v, dict) and v.get("url")}
     con = videos.db()
-    con.execute("UPDATE videos SET youtube_url=COALESCE(?, youtube_url), instagram_url=COALESCE(?, instagram_url), updated_at=? WHERE id=?",
-                (links.get("youtube"), links.get("instagram"), videos.now(), video_id))
-    if links.get("youtube") and links.get("instagram"):
+    cols = {r[1] for r in con.execute("PRAGMA table_info(videos)")}
+    if "facebook_url" not in cols:
+        con.execute("ALTER TABLE videos ADD COLUMN facebook_url TEXT")
+    con.execute("UPDATE videos SET youtube_url=COALESCE(?, youtube_url), instagram_url=COALESCE(?, instagram_url), "
+                "facebook_url=COALESCE(?, facebook_url), updated_at=? WHERE id=?",
+                (links.get("youtube"), links.get("instagram"), links.get("facebook"), videos.now(), video_id))
+    if all(pl in links for pl in platforms):
         con.execute("UPDATE videos SET status='posted' WHERE id=?", (video_id,))
     con.commit()
     return results

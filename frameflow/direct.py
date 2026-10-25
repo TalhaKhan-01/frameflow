@@ -83,6 +83,12 @@ def direct(brief_path, out=None, lane="how-tech-works", skip_writer=False, skip_
     slug = re.sub(r"[^a-z0-9]+", "-", Path(brief_path).stem.lower()).strip("-")
     out = Path(out or ROOT / "out" / slug)
     wdir, ddir = out / "writer", out / "director"
+    out.mkdir(parents=True, exist_ok=True)
+    try:   # the learning loop: the current top lessons go into the writer's and director's house rules
+        from frameflow import lessons
+        (out / "lessons-used.json").write_text(json.dumps(lessons.write_files()))
+    except Exception as e:
+        print(f"lessons: {e}")
     if not skip_writer:
         skill([WRITER, "--project", ROOT, "run", brief_path, "--out", wdir])
     script = json.loads((wdir / "script.json").read_text())

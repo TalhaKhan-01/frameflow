@@ -1,0 +1,30 @@
+{
+ "_about": "Daily automation (vault Decisions/Daily Automation.md). Times are IST. chat_id is the only Telegram chat the bot listens to (set when Talha sent /start).",
+ "chat_id": **********,
+ "topic_card_at": "20:00",
+ "auto_pick_at": "22:30",
+ "post_at": "11:30",
+ "lanes": [
+  "how-tech-works",
+  "ai-news",
+  "ai-money"
+ ],
+ "lane_names": {
+  "how-tech-works": "Tech",
+  "ai-news": "AI",
+  "ai-money": "Money"
+ },
+ "rotation_start": {
+  "date": "2026-10-25",
+  "lane": "how-tech-works"
+ },
+ "options": 3,
+ "max_revisions": 2,
+ "preview_max_mb": 45,
+ "platforms": [
+  "youtube",
+  "instagram",
+  "facebook"
+ ],
+ "paused": false
+}

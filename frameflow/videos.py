@@ -55,6 +55,11 @@ def make(idea_id):
         q, r = check(out)
     plan = json.loads(plan_path.read_text())
     status = "awaiting-approval" if q["pass"] and r["pass"] else "needs-work"
+    try:   # what this video teaches the next ones (frameflow.lessons)
+        from frameflow import lessons
+        lessons.distill(rout)
+    except Exception as e:
+        print(f"lessons: {e}")
     con = db()
     con.execute("INSERT OR REPLACE INTO videos (id, idea_id, plan, out_dir, lane, title, qa_pass, review_total, review_pass, status, note, created_at, updated_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -87,6 +92,11 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
             break
     plan = json.loads(plan_path.read_text())
     status = "awaiting-approval" if q["pass"] and r["pass"] else "needs-work"
+    try:   # what this video teaches the next ones (frameflow.lessons)
+        from frameflow import lessons
+        lessons.distill(rout)
+    except Exception as e:
+        print(f"lessons: {e}")
     con = db()
     con.execute("INSERT OR REPLACE INTO videos (id, idea_id, plan, out_dir, lane, title, qa_pass, review_total, review_pass, status, note, created_at, updated_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",

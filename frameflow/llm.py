@@ -22,6 +22,8 @@ def call(prompt, system, schema=None, model="haiku", tools="", add_dirs=(), purp
     """Run one headless call; return structured_output (when a schema is given) or the text result."""
     cmd = ["claude", "-p", prompt, "--model", model, "--output-format", "json", "--no-session-persistence",
            "--setting-sources", "", "--strict-mcp-config", "--system-prompt", system, "--tools", tools]
+    if tools:   # headless runs only use tools that are explicitly allowed, not merely listed
+        cmd += ["--allowedTools", tools]
     if schema:
         cmd += ["--json-schema", json.dumps(schema)]
     if effort:
