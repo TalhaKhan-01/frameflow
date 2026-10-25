@@ -1,0 +1,108 @@
+{
+ "topic": "Microsoft's AI Diagnostic Orchestrator (MAI-DxO), which works through a case step by step like a doctor, was published in Science on 22 Oct 2026. Microsoft says it beat generalist physicians on hard cases at lower simulated cost, but it has not been tested on real patients yet.",
+ "audience": "Indians aged 18-30 who are curious about tech, AI and money and mostly don't code. They know chatbots like ChatGPT and have probably heard that AI will replace doctors. They don't know what a benchmark is or how medical AI is tested.",
+ "angle_hint": "The twist is that this AI doesn't get the whole case file. It starts from a chief complaint and must choose which questions and tests to ask for, and each one carries a virtual cost. Microsoft describes it as a virtual panel of AI doctors that argue with each other. The counterweight is that the doctors it beat were generalists working alone, and the cost savings are simulated. Indian angle: the sources I read don't mention India. Cheaper, smarter test-ordering would matter where patients pay out of pocket and doctors are scarce, but that is our inference, so don't present it as a fact or as a plan.",
+ "facts": [
+  {
+   "id": "f1",
+   "text": "The Microsoft AI Diagnostic Orchestrator (MAI-DxO, also called DxO) is described in a paper titled 'Sequential Diagnosis with Language Models'. A preprint appeared on arXiv in 2025, and the peer-reviewed version was published in Science on Thursday, 22 October 2026.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562",
+   "also": [
+    "https://arxiv.org/pdf/2506.22405"
+   ]
+  },
+  {
+   "id": "f2",
+   "text": "DxO works sequentially. It starts from a chief complaint and decides which follow-up questions and tests to order, instead of receiving a full patient file at once.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  },
+  {
+   "id": "f3",
+   "text": "The system simulates a panel of physicians. AI agents take roles such as proposing diagnoses, selecting tests, challenging assumptions and weighing costs. The authors suggest this may reduce cognitive biases such as anchoring.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  },
+  {
+   "id": "f4",
+   "text": "Gizmodo reports that on complex NEJM cases, DxO reached 83.2% accuracy. Generalist physicians with reference materials reached 36.1%.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  },
+  {
+   "id": "f5",
+   "text": "When generalist physicians were denied reference materials, their accuracy dropped to roughly 22%, which Gizmodo says makes DxO nearly four times as accurate.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  },
+  {
+   "id": "f6",
+   "text": "On emergency department admissions, DxO scored 80.3% against 46.8% for generalists, a narrower margin.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  },
+  {
+   "id": "f7",
+   "text": "The strongest results came with OpenAI's GPT-5. Testing with GPT-5.5 showed further improvement.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  },
+  {
+   "id": "f8",
+   "text": "Microsoft says DxO works at half or even one third of the cost. The savings are based on estimated costs in simulated cases, not real medical bills.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  },
+  {
+   "id": "f9",
+   "text": "The benchmark, SDBench, turns 304 diagnostically challenging New England Journal of Medicine case records into step-by-step diagnostic encounters. Earlier benchmarks did not test diagnosis sequentially.",
+   "source": "https://www.medicaleconomics.com/view/microsoft-says-its-ai-tool-outperforms-physicians-on-complex-diagnostic-challenges",
+   "also": [
+    "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+   ]
+  },
+  {
+   "id": "f10",
+   "text": "In the original June 2025 announcement, 21 US and UK physicians worked alone without textbooks, colleagues or AI tools. They averaged 20% accuracy, against 85.5% for MAI-DxO, as reported by the company.",
+   "source": "https://www.medicaleconomics.com/view/microsoft-says-its-ai-tool-outperforms-physicians-on-complex-diagnostic-challenges"
+  },
+  {
+   "id": "f11",
+   "text": "Each test or question carried a virtual cost, so researchers could measure cost efficiency alongside accuracy. Users can set cost constraints.",
+   "source": "https://www.medicaleconomics.com/view/microsoft-says-its-ai-tool-outperforms-physicians-on-complex-diagnostic-challenges"
+  },
+  {
+   "id": "f12",
+   "text": "The researchers said they would expect the performance gap to narrow if DxO were compared with expert specialists instead of generalists.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  },
+  {
+   "id": "f13",
+   "text": "Microsoft AI chief Mustafa Suleyman says clinical testing is still required before real-world deployment.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  },
+  {
+   "id": "f14",
+   "text": "Testing is planned at Beth Israel Deaconess Medical Center in Boston within about two months, per Dr. Dominic King. A separate search summary says this will test triage of patients in emergency department waiting rooms.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562",
+   "also": []
+  },
+  {
+   "id": "f15",
+   "text": "Microsoft says the tool is meant to augment physicians, not replace them.",
+   "source": "https://www.medicaleconomics.com/view/microsoft-says-its-ai-tool-outperforms-physicians-on-complex-diagnostic-challenges"
+  },
+  {
+   "id": "f16",
+   "text": "A 2025 study found doctors who relied on AI for colonoscopy cancer-risk detection performed worse once the AI was removed, per Gizmodo.",
+   "source": "https://gizmodo.com/microsoft-says-its-new-ai-is-more-than-twice-as-good-at-diagnosing-diseases-as-doctors-2000829562"
+  }
+ ],
+ "cautions": [
+  "The accuracy numbers differ between versions. The 2025 preprint gave 85.5% vs 20%. The Science-era figures reported by Gizmodo are 83.2% vs 36.1% with reference materials, and about 22% without. Don't mix them. Use the headline 'more than twice' and name the version you cite.",
+  "I could not open the Economic Times page or the Science paper itself. Business Standard returned 403. The Science-version numbers come from Gizmodo only, so check them against the paper or Microsoft's blog before using exact figures.",
+  "These are company-reported results. Independent replication is not confirmed.",
+  "The cases were rare, hard NEJM cases, not everyday primary care. The doctors were generalists working without their usual resources or team, which is not how real clinics work.",
+  "Cost savings are simulated estimates, not real billing. Don't say patients will save money.",
+  "This is not tested on real patients yet. Don't say it is available, approved or in use. Don't imply it is ready for India or in Indian hospitals.",
+  "Accountability when an AI-assisted diagnosis is wrong is unresolved, per Gizmodo.",
+  "Don't say 'twice as accurate as doctors' without 'generalists, on hard test cases'. Also don't say 'replaces doctors'.",
+  "The Economic Times-style framing says 'more than twice as accurate'. Gizmodo's figure for the no-reference case is nearly four times, so the multiplier depends on the comparison."
+ ],
+ "notes": "Tone: calm and curious, not hype and not doom. Analogy: a normal AI exam is an open-book test with the full question paper. This is more like a doctor's visit. You get a one-line complaint, then you have to decide what to ask and which tests to order, and every test costs money. Another way to put it: a panel of five doctors in your head, one of them playing devil's advocate. Practical takeaway: AI second opinions may become a tool for doctors, but today don't self-diagnose from a chatbot, and ask your doctor why a test is needed. Ending question: if an AI orders cheaper tests and gets it right, who is responsible when it gets it wrong, the doctor, the hospital or the company?",
+ "lane": "ai-news",
+ "story_url": "https://economictimes.indiatimes.com/tech/technology/microsoft-develops-ai-tool-that-can-diagnose-sequentially-like-a-doctor/articleshow/135132770.cms"
+}

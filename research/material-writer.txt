@@ -1,0 +1,8 @@
+- hook (mini-story, scored 10/14): An AI gets one complaint. Now it has to ask the right questions.
+- hook (contrast, scored 11/14): It beat generalist doctors. It hasn't met a single real patient.
+- hook (bold-claim, scored 10/14): Microsoft's new AI doctor pays for every test. In pretend money.
+- hook (mini-story, scored 9/14): On Thursday, Science published an AI that argues with itself.
+- analogy: Earlier AI tests weren't step by step. They handed over the whole question paper.
+- analogy: So what did it actually win? First rank in a very hard mock test.
+- analogy: Basically a society committee. Except this one actually checks the accounts.
+- analogy: The cause? A hole in PHP, the cook that makes each page fresh when you open it.

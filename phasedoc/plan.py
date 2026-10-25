@@ -284,6 +284,26 @@ TASKS = [
      "from a video's knowledge cards, a Paper Press carousel (bold-claim hook slide, 3-5 fact slides with source lines, follow slide) is rendered at 1080x1350, approved on Telegram and posted to Instagram and Facebook", "publish"),
     ("P12.4", "P12", "Repeating voice lines cached",
      "a line marked cache (the house outro) is recorded once and reused when the words and delivery match", "voice"),
+
+    ("P13", "", "Studio web app and betadoc (Vercel)", "", ""),
+    ("P13.1", "P13", "Studio app", "", ""),
+    ("P13.1.1", "P13.1", "PIN-locked Studio snapshot",
+     "uv run frameflow web export writes web/public/data/studio.enc (AES-GCM, key from FRAMEFLOW_WEB_PIN via PBKDF2) plus media for posted items only; tests/test_webexport.py decrypts it round-trip, and a grep of web/public finds no token, chat id or secrets.env value", "web"),
+    ("P13.1.2", "P13.1", "Studio pages: runs, videos, card posts, lessons, library",
+     "headless walk of the built web/dist at 1440 and 390 px: a wrong PIN shows an error, the right PIN shows today's run, the Black October page (player, QA gates, review scores, links), card posts, lessons and library; 0 console errors, no horizontal overflow", "web"),
+    ("P13.1.3", "P13.1", "Studio live on Vercel (talha-785b), deployed by git push",
+     "Vercel project frameflow-studio (root web/) is git-connected to TalhaKhan-01/frameflow; scripts/deploy-check.sh studio passes (production SHA = HEAD, / and data/studio.enc return 200)", "web"),
+    ("P13.1.4", "P13.1", "Snapshot refreshes itself after each post",
+     "after a daily post (and after the 48 h stats), the daily tick runs web export, commits only web/public and pushes; the live Studio shows the new post within 10 minutes", "web"),
+    ("P13.2", "P13", "Betadoc", "", ""),
+    ("P13.2.1", "P13.2", "Concept locked (cinematic video + WebGL immersive + live product hero)",
+     "betadoc/CONCEPT.md lists OKLCH tokens, a licensed type pairing, the motion language and the one wow moment; a row is in the sitecraft used.md", "betadoc"),
+    ("P13.2.2", "P13.2", "Story site: index.html and documentation.html (LONG)",
+     "betadoc build has hero (real Short + WebGL + live numbers) -> problem -> product -> architecture SVG -> honest feature matrix (built/partial/roadmap) -> roadmap -> deployment -> demo call-to-action, and documentation.html with its own contents; walk at 1440, 390 and --reduced: 0 console errors, no overflow", "betadoc"),
+    ("P13.2.3", "P13.2", "Betadoc live on Vercel (talha-785b), deployed by git push",
+     "Vercel project frameflow-betadoc (root betadoc/) is git-connected; scripts/deploy-check.sh betadoc passes; the Studio link on it opens the PIN screen", "betadoc"),
+    ("P13.2.4", "P13.2", "Narrated demo video in the hero",
+     "betadoc/video renders a deterministic 60 fps narrated tour (betadoc narrate.py, voice Talha picked) with captions; it streams from the live site", "betadoc"),
 ]
 
 

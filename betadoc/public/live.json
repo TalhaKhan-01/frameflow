@@ -1,0 +1,49 @@
+{
+ "generated": "2026-10-25T21:04:26",
+ "ideas": 764,
+ "videos_made": 3,
+ "videos_posted": 1,
+ "card_posts": 1,
+ "lessons": 20,
+ "library": 99,
+ "leaves_done": 68,
+ "leaves_partial": 25,
+ "leaves_total": 116,
+ "today": {
+  "day": "2026-10-26",
+  "lane": "AI",
+  "state": "queued"
+ },
+ "latest": {
+  "title": "Black October: Why Sites Went Offline to Patch PHP",
+  "lane": "How tech works",
+  "seconds": 92.53,
+  "lufs": -14.2,
+  "wpm": 199,
+  "review_total": 17,
+  "links": {
+   "youtube": "https://youtube.com/shorts/QjnhL4m7SOw",
+   "instagram": "https://www.instagram.com/reel/De6Brw1uWxj/"
+  },
+  "gates": {
+   "length": true,
+   "events": true,
+   "rehooks": true,
+   "size": true,
+   "loudness": true,
+   "black": true,
+   "captions": true,
+   "voice-start": true,
+   "licences": true
+  },
+  "media": {
+   "video": "media/latest/preview.mp4",
+   "cover": "media/latest/cover.jpg",
+   "keyframes": "media/latest/keyframes.jpg"
+  }
+ },
+ "channels": {
+  "youtube": "https://www.youtube.com/channel/UCrcF7Q5J4kEENdJuA8BPQxQ",
+  "instagram": "https://www.instagram.com/madebythirdspace/"
+ }
+}

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Automated short vertical videos for YouTube Shorts and Instagram Reels"
 requires-python = ">=3.12"
 dependencies = [
+    "cryptography>=50.0.2",
     "kokoro-onnx==0.6.1",
     "playwright==1.63.0",
     "pygments==2.21.0",
