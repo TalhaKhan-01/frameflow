@@ -274,6 +274,16 @@ TASKS = [
      "each lesson used in a video is marked helped/hurt from that video's % watched and swipe-away against the channel average", "learning"),
     ("P11.5", "P11", "Weekly promotion",
      "every Sunday lessons that helped in 3+ videos are proposed on Telegram for the Quality Bar or house rules; approved ones are applied, stale ones retired; the weekly report lands in the vault (closes P7.4)", "learning"),
+
+    ("P12", "", "Reuse: asset library, cleanup, Habit cards", "", ""),
+    ("P12.1", "P12", "Asset library",
+     "passing videos feed research/assets (knowledge cards, unused hooks, analogies, scene recipes) with origin and scores; the researcher, writer and director are offered matching items with variety windows and freshness flags; a profile switch turns it off; tests pass", "learning"),
+    ("P12.2", "P12", "Disk cleanup after the library has taken what it reuses",
+     "48 h after posting, a video keeps final.mp4, cover, brief, review, stats and its vault page; intermediate renders and scene projects are deleted only after library.extract ran; a video shrinks to about 80 MB", "automation"),
+    ("P12.3", "P12", "Habit cards (news-first carousel posts)",
+     "from a video's knowledge cards, a Paper Press carousel (bold-claim hook slide, 3-5 fact slides with source lines, follow slide) is rendered at 1080x1350, approved on Telegram and posted to Instagram and Facebook", "publish"),
+    ("P12.4", "P12", "Repeating voice lines cached",
+     "a line marked cache (the house outro) is recorded once and reused when the words and delivery match", "voice"),
 ]
 
 
