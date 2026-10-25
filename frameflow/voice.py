@@ -17,6 +17,7 @@ Model files: Kokoro in ~/.cache/frameflow/kokoro/ (or FRAMEFLOW_KOKORO); Chatter
 import argparse
 import json
 import os
+import re
 import subprocess
 import tempfile
 import wave
@@ -62,17 +63,39 @@ def expression(energy):
     return {"exaggeration": round(0.4 + 0.4 * e + (HOUSE["exaggeration"] - 0.64), 3), "cfg_weight": HOUSE["cfg_weight"]}
 
 
-def chatterbox_lines(lines, out, seed=7, model="standard", ref=None, timeout=1800):
+def chatterbox_lines(lines, out, seed=7, model="standard", ref=None, timeout=1800, temperature=None, job_name="chatterbox-job.json"):
     """Raw Chatterbox WAVs for lines [(text, energy, path)] in one worker run (the model loads once)."""
+    if not lines:
+        return []
+    extra = {"temperature": temperature} if temperature is not None else {}
     job = {"model": model, "ref": str(ref) if ref else None,
-           "lines": [{"text": text, "out": str(path), "seed": seed + i, **expression(energy)} for i, (text, energy, path) in enumerate(lines)]}
-    job_file = Path(out) / "chatterbox-job.json"
+           "lines": [{"text": text, "out": str(path), "seed": seed + i, **expression(energy), **extra} for i, (text, energy, path) in enumerate(lines)]}
+    job_file = Path(out) / job_name
     job_file.write_text(json.dumps(job, ensure_ascii=False, indent=1))
     r = subprocess.run(CHATTERBOX + [str(job_file)], capture_output=True, text=True, timeout=timeout,
                        env=dict(os.environ, HF_HOME=str(Path("~/.cache/frameflow/hf").expanduser())))
     if r.returncode or not all(Path(p).exists() for _, _, p in lines):
         raise RuntimeError(f"chatterbox worker failed: {(r.stderr or r.stdout)[-1200:]}")
     return [p for _, _, p in lines]
+
+
+ROOT = Path(__file__).resolve().parent.parent
+PACE = ROOT / "research" / "voice-pace.json"
+LAUGH = re.compile(r"\[(chuckle|laugh)\]")
+NUMBER_WORDS = re.compile(r"\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|point)\b|\d", re.I)
+
+
+def spoken_words(text):
+    return len(LAUGH.sub(" ", text).split())
+
+
+def target_wpm(line, pace):
+    """Words per minute a line should land at: its beat's pace, plus the emotion and content nudges."""
+    w = pace["beats"].get(line.get("beat", ""), pace.get("default_wpm", 178))
+    w += pace.get("emotion", {}).get(line.get("emotion", ""), 0)
+    if NUMBER_WORDS.search(line["say"]):
+        w += pace.get("content", {}).get("numbers", 0)
+    return w
 
 
 def finish(raw, out, tempo=1.0):
@@ -114,10 +137,23 @@ def tts(script_path, out_dir):
     paths = [out / f"{i:02d}-{line['id']}.wav" for i, line in enumerate(script["lines"])]
     if engine_used == "chatterbox":
         try:
-            raws = chatterbox_lines([(l["say"], l.get("energy", 0.6), p.with_suffix(".raw.wav")) for l, p in zip(script["lines"], paths)],
-                                    out, seed=int(script.get("seed", 7)), model=script.get("model", "standard"), ref=script.get("ref"))
-            for raw, p in zip(raws, paths):
-                finish(raw, p, float(script.get("tempo", 1.0)))
+            pace = json.loads(PACE.read_text()) if PACE.exists() else None
+            laugh = [bool(LAUGH.search(l["say"])) for l in script["lines"]]
+            plain = [(l["say"], l.get("energy", 0.6), p.with_suffix(".raw.wav")) for l, p, x in zip(script["lines"], paths, laugh) if not x]
+            chatterbox_lines(plain, out, seed=int(script.get("seed", 7)), model=script.get("model", "standard"), ref=script.get("ref"))
+            if any(laugh):   # [chuckle]/[laugh] lines: Chatterbox Turbo cloned from the house voice
+                tb = (pace or {}).get("turbo", {})
+                chatterbox_lines([(l["say"], 0.6, p.with_suffix(".raw.wav")) for l, p, x in zip(script["lines"], paths, laugh) if x],
+                                 out, seed=int(script.get("seed", 7)) + 100, model="turbo", ref=ROOT / tb.get("ref", "data/voice/house-ref.wav"),
+                                 temperature=tb.get("temperature", 0.95), job_name="chatterbox-turbo-job.json")
+            for line, p, x in zip(script["lines"], paths, laugh):
+                finish(p.with_suffix(".raw.wav"), p, float(script.get("tempo", 1.0)))
+                if pace and not x:   # pull the line toward its target pace (vault Docs/Voice Pace.md)
+                    target = target_wpm(line, pace)
+                    wpm = spoken_words(line["say"]) / seconds(p) * 60
+                    if abs(wpm / target - 1) > pace.get("tolerance", 0.04):
+                        lo, hi = pace.get("tempo_range", [0.85, 1.12])
+                        finish(p.with_suffix(".raw.wav"), p, min(max(target / wpm * float(script.get("tempo", 1.0)), lo), hi))
         except Exception as e:   # no GPU memory, worker crash: the video still gets a voice
             engine_used, fallback = "kokoro", str(e)[-400:]
     if engine_used == "kokoro":
@@ -127,7 +163,7 @@ def tts(script_path, out_dir):
     clips, lines, t = [], [], 0.0
     for i, (line, clip) in enumerate(zip(script["lines"], paths)):
         d = seconds(clip)
-        words = len(line["say"].split())
+        words = spoken_words(line["say"])
         lines.append({"id": line["id"], "file": clip.name, "start": round(t, 3), "seconds": round(d, 3),
                       "wpm": round(words / d * 60) if d else None})
         clips.append(clip)

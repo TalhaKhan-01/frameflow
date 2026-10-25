@@ -1,0 +1,19 @@
+{
+ "_about": "Voice pace per line: target words per minute by beat, nudged by emotion and content. The voice step speeds or slows each finished Chatterbox line (ffmpeg atempo, pitch kept) toward its target, within tempo_range. Turbo laugh lines keep their natural pace. Table and reasoning: vault Docs/Voice Pace.md.",
+ "default_wpm": 178,
+ "tempo_range": [0.85, 1.12],
+ "tolerance": 0.04,
+ "beats": {
+  "hook": 190, "loop": 180, "and": 176, "but": 172, "therefore": 176,
+  "twist": 168, "payoff": 170, "ending": 165, "outro": 186
+ },
+ "emotion": {
+  "urgent": 8, "impressed": 4, "curious": 3, "amused": 0, "sly": -5, "deadpan": -6, "serious": -8
+ },
+ "content": {
+  "numbers": -10,
+  "_numbers": "a line with a spoken number (twenty twelve, thirty-four million): the ear needs time to hold it"
+ },
+ "turbo": {"temperature": 0.95, "ref": "data/voice/house-ref.wav",
+           "_": "lines containing a [chuckle] or [laugh] tag render on Chatterbox Turbo, cloned from the house voice; at most one per video"}
+}

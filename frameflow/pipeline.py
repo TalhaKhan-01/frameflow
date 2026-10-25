@@ -158,7 +158,7 @@ def render(plan_path, out_dir=None, quality="looks", mood=None, theme=None):
     info = voice.tts(out / "script.json", vdir)
     shutil.copy(out / "script.json", vdir / "script.json")
     words = captions.align(vdir)
-    word_error = captions.wer(" ".join(l["say"] for l in script["lines"]), " ".join(w["w"] for w in words))
+    word_error = captions.wer(voice.LAUGH.sub(" ", " ".join(l["say"] for l in script["lines"])), " ".join(w["w"] for w in words))
     proj, total = build.project(plan, out / "project", vdir, theme=theme)
     raw = build.render(proj, out / "raw.mp4", quality)
     slots = build.timings(plan, vdir)

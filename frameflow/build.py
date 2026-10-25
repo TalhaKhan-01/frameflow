@@ -137,7 +137,8 @@ def voice_script(plan):
             for j, part in enumerate(parts):   # a scene may carry several lines, each with its own delivery
                 d = part.get("delivery", {})
                 lines.append({"id": f"s{i}" if len(parts) == 1 else f"s{i}.{j}", "say": part["say"],
-                              "energy": d.get("energy", s.get("energy", 0.6)), "pause_before": d.get("pause_before", 0.0)})
+                              "energy": d.get("energy", s.get("energy", 0.6)), "pause_before": d.get("pause_before", 0.0),
+                              "beat": part.get("beat", ""), "emotion": d.get("emotion", "")})
         return {"engine": v.get("engine", "chatterbox"), "model": v.get("model", "standard"), "tempo": v.get("tempo", 1.0),
                 "seed": v.get("seed", 7), "voice": v.get("voice", "af_heart"), "speed": v.get("speed", 1.1), "pad": v.get("pad", 0.12),
                 "lines": lines}
@@ -286,7 +287,7 @@ def project(plan, out_dir, voice_dir=None, captions=True, theme=None):
     if captions and voice_dir and (Path(voice_dir) / "words.json").exists():
         from frameflow import captions as cap
         heard = json.loads((Path(voice_dir) / "words.json").read_text())
-        script_text = " ".join(l["say"] for l in voice_script(plan)["lines"])
+        script_text = re.sub(r"\[(chuckle|laugh)\]", " ", " ".join(l["say"] for l in voice_script(plan)["lines"]))   # tags aren't words
         shown = cap.respell(heard, script_text)   # script spelling, Whisper timing
         (Path(voice_dir) / "words-shown.json").write_text(json.dumps(shown, ensure_ascii=False, indent=0))
         (out / "compositions" / "captions.html").write_text(cap.composition(shown, total))
