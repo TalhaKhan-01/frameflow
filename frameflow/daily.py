@@ -325,9 +325,16 @@ def tick():
             update(day, state="posting")
         elif run["state"] in ("making", "posting", "picked") and not job_alive(run) and run.get("job_pid") \
                 and (now() - dt.datetime.fromisoformat(run["updated_at"])).total_seconds() > 60:
-            update(day, state="failed", job_pid=None, note=f"job stopped while {run['state']}")
-            telegram.send(f"Something stopped while {run['state']} the {day} video. Log: logs/daily-{day}-*.log. "
-                          "Reply /retry to run that step again.")
+            # usually the laptop shut down mid-job (it runs 10:00-17:00): start the step again once, then ask
+            restarts = (run.get("log") or "").count("restarted after stop")
+            step = "post" if run["state"] == "posting" else ("revise" if run.get("notes") and run.get("video_id") else "make")
+            if restarts < 2:
+                update(day, note=f"restarted after stop ({run['state']})")
+                spawn(step, day)
+                telegram.send(f"The {day} video's {step} step had stopped (laptop off?). Starting it again now.")
+            else:
+                update(day, state="failed", job_pid=None, note=f"job stopped while {run['state']} (twice)")
+                telegram.send(f"The {step} step for {day} stopped twice. Log: logs/daily-{day}-*.log. Reply /retry to try again.")
 
 
 def stats_due():

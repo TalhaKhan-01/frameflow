@@ -1,8 +1,8 @@
 {
- "_about": "Daily automation (vault Decisions/Daily Automation.md). Times are IST. chat_id is the only Telegram chat the bot listens to (set when Talha sent /start).",
+ "_about": "Daily automation (vault Decisions/Daily Automation.md). Times are IST; the laptop is on 10:00-17:00. 14:00 topic card for tomorrow, 15:00 auto-pick, video ready before 17:00, approval any time (Telegram keeps taps while the laptop is off), post 11:30 the next day. chat_id is the only Telegram chat the bot listens to.",
  "chat_id": **********,
- "topic_card_at": "20:00",
- "auto_pick_at": "22:30",
+ "topic_card_at": "14:00",
+ "auto_pick_at": "15:00",
  "post_at": "11:30",
  "lanes": [
   "how-tech-works",
@@ -26,5 +26,9 @@
   "instagram",
   "facebook"
  ],
- "paused": false
+ "paused": false,
+ "laptop_hours": [
+  "10:00",
+  "17:00"
+ ]
 }

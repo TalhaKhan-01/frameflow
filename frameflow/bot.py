@@ -15,8 +15,9 @@ from frameflow import daily, telegram
 TICK_EVERY = 30
 URL = re.compile(r"https?://\S+")
 HELP = ("I'm Habit, Frameflow's bot.\n"
-        "Every evening at 20:00 I send tomorrow's story options. Pick one (or paste a link) by 22:30, or I'll take story 1.\n"
-        "Then I make the video and send it here: Approve, Revise (tell me what to change) or Reject.\n"
+        "Every day at 14:00 I send tomorrow's story options. Pick one (or paste a link) by 15:00, or I'll take story 1.\n"
+        "The video comes back here before 17:00: Approve, Revise (tell me what to change) or Reject. You can tap any time,\n"
+        "even at night: I act on it when the laptop starts at 10:00.\n"
         "Approved before 11:30: posted at 11:30. Approved later: posted right away.\n\n"
         "/status  where things are\n/ab  blind script test\n/pause  stop the daily runs\n/resume  start them again\n/retry  re-run a failed step")
 
