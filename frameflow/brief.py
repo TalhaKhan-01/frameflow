@@ -60,8 +60,13 @@ def loads(url, timeout=20):
 def build(url, title="", lane="", summary="", out=None, model=None):
     from frameflow import profiles
     model = model or profiles.pipeline()["brief_model"]
+    from frameflow import library, profiles
+    known = library.known_facts(f"{title} {summary}") if profiles.pipeline().get("assets", True) else []
     prompt = (f"Story to research ({dt.date.today().isoformat()}):\nTitle: {title or '(from the link)'}\nLink: {url}\n"
-              f"Lane: {lane}\nWhat we know so far: {summary or '-'}\nWrite the brief.")
+              f"Lane: {lane}\nWhat we know so far: {summary or '-'}\n"
+              + ("\nFacts from our earlier research that may help (a head start, not sources: re-check any you use, refresh "
+                 "numbers and dates, and cite the page you checked):\n" + "\n".join(known) + "\n" if known else "")
+              + "Write the brief.")
     b = llm.call(prompt, SYSTEM, SCHEMA, model=model, tools="WebSearch,WebFetch", purpose=f"brief:{slugify(title or url)}",
                  effort="medium", timeout=1500)
     if b["topic"].upper().startswith("UNVERIFIED") or any("NOT read" in f["text"] for f in b["facts"]):

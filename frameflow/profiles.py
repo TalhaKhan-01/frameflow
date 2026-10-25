@@ -24,7 +24,8 @@ PROFILES = RESEARCH / "profiles"
 FILES = {"pipeline": "pipeline.json", "shorts-writer": "shorts-writer.json", "shorts-director": "shorts-director.json",
          "social-caption": "social-caption.json"}
 PIPELINE_DEFAULTS = {"profile": "diet", "review_model": "opus", "keyframe_every": 3.0, "keyframe_width": 200,
-                     "max_auto_revisions": 1, "brief_model": "sonnet", "cover_model": "haiku", "lessons_model": "haiku"}
+                     "max_auto_revisions": 1, "brief_model": "sonnet", "cover_model": "haiku", "lessons_model": "haiku",
+                     "assets": True}
 
 
 def _read(name):

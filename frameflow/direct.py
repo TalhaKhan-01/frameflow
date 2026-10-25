@@ -89,6 +89,14 @@ def direct(brief_path, out=None, lane="how-tech-works", skip_writer=False, skip_
         (out / "lessons-used.json").write_text(json.dumps(lessons.write_files()))
         from frameflow import profiles
         profiles.snapshot(out)   # which profile (models, rounds) this video is made with
+        from frameflow import library   # proven material from past videos, offered (not imposed) to the writer and director
+        brief_data = json.loads(Path(brief_path).read_text())
+        story = " ".join([brief_data.get("topic", ""), brief_data.get("angle_hint", "")] + [x["text"] for x in brief_data.get("facts", [])])
+        if profiles.pipeline().get("assets", True):
+            (out / "material-offered.json").write_text(json.dumps(library.material(story)))
+        else:
+            for m in ("material-writer.txt", "material-director.txt"):
+                (ROOT / "research" / m).write_text("")
     except Exception as e:
         print(f"lessons: {e}")
     if not skip_writer:

@@ -1,8 +1,28 @@
 {
   "_about": "the original setup (until 2026-10-25): Opus everywhere, 2 fix rounds, 2 automatic revisions, dense keyframes",
-  "pipeline": {"review_model": "opus", "keyframe_every": 2.0, "keyframe_width": 240, "max_auto_revisions": 2,
-               "brief_model": "sonnet", "cover_model": "sonnet", "lessons_model": "sonnet"},
-  "shorts-writer": {"writer_model": "opus", "hooks_model": "opus", "judge_model": "sonnet", "doctor_model": "opus", "doctor_rounds": 2},
-  "shorts-director": {"model": "opus", "doctor_model": "opus", "doctor_rounds": 2},
-  "social-caption": {"model": "sonnet"}
+  "pipeline": {
+    "review_model": "opus",
+    "keyframe_every": 2.0,
+    "keyframe_width": 240,
+    "max_auto_revisions": 2,
+    "brief_model": "sonnet",
+    "cover_model": "sonnet",
+    "lessons_model": "sonnet",
+    "assets": true
+  },
+  "shorts-writer": {
+    "writer_model": "opus",
+    "hooks_model": "opus",
+    "judge_model": "sonnet",
+    "doctor_model": "opus",
+    "doctor_rounds": 2
+  },
+  "shorts-director": {
+    "model": "opus",
+    "doctor_model": "opus",
+    "doctor_rounds": 2
+  },
+  "social-caption": {
+    "model": "sonnet"
+  }
 }

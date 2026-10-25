@@ -138,7 +138,8 @@ def voice_script(plan):
                 d = part.get("delivery", {})
                 lines.append({"id": f"s{i}" if len(parts) == 1 else f"s{i}.{j}", "say": part["say"],
                               "energy": d.get("energy", s.get("energy", 0.6)), "pause_before": d.get("pause_before", 0.0),
-                              "beat": part.get("beat", ""), "emotion": d.get("emotion", "")})
+                              "beat": part.get("beat", ""), "emotion": d.get("emotion", ""),
+                              "cache": bool(s.get("outro"))})   # the house outro is recorded once and reused
         return {"engine": v.get("engine", "chatterbox"), "model": v.get("model", "standard"), "tempo": v.get("tempo", 1.0),
                 "seed": v.get("seed", 7), "voice": v.get("voice", "af_heart"), "speed": v.get("speed", 1.1), "pad": v.get("pad", 0.12),
                 "lines": lines}

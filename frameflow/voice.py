@@ -85,6 +85,34 @@ LAUGH = re.compile(r"\[(chuckle|laugh)\]")
 NUMBER_WORDS = re.compile(r"\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|point)\b|\d", re.I)
 
 
+CACHE = ROOT / "data" / "voice-cache"
+
+
+def cache_key(line, script):
+    import hashlib
+    k = json.dumps([line["say"], round(float(line.get("energy", 0.6)), 2), script.get("model", "standard"), script.get("ref")])
+    return hashlib.sha1(k.encode()).hexdigest()[:16]
+
+
+def cache_hit(line, raw, script):
+    """A repeating line (the outro) already recorded with the same words and delivery: reuse its raw take."""
+    if not line.get("cache"):
+        return False
+    src = CACHE / f"{cache_key(line, script)}.raw.wav"
+    if src.exists():
+        import shutil
+        shutil.copy(src, raw)
+        return True
+    return False
+
+
+def cache_store(line, raw, script):
+    CACHE.mkdir(parents=True, exist_ok=True)
+    if Path(raw).exists():
+        import shutil
+        shutil.copy(raw, CACHE / f"{cache_key(line, script)}.raw.wav")
+
+
 def spoken_words(text):
     return len(LAUGH.sub(" ", text).split())
 
@@ -139,13 +167,18 @@ def tts(script_path, out_dir):
         try:
             pace = json.loads(PACE.read_text()) if PACE.exists() else None
             laugh = [bool(LAUGH.search(l["say"])) for l in script["lines"]]
-            plain = [(l["say"], l.get("energy", 0.6), p.with_suffix(".raw.wav")) for l, p, x in zip(script["lines"], paths, laugh) if not x]
+            cached = [cache_hit(l, p.with_suffix(".raw.wav"), script) for l, p in zip(script["lines"], paths)]
+            plain = [(l["say"], l.get("energy", 0.6), p.with_suffix(".raw.wav")) for l, p, x, c in zip(script["lines"], paths, laugh, cached)
+                     if not x and not c]
             chatterbox_lines(plain, out, seed=int(script.get("seed", 7)), model=script.get("model", "standard"), ref=script.get("ref"))
             if any(laugh):   # [chuckle]/[laugh] lines: Chatterbox Turbo cloned from the house voice
                 tb = (pace or {}).get("turbo", {})
                 chatterbox_lines([(l["say"], 0.6, p.with_suffix(".raw.wav")) for l, p, x in zip(script["lines"], paths, laugh) if x],
                                  out, seed=int(script.get("seed", 7)) + 100, model="turbo", ref=ROOT / tb.get("ref", "data/voice/house-ref.wav"),
                                  temperature=tb.get("temperature", 0.95), job_name="chatterbox-turbo-job.json")
+            for line, p, c in zip(script["lines"], paths, cached):
+                if line.get("cache") and not c:
+                    cache_store(line, p.with_suffix(".raw.wav"), script)
             for line, p, x in zip(script["lines"], paths, laugh):
                 finish(p.with_suffix(".raw.wav"), p, float(script.get("tempo", 1.0)))
                 if pace and not x:   # pull the line toward its target pace (vault Docs/Voice Pace.md)
