@@ -140,8 +140,9 @@
     _Note 2026-10-25:_ 2026-10-25: frameflow/library.py; Black October gave 20 knowledge cards, 12 unused hooks, 6 analogies, 17 scene recipes; offered via material_file (writer, director) and known facts (researcher); 4 tests; pipeline assets flag in both profiles.
   - [ ] **P12.2** Disk cleanup after the library has taken what it reuses  
     _Acceptance:_ 48 h after posting, a video keeps final.mp4, cover, brief, review, stats and its vault page; intermediate renders and scene projects are deleted only after library.extract ran; a video shrinks to about 80 MB
-  - [ ] **P12.3** Habit cards (news-first carousel posts)  
+  - [~] **P12.3** Habit cards (news-first carousel posts)  
     _Acceptance:_ from a video's knowledge cards, a Paper Press carousel (bold-claim hook slide, 3-5 fact slides with source lines, follow slide) is rendered at 1080x1350, approved on Telegram and posted to Instagram and Facebook
+    _Note 2026-10-25:_ 2026-10-25: first card post live (Black October, 8 slides): Facebook multi-photo with caption; Instagram via the web lost its caption. Fixed: Instagram now posts carousels by API with the images hosted on the Facebook Page (dry run: 8-slide container FINISHED with caption). Reels switched to the same route (Facebook Reel URL).
   - [~] **P12.4** Repeating voice lines cached  
     _Acceptance:_ a line marked cache (the house outro) is recorded once and reused when the words and delivery match
     _Note 2026-10-25:_ 2026-10-25: voice cache in data/voice-cache keyed by words + energy + model; seeded with Black October's outro take. Proven on the next video's render.
@@ -253,6 +254,7 @@
   - [~] **P7.6** Instagram Reels by API  
     _Acceptance:_ frameflow upload <id> --only instagram posts the full-length Reel (cover via thumb_offset, AI label) and returns its permalink
     _Note 2026-10-25:_ 2026-10-25: token + account verified (@madebythirdspace via the Thirdspace Page, 60-day token). Resumable upload fails with ProcessingFailedError for clips over ~40-45 s (shorter clips succeed). Black October was posted through instagram.com by The Pilot instead; the caption did not stick there and must be checked after posting.
+    _Note 2026-10-25:_ 2026-10-25: new route: Instagram Reels from the Facebook Reel's public video URL (reel-url), then direct upload, web last; the web composer was dropping captions. First real use on the next post.
   - [ ] **P7.7** YouTube API audit passed  
     _Acceptance:_ YouTube API Services audit approved for the Thirdspace Cloud project; youtube.py upload of a public video stays public; youtube_mode switched to api
   - [x] **P7.8** social-caption skill  
