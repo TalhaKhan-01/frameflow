@@ -47,6 +47,8 @@ section { padding: clamp(72px, 12vh, 140px) 16px; max-width: 1240px; margin: 0 a
 .top nav { display: flex; gap: clamp(10px, 2vw, 26px); align-items: center; }
 .top nav a { color: var(--paper); text-decoration: none; font-size: .92rem; }
 .top nav a:hover { color: var(--lamp); }
+.top nav a.gh { display: inline-flex; align-items: center; gap: 6px; }
+.foot a { color: inherit; }
 .btn-sm { border: 1px solid var(--line); padding: .45em .9em; border-radius: 999px; }
 .btn { display: inline-block; background: var(--red); color: var(--paper); text-decoration: none; font-weight: 600;
   padding: .85em 1.4em; border-radius: 999px; transition: transform .3s var(--ease), background .3s; }
@@ -155,7 +157,8 @@ tbody tr:last-child td { border-bottom: 0; }
 .foot { text-align: center; color: var(--muted); font-size: .8rem; padding: 28px 16px 40px; border-top: 1px solid var(--line); }
 
 @media (max-width: 820px) {
-  .top nav a:not(.btn-sm) { display: none; }
+  .top nav a:not(.btn-sm):not(.gh) { display: none; }
+  .top nav a.gh span { display: none; }   /* icon only on phones */
   .hero { grid-template-columns: 1fr; padding-top: 96px; }
   .counters { grid-template-columns: repeat(2, 1fr); }
   .problem-grid, .deploy-grid { grid-template-columns: 1fr; }

@@ -64,6 +64,8 @@ button:disabled { opacity: .6; cursor: progress; }
 /* masthead */
 .mast { border-bottom: 3px double var(--ink); padding: 10px 16px 0; background: var(--paper); position: sticky; top: 0; z-index: 5; }
 .mast-top { display: flex; justify-content: space-between; font: .75rem var(--mono); color: var(--muted); max-width: 1180px; margin: 0 auto; }
+.mast-top a { color: inherit; }
+.mast-top .gh { display: inline-flex; align-items: center; gap: 5px; }
 .mast-title { display: block; text-align: center; font: 800 clamp(1.6rem, 5vw, 2.6rem)/1.05 var(--serif); color: var(--ink); text-decoration: none; margin: 4px 0 8px; }
 .mast nav { display: flex; gap: 4px 18px; justify-content: center; flex-wrap: wrap; border-top: 1px solid var(--line); padding: 8px 0; }
 .mast nav a { color: var(--ink); text-decoration: none; font-weight: 600; font-size: .92rem; padding: 2px 0; border-bottom: 2px solid transparent; }
