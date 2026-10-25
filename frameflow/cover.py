@@ -7,6 +7,7 @@ brand.json's lead_seconds of silence, so the thumbnail frame has no captions; th
 the Follow button appears. pipeline.render saves that frame as cover.png and records its time for Instagram.
 """
 import json
+import re
 import sys
 import zlib
 from pathlib import Path
@@ -40,16 +41,87 @@ def make(out_dir, model=None):
     model = model or profiles.pipeline()["cover_model"]
     out = Path(out_dir)
     path = out / "cover.json"
-    if path.exists():
-        return json.loads(path.read_text())
     script = json.loads((out / "writer" / "script.json").read_text())
     text = "\n".join(b["say"] for b in script["beats"])
+    if path.exists():
+        c = json.loads(path.read_text())
+        if not bad_numbers(c, text):   # a cached cover is reused only while it still matches the (maybe revised) script
+            return c
     c = llm.call(f"Video title: {script['title']}\nScript:\n{text}", SYSTEM.format(icons=", ".join(scene_plan.ICONS)), SCHEMA,
                  model=model, purpose=f"cover:{out.name}", effort="low")
+    if bad_numbers(c, text):   # the cover becomes the thumbnail: its numbers must be the script's (it once said 80% vs 20% for 83.2% vs 36.1%)
+        c = llm.call(f"Video title: {script['title']}\nScript:\n{text}\n\nYour last cover used numbers the script doesn't say "
+                     f"({', '.join(bad_numbers(c, text))}). Use only numbers exactly as the script says them, or none.",
+                     SYSTEM.format(icons=", ".join(scene_plan.ICONS)), SCHEMA, model=model, purpose=f"cover-fix:{out.name}", effort="low")
+        if bad_numbers(c, text):
+            c["stat"] = ""
+            c["title"] = [l for l in c["title"] if not re.search(r"\d", l)] or ["TODAY'S STORY"]
     c["title"] = [l.upper() for l in c["title"]][:3]
     c["mark"] = min(c["mark"], len(c["title"]) - 1)
     path.write_text(json.dumps(c, ensure_ascii=False, indent=1))
     return c
+
+
+UNITS = {w: i for i, w in enumerate("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen "
+                                      "sixteen seventeen eighteen nineteen".split())}
+TENS = {w: 10 * i for i, w in enumerate("_ _ twenty thirty forty fifty sixty seventy eighty ninety".split()) if w != "_"}
+SCALES = {"hundred": 100, "thousand": 1000, "lakh": 100000, "million": 1000000, "crore": 10000000, "billion": 1000000000}
+
+
+def spoken_numbers(text):
+    """Every number the script says, as digits: 'eighty-three point two' -> 83.2, 'three hundred and four' -> 304,
+    'twenty twelve' -> 2012, plus any digits written as digits."""
+    found = set(re.findall(r"\d+(?:\.\d+)?", text))
+    raw = text.lower().replace("-", " ").split()
+    toks = [w.strip(".,!?;:'\"()") for w in raw]
+    stops = {i for i, w in enumerate(raw) if w.rstrip("'\")").endswith((".", ",", "!", "?", ";", ":"))}   # punctuation ends a number
+    i = 0
+    while i < len(toks):
+        if toks[i] not in UNITS and toks[i] not in TENS:
+            i += 1
+            continue
+        total, cur, decimals, parts = 0, 0, "", []
+        while i < len(toks):
+            w = toks[i]
+            if w in UNITS:
+                if UNITS[w] >= 10 and cur in TENS.values():   # 'twenty twelve' is a year, not 32
+                    parts.append(cur)
+                    cur = 0
+                cur += UNITS[w]
+            elif w in TENS:
+                if cur and cur % 100 not in (0,) and cur < 100:   # 'twenty twelve': two numbers spoken as one year
+                    parts.append(cur)
+                    cur = 0
+                cur += TENS[w]
+            elif w in SCALES:
+                cur = max(cur, 1) * SCALES[w]
+                if SCALES[w] >= 1000:
+                    total, cur = total + cur, 0
+            elif w == "and" and (cur or total) and i + 1 < len(toks) and (toks[i + 1] in UNITS or toks[i + 1] in TENS):
+                pass
+            elif w == "point" and i + 1 < len(toks) and toks[i + 1] in UNITS:
+                while i + 1 < len(toks) and toks[i + 1] in UNITS and UNITS[toks[i + 1]] < 10:
+                    i += 1
+                    decimals += str(UNITS[toks[i]])
+                    if i in stops:
+                        break
+            else:
+                break
+            i += 1
+            if i - 1 in stops:
+                break
+        value = total + cur
+        if parts:   # a year like 'twenty twelve' -> 2012, 'twenty twenty six' -> 2026
+            found.add(str(parts[0] * 100 + value))
+        found.add(f"{value}.{decimals}" if decimals else str(value))
+    return found
+
+
+def bad_numbers(cover, script_text):
+    """Numbers on the cover (title or stat) that the script never says."""
+    said = spoken_numbers(script_text)
+    shown = re.findall(r"\d+(?:\.\d+)?", " ".join(cover.get("title", [])) + " " + cover.get("stat", ""))
+    return [n for n in shown if n not in said and n.lstrip("0") not in said]
 
 
 def endcard(cover, plan_id):
