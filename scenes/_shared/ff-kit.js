@@ -206,6 +206,8 @@
     "whip-up": (tl, r) => tl.fromTo(r, { yPercent: 45, filter: "blur(16px)" }, { yPercent: 0, filter: "blur(0px)", duration: 0.28, ease: "expo.out" }, 0),
     punch: (tl, r) => tl.fromTo(r, { scale: 1.22, opacity: 0.2 }, { scale: 1, opacity: 1, duration: 0.24, ease: "power3.out" }, 0),
     drop: (tl, r) => tl.fromTo(r, { yPercent: -18, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.42, ease: "bounce.out" }, 0),
+    // velocity cut: the outgoing scene speeds into the lens, the new one lands from a rushing zoom and settles
+    velocity: (tl, r) => tl.fromTo(r, { scale: 0.68, filter: "blur(16px) brightness(1.15)" }, { scale: 1, filter: "blur(0px) brightness(1)", duration: 0.32, ease: "expo.out" }, 0),
     glitch: (tl, r) => {
       const xs = [26, -34, 18, -12, 6, 0];
       xs.forEach((x, i) => tl.set(r, { x, filter: i < xs.length - 1 ? `hue-rotate(${(i % 2) * 90}deg) contrast(1.4)` : "none" }, i * 0.035));
@@ -218,6 +220,8 @@
     "whip-up": (tl, r, d) => tl.to(r, { yPercent: -45, filter: "blur(16px)", duration: 0.2, ease: "expo.in" }, d - 0.2),
     punch: (tl, r, d) => tl.to(r, { scale: 0.86, opacity: 0, duration: 0.18, ease: "power2.in" }, d - 0.18),
     drop: (tl, r, d) => tl.to(r, { yPercent: 20, opacity: 0, duration: 0.2, ease: "power2.in" }, d - 0.2),
+    // explicit start: tweening a filter up from "none" starts brightness at 0 and flashes the frame black
+    velocity: (tl, r, d) => tl.fromTo(r, { scale: 1, filter: "blur(0px) brightness(1)" }, { scale: 1.45, filter: "blur(16px) brightness(1.15)", duration: 0.24, ease: "power3.in", immediateRender: false }, d - 0.24),
     glitch: (tl, r, d) => [0, -22, 30, -8].forEach((x, i) => tl.set(r, { x, filter: i ? "contrast(1.5) saturate(0)" : "none" }, d - 0.14 + i * 0.035)),
     cut: () => {},
   };

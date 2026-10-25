@@ -106,7 +106,7 @@ def cue_times(scene, start, dur, words):
 
 
 # transition -> the sound it makes at the cut (library names from frameflow.music / data/library/sfx)
-TRANSITION_SFX = {"whip-left": "whoosh", "whip-right": "whoosh", "whip-up": "whoosh", "glitch": "glitch",
+TRANSITION_SFX = {"whip-left": "whoosh", "whip-right": "whoosh", "whip-up": "whoosh", "velocity": "whoosh-big", "glitch": "glitch",
                   "punch": "slam", "drop": "impact"}
 
 
