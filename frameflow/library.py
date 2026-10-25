@@ -68,10 +68,24 @@ def _video(video_id):
     return row
 
 
+EXTRACTED = LIB / "extracted.json"
+
+
+def extracted():
+    """Every video the library has processed (cleanup only touches these)."""
+    return set(json.loads(EXTRACTED.read_text())) if EXTRACTED.exists() else set()
+
+
+def _mark_extracted(video_id):
+    LIB.mkdir(parents=True, exist_ok=True)
+    EXTRACTED.write_text(json.dumps(sorted(extracted() | {video_id}), indent=1))
+
+
 def extract(video_id):
     """Add a finished video's assets. Only videos that passed review or were posted feed the library."""
     row = _video(video_id)
     if not (row["review_pass"] or row["status"] in ("approved", "posted")):
+        _mark_extracted(video_id)   # looked at: nothing worth keeping
         return {"skipped": f"{video_id} didn't pass review; nothing taken"}
     base = Path(row["plan"]).parent
     out = Path(row["out_dir"])
@@ -116,6 +130,7 @@ def extract(video_id):
             add("scenes", {"id": aid("scenes", sc["world"]), "template": sc["template"], "world": sc["world"], "metaphor": sc.get("metaphor"),
                            "why": sc.get("why", ""), "data": shape, "visual_score": scores.get("visual_storytelling"),
                            "keys": keys(said + " " + sc["world"] + " " + sc.get("why", ""))})
+    _mark_extracted(video_id)
     return {"video": video_id, "added": added}
 
 

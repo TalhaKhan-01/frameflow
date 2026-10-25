@@ -29,6 +29,10 @@ def db():
     con = sqlite3.connect(DB)
     con.row_factory = sqlite3.Row
     con.executescript(TABLES)
+    cols = {r[1] for r in con.execute("PRAGMA table_info(card_runs)")}
+    for c in ("day", "post_at"):   # daily card posts ride along with the day's Short
+        if c not in cols:
+            con.execute(f"ALTER TABLE card_runs ADD COLUMN {c} TEXT")
     return con
 
 
@@ -287,13 +291,40 @@ def make(run, notes=""):
     preview(run)
 
 
+def make_for_day(day, brief_path):
+    """The daily card post: made from the same researched brief as the day's Short, posted with it at the post time."""
+    run = f"cards-{day}"
+    con = db()
+    con.execute("DELETE FROM card_runs WHERE id=?", (run,))
+    con.execute("INSERT INTO card_runs (id, state, options, chosen, brief, day, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?)",
+                (run, "picked", "[]", json.dumps({"kind": "brief", "brief": str(brief_path)}), str(brief_path), day, now(), now()))
+    con.commit()
+    make(run)
+    return run
+
+
+def queue_or_post(run):
+    """Approve: a daily card post waits for the day's post time (like the Short); a one-off card posts at once."""
+    from frameflow import daily
+    r = get(run)
+    if r.get("day"):
+        slot = daily.at(r["day"], daily.cfg()["post_at"])
+        if dt.datetime.now() < slot:
+            update(run, state="queued", post_at=slot.isoformat(), note=f"approved; post at {slot}")
+            return f"Approved. The card post goes out with the Short at {slot.strftime('%H:%M on %a %d %b')}."
+    update(run, state="posting", note="approved; posting now")
+    spawn("post", run)
+    return "Approved. Posting the carousel on Instagram and Facebook now."
+
+
 def preview(run):
     r = get(run)
     out = OUT / run
     paths = sorted(out.glob("slide-*.png"))
     pack = json.loads(r["caption"])
     telegram.send_album(paths, caption=f"Habit card post: {json.loads(r['slides'])['title']}")
-    msg = telegram.send("Caption (Instagram):\n\n" + pack["ig_caption"][:3500] + "\n\nApprove to post now on Instagram and Facebook.",
+    when = "with the Short at the post time" if r.get("day") else "now"
+    msg = telegram.send("Caption (Instagram):\n\n" + pack["ig_caption"][:3500] + f"\n\nApprove to post it {when} on Instagram and Facebook.",
                         [[("✅ Approve", f"cardok:{run}")], [("✏️ Revise", f"cardrev:{run}"), ("❌ Reject", f"cardno:{run}")]])
     update(run, state="preview-sent", preview_msg=msg, note="preview sent")
 

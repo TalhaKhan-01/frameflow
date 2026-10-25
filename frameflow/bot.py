@@ -100,9 +100,7 @@ def on_callback(cb):
             cards.update(run_id, state="skipped", note="skipped")
             return telegram.clear_buttons(cr["preview_msg"], "No card post today.")
         if kind == "cardok" and cr["state"] == "preview-sent":
-            telegram.clear_buttons(cr["preview_msg"], "Approved. Posting the carousel on Instagram and Facebook now.")
-            cards.update(run_id, state="posting", note="approved")
-            return cards.spawn("post", run_id)
+            return telegram.clear_buttons(cr["preview_msg"], cards.queue_or_post(run_id))
         if kind == "cardrev" and cr["state"] == "preview-sent":
             if cr["revisions"] >= 2:
                 return telegram.send("That's 2 revisions already. Approve or Reject this one.")

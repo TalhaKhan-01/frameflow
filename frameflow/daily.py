@@ -205,6 +205,12 @@ def make(day):
         raise RuntimeError(f"plan invalid after the director's fix: {r.get('errors')}")
     update(day, video_id=r["video"], note=f"made {r['video']}: {r['status']}, review {r['review']}")
     video_card(day)
+    try:   # the day's card post, from the same brief (no second topic choice, little extra cost)
+        from frameflow import cards
+        cards.make_for_day(day, path)
+        update(day, note="card post made")
+    except Exception as e:
+        update(day, note=f"card post failed: {str(e)[:200]}")
 
 
 def preview(final, out):
@@ -347,6 +353,14 @@ def tick():
     tomorrow = (t.date() + dt.timedelta(days=1)).isoformat()
     if not c.get("paused") and t >= at(t.date().isoformat(), c["topic_card_at"]) and not get(tomorrow):
         spawn_scout(tomorrow)
+    try:   # card posts approved for today's slot
+        from frameflow import cards
+        for cr in [dict(x) for x in cards.db().execute("SELECT * FROM card_runs WHERE state='queued' AND post_at IS NOT NULL")]:
+            if t >= dt.datetime.fromisoformat(cr["post_at"]):
+                cards.update(cr["id"], state="posting", note="post time")
+                cards.spawn("post", cr["id"])
+    except Exception as e:
+        print(f"card queue: {e}", file=sys.stderr)
     for run in stats_due():
         update(run["day"], stats_at=t.isoformat())
         try:
@@ -354,6 +368,13 @@ def tick():
             stats48.collect(run["video_id"])
         except Exception as e:
             print(f"stats {run['day']}: {e}", file=sys.stderr)
+        try:   # stats are in: the library has its assets, so the bulky files can go
+            from frameflow import cleanup, library
+            library.extract(run["video_id"])
+            freed = cleanup.clean(run["video_id"])
+            update(run["day"], note=f"cleanup: {freed}")
+        except Exception as e:
+            print(f"cleanup {run['day']}: {e}", file=sys.stderr)
     if t.weekday() == 6 and t.hour >= 21:
         weekly()
     for run in [dict(r) for r in db().execute("SELECT * FROM runs WHERE state NOT IN ('posted','skipped','rejected')")]:
