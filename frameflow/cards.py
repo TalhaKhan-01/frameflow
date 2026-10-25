@@ -318,8 +318,8 @@ def post(run):
         links["facebook"] = json.loads(p.stdout[p.stdout.rindex("{"):])["url"]
     except Exception as e:
         errors["facebook"] = str(e)[-300:]
-    try:
-        p = subprocess.run(["uv", "run", "python", "-m", "frameflow.pilot", "carousel", str(out / "ig.txt"), *paths], cwd=ROOT,
+    try:   # Instagram API, images hosted on the Facebook Page; the caption travels as data (the web composer dropped it)
+        p = subprocess.run(["python3", "-I", str(up / "instagram.py"), "--project", str(ROOT), "carousel", str(out / "ig.txt"), *paths],
                            capture_output=True, text=True, timeout=1800)
         if p.returncode:
             raise RuntimeError((p.stderr or p.stdout)[-400:])

@@ -121,6 +121,8 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
         return json.loads(r.stdout[r.stdout.rindex("{"):])
 
     pilot = ["uv", "run", "python", "-m", "frameflow.pilot"]
+    # Facebook first: its Reel gives Instagram a public video URL, so Instagram posts by API with the caption as data
+    platforms = sorted(platforms, key=lambda x: {"facebook": 0, "youtube": 1, "instagram": 2}.get(x, 3))
     for platform in platforms:
         try:
             if platform == "youtube" and mode == "studio":
@@ -132,14 +134,21 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
                 results["youtube"] = run(["python3", "-I", str(UPLOADER / "youtube.py"), "--project", str(ROOT), "upload",
                                           str(out / "final.mp4"), str(out / "youtube-meta.json")])
             elif platform == "instagram":
-                cmd = ["python3", "-I", str(UPLOADER / "instagram.py"), "--project", str(ROOT), "publish", str(out / "final.mp4"),
-                       str(out / "instagram-caption.txt")]
-                if report.get("cover_at"):
-                    cmd += ["--thumb-offset", str(int(report["cover_at"] * 1000))]
-                try:
-                    results["instagram"] = run(cmd)
-                except RuntimeError as e:   # the API refuses long Reels (ProcessingFailedError over ~40 s): post on the web
-                    results["instagram_api_error"] = str(e)[-300:]
+                offset = ["--thumb-offset", str(int(report["cover_at"] * 1000))] if report.get("cover_at") else []
+                src = (results.get("facebook") or {}).get("source")
+                attempts = []
+                if src:   # 1) the Facebook Reel's public video URL (no upload from here, caption as data)
+                    attempts.append(["python3", "-I", str(UPLOADER / "instagram.py"), "--project", str(ROOT), "reel-url", src,
+                                     str(out / "instagram-caption.txt"), *offset])
+                attempts.append(["python3", "-I", str(UPLOADER / "instagram.py"), "--project", str(ROOT), "publish",   # 2) direct upload
+                                 str(out / "final.mp4"), str(out / "instagram-caption.txt"), *offset])
+                for cmd in attempts:
+                    try:
+                        results["instagram"] = run(cmd)
+                        break
+                    except RuntimeError as e:
+                        results.setdefault("instagram_api_errors", []).append(str(e)[-300:])
+                else:   # 3) last resort: the web (its caption can get lost, so the result says so)
                     results["instagram"] = run(pilot + ["instagram", video_id])
             elif platform == "facebook":
                 results["facebook"] = run(["python3", "-I", str(UPLOADER / "facebook.py"), "--project", str(ROOT), "publish",
