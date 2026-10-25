@@ -1,0 +1,14 @@
+{
+ "_about": "Frameflow's config for the social-caption skill (~/Talha_Khan/Claude/skills/social-caption). The channel tag goes on every post so all of Habit's videos are findable together.",
+ "channel_tag": "#habitexplains",
+ "handle": "@madebythirdspace",
+ "audience": "Indians aged 18-30, curious about tech, AI and money; most don't code",
+ "voice": "Habit: informative, plain words, a little goofy; never hype, never fear-mongering",
+ "model": "sonnet",
+ "hashtag_pools": {
+  "broad": ["#tech", "#ai", "#technology", "#money", "#finance", "#internet"],
+  "audience": ["#techindia", "#indiantech", "#india", "#learnontiktok", "#learnsomethingnew"],
+  "format": ["#shorts", "#techexplained", "#explained", "#reels", "#didyouknow"]
+ },
+ "banned_tags": ["#follow4follow", "#f4f", "#like4like", "#l4l", "#likeforlikes", "#followforfollow", "#followback", "#viral", "#explorepage", "#fyp", "#foryou"]
+}

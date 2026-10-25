@@ -57,17 +57,22 @@ def publish(video_id):
     plan = json.loads(Path(row["plan"]).read_text())
     sources = sorted({u for s in plan["scenes"] for u in s.get("sources", [])})
     script = "\n".join(s.get("say", "") for s in plan["scenes"])
-    p = llm.call(f"Title: {plan['title']}\nLane: {plan['lane']}\nScript:\n{script}\nSources:\n" + "\n".join(sources),
-                 PACK_SYSTEM, PACK_SCHEMA, model="haiku", purpose=f"publish:{video_id}", effort="low")
-    if not all(u in p["yt_description"] for u in sources):
-        p["yt_description"] += "\n\nSources:\n" + "\n".join(sources)
-    # CC BY music must be credited where viewers can see it: description (YouTube) and caption (Instagram)
+    # CC BY music must be credited where viewers can see it: the skill appends these verbatim on every platform
     assets = json.loads((out / "assets.json").read_text()) if (out / "assets.json").exists() else []
     credits = [r["credit"] for r in assets if r.get("credit")]
-    if credits:
-        p["yt_description"] += "\n\nMusic:\n" + "\n\n".join(credits)
-        p["ig_caption"] += "\n\nMusic: " + "; ".join(c.splitlines()[0] for c in credits) + " (CC BY 4.0)"
-    problems = pack_problems(p)
+    brief_file = ROOT / "briefs" / f"{Path(row['plan']).parent.name}.json"   # make2 names the output folder after the brief
+    brief = json.loads(brief_file.read_text()) if brief_file.exists() else {}
+    inp = {"title": plan["title"], "script": script, "lane": plan["lane"], "sources": sources, "credits": credits,
+           "facts": [f["text"] for f in brief.get("facts", [])], "cautions": brief.get("cautions", [])}
+    (out / "caption-input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1))
+    import os
+    import subprocess
+    r = subprocess.run(["python3", "-I", str(CAPTION), "--project", str(ROOT), "write", str(out / "caption-input.json"), "--out", str(out / "caption-pack.json")],
+                       capture_output=True, text=True, timeout=1800, env=dict(os.environ, CLAUDE_CONFIG_DIR=llm.CONFIG_DIR))
+    if r.returncode:
+        raise SystemExit(f"social-caption failed: {(r.stderr or r.stdout)[-600:]}")
+    p = json.loads((out / "caption-pack.json").read_text())
+    problems = p.get("problems", []) + pack_problems(p)
     report = json.loads((out / "report.json").read_text()) if (out / "report.json").exists() else {}
     p["cover"], p["cover_at"] = report.get("cover"), report.get("cover_at")
     md = [f"# Publish pack: {plan['title']}", "", f"Video file: `{out / 'final.mp4'}` ({row['lane']})", "",
@@ -75,6 +80,7 @@ def publish(video_id):
           "## YouTube Shorts", f"**Title** ({len(p['yt_title'])} chars): {p['yt_title']}", "", "**Description:**", "", p["yt_description"], "",
           f"**Tags:** {', '.join(p['yt_tags'])}", "", f"**Pinned comment:** {p['pinned_comment']}", "",
           "## Instagram Reels", "**Caption:**", "", p["ig_caption"], "",
+          "## Facebook Reels", "**Caption:**", "", p.get("fb_caption", p["ig_caption"]), "",
           "## Upload checklist",
           "- [ ] YouTube Studio → Create → Upload → final.mp4; paste title, description, tags; audience: not made for kids",
           "- [ ] 'Altered or synthetic content': the narration voice is AI-generated; tick it if YouTube's question applies to this video",
@@ -90,6 +96,7 @@ def publish(video_id):
 
 
 UPLOADER = Path.home() / "Talha_Khan" / "Claude" / "skills" / "social-upload" / "scripts"
+CAPTION = Path.home() / "Talha_Khan" / "Claude" / "skills" / "social-caption" / "scripts" / "caption.py"
 
 
 def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="public"):
@@ -102,6 +109,7 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
         publish(video_id)
     p = json.loads((out / "publish.json").read_text())
     (out / "instagram-caption.txt").write_text(p["ig_caption"])
+    (out / "facebook-caption.txt").write_text(p.get("fb_caption", p["ig_caption"]))
     report = json.loads((out / "report.json").read_text()) if (out / "report.json").exists() else {}
     mode = json.loads((ROOT / "research" / "social-upload.json").read_text()).get("youtube_mode", "api")
     results = {}
@@ -135,7 +143,7 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
                     results["instagram"] = run(pilot + ["instagram", video_id])
             elif platform == "facebook":
                 results["facebook"] = run(["python3", "-I", str(UPLOADER / "facebook.py"), "--project", str(ROOT), "publish",
-                                           str(out / "final.mp4"), str(out / "instagram-caption.txt")])
+                                           str(out / "final.mp4"), str(out / "facebook-caption.txt")])
         except Exception as e:
             results[platform] = {"error": str(e)[-600:]}
     yt = results.get("youtube") or {}
