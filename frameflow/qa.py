@@ -69,10 +69,11 @@ def visual_events(path, fps=12, changed=0.7, min_sep=0.5):
 PAPER = (0xF3, 0xEE, 0xE4)   # Paper Press background (--ff-bg)
 
 
-def blank_spans(path, fps=4, ink=0.05, min_len=0.75):
-    """Stretches where the picture above the caption band is close to empty paper: under `ink` of its pixels differ
-    clearly from the background for at least `min_len` seconds. Calibrated on Black October (2026-10-25): flags the
-    near-empty frames the reviewer saw at 39, 43, 66 and 80 s; transitions (one frame) don't count."""
+def blank_spans(path, fps=4, ink=0.025, min_len=0.75):
+    """Stretches where the picture above the caption band is blank paper: under `ink` of its pixels differ clearly from
+    the background for at least `min_len` seconds. Calibrated on Black October (2026-10-25): a kicker alone measures
+    0.4-2%, one line of headline text 3-4%, a drawn scene 10-30%. So this catches empty frames (a template showing
+    nothing, a beat that never fires), not sparse text cards; those are the reviewer's call. Transitions don't count."""
     w, h = 270, 480
     raw = subprocess.run([media.FFMPEG, "-loglevel", "error", "-i", str(path), "-vf", f"fps={fps},scale={w}:{h}", "-f", "rawvideo",
                           "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
@@ -132,7 +133,7 @@ def run(out_dir):
              f"at {ev[gaps.index(max(gaps)) - 1] if gaps.index(max(gaps)) else 0:.1f} s")
         blanks = blank_spans(final)
         gate("blank-frames", not [s for s in blanks if s[1] - s[0] >= 1.0],
-             f"near-empty picture (under 5% drawn, 0.75 s or more): {blanks or 'none'}; fails at 1 s or more")
+             f"blank picture (under 2.5% drawn, 0.75 s or more): {blanks or 'none'}; fails at 1 s or more")
         rg = rehook_gaps(out)
         gate("rehooks", rg <= V2["max_rehook_gap"], f"longest stretch without a re-hook {rg:.1f} s (max {V2['max_rehook_gap']})")
     v = [s for s in media.probe(final)["streams"] if s["codec_type"] == "video"][0]

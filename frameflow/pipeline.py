@@ -93,6 +93,24 @@ def duck_envelope(vo, sr=sound.SR):
     return np.pad(out, (0, max(len(vo) - len(out), 0)), mode="edge" if len(out) else "constant")[: len(vo)]
 
 
+def cap_peaks(x, ceiling, sr=sound.SR):
+    """Gain-reduce only around peaks above `ceiling` (10 ms look-around, 80 ms release), so hits keep their punch
+    without poking out over the voice (Black October measured SFX at -0.1 dBFS against a -4.3 dBFS voice)."""
+    if ceiling <= 0 or float(np.abs(x).max()) <= ceiling:
+        return x
+    level = np.abs(x).max(axis=1) if x.ndim == 2 else np.abs(x)
+    g = np.minimum(1.0, ceiling / np.maximum(level, 1e-9))
+    w = max(int(0.01 * sr), 1)   # each 10 ms block takes its deepest reduction, so the attack lands before the peak
+    padded = np.pad(g, (0, (-len(g)) % w), constant_values=1.0)
+    g = padded.reshape(-1, w).min(axis=1).repeat(w)[: len(g)]
+    rel = 1 - np.exp(-1 / (0.08 * sr))
+    out, acc = np.empty_like(g), 1.0
+    for i, v in enumerate(g):   # instant attack, smooth release
+        acc = v if v < acc else acc + rel * (v - acc)
+        out[i] = acc
+    return x * (out[:, None] if x.ndim == 2 else out)
+
+
 def mix_v2(raw, out, voice_dir, plan, slots, total, sheet):
     """Voice + score (energy-automated, ducked under speech) + sound-effect cue sheet, then two-pass loudnorm."""
     work = Path(out).parent
@@ -105,6 +123,7 @@ def mix_v2(raw, out, voice_dir, plan, slots, total, sheet):
     duck = 10 ** (-VOICE_DUCK_DB * duck_envelope(voice_track[:, 0]) / 20)
     sfx = sound.place_sfx(sheet, total)
     sfx = np.pad(sfx, ((0, max(n - len(sfx), 0)), (0, 0)))[:n]
+    sfx = cap_peaks(sfx, float(np.abs(vo).max()) * 10 ** (-1 / 20))   # no hit louder than the voice's own peak
     pre = voice_track + score * duck[:, None] + sfx
     pre = pre / max(1.0, float(np.abs(pre).max()) / 0.95)
     music.write_wav(work / "premix.wav", pre)
