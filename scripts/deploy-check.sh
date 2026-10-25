@@ -5,7 +5,7 @@ set -euo pipefail
 CFG="$HOME/.config/vercel-personal/auth.json"
 TEAM=team_fds98RHa6xySDTWPlaNGxqcp
 case "${1:-studio}" in
-  studio)  PROJECT=frameflow-studio;  PATHS="/ /data/studio.enc /media/2026-10-25-black-october/preview.mp4" ;;
+  studio)  PROJECT=frameflow-studio;  SNAP=$(python3 -c "import json;print('studio.json' if json.load(open('web/access.json')).get('open') else 'studio.enc')" 2>/dev/null || echo studio.enc); PATHS="/ /data/$SNAP /media/2026-10-25-black-october/preview.mp4" ;;
   betadoc) PROJECT=frameflow-betadoc; PATHS="/ /documentation.html /live.json /media/latest/preview.mp4 /video/frameflow-tour.mp4 /video/frameflow-tour.vtt" ;;
   *) echo "usage: $0 studio|betadoc"; exit 2 ;;
 esac

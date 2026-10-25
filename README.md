@@ -6,7 +6,7 @@ An automated daily newsroom for one narrator, **Habit**: every day it picks a st
 
 **Live:**
 - Betadoc (story + docs): https://frameflow-betadoc.vercel.app
-- Studio (PIN-locked, read-only): https://frameflow-studio-tau.vercel.app
+- Studio (read-only; open for now, PIN lock switchable): https://frameflow-studio-tau.vercel.app
 
 ## Layout
 | Path | Holds |
@@ -34,9 +34,10 @@ The daily run needs no command: `frameflow-bot` ticks every 30 s and follows the
 
 ## Studio and betadoc
 ```
-uv run frameflow web export     # snapshot -> web/public/data/studio.enc (AES-GCM, PIN) + betadoc/public/live.json
+uv run frameflow web export     # snapshot -> web/public/data/studio.json (open) or studio.enc (AES-GCM, PIN) + betadoc/public/live.json
+uv run frameflow web open|lock  # switch the Studio between open and PIN-locked (web/access.json), then export
 uv run frameflow web refresh    # export, then commit + push only web/public and betadoc/public (runs after each post)
-cd web && npm ci && npm run build && FRAMEFLOW_WEB_PIN=... npm run walk
+cd web && npm ci && npm run build && npm run walk   # FRAMEFLOW_WEB_PIN=... when locked
 cd betadoc && npm ci && npm run build && npm run walk
 scripts/deploy-check.sh studio|betadoc
 ```

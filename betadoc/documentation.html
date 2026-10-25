@@ -64,7 +64,7 @@
         <p>Taps made while the laptop is off are handled when it starts at 10:00.</p>
 
         <h2 id="studio">2. The Studio</h2>
-        <p>The Studio is a read-only web app: <a href="https://frameflow-studio-tau.vercel.app" rel="noopener">frameflow-studio-tau.vercel.app</a>. Enter the PIN once per browser session. It has six pages:</p>
+        <p>The Studio is a read-only web app: <a href="https://frameflow-studio-tau.vercel.app" rel="noopener">frameflow-studio-tau.vercel.app</a>. It is open for now, with no PIN. It has six pages:</p>
         <ul>
           <li><b>Today</b>: each run's progress from topic card to posted, the three options with their scores, the Short, its card post and links.</li>
           <li><b>Videos</b>: every Short. A posted one plays here, with its automatic checks, the review row by row, the fixes asked for, keyframes and the full script.</li>
@@ -98,7 +98,7 @@
             <tr><td>Approval</td><td>A Telegram bot with a small state machine stored in SQLite, so a restart resumes where it stopped.</td></tr>
             <tr><td>Publishing</td><td>Captions per platform from one skill; Instagram and Facebook through the Meta Graph API; YouTube through a dedicated, signed-in browser until API uploads are approved.</td></tr>
             <tr><td>Learning</td><td>A lessons ledger fed by reviews, failed checks, owner notes and 48 h stats; the top 8 per area go into the prompts.</td></tr>
-            <tr><td>Studio</td><td>A static site. After each post the snapshot is exported, encrypted with AES-GCM under a key derived from the PIN (PBKDF2-SHA256, 600,000 rounds) and pushed; the browser decrypts it.</td></tr>
+            <tr><td>Studio</td><td>A static site. After each post the snapshot is exported and pushed. Access is one switch, <code>frameflow web open | lock</code> (web/access.json): open publishes plain JSON; locked encrypts it with AES-GCM under a key derived from the PIN (PBKDF2-SHA256, 600,000 rounds) and the browser decrypts it.</td></tr>
           </tbody>
         </table>
 

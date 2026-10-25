@@ -1,12 +1,12 @@
-// Headless walk of the Studio (P13.1.2): wrong PIN fails, right PIN opens every view at 1440 and 390 px,
-// 0 console errors, no horizontal overflow. Screenshots in web/walk/ (gitignored).
-// Usage: FRAMEFLOW_WEB_PIN=... node scripts/walk.mjs [base-url]   (default: vite preview on 127.0.0.1:7308)
+// Headless walk of the Studio (P13.1.2): every view at 1440 and 390 px, 0 console errors, no horizontal overflow.
+// Locked mode: a wrong PIN fails and the right PIN opens it. Open mode (web/access.json): no PIN screen at all.
+// Screenshots in web/walk/ (gitignored).
+// Usage: [FRAMEFLOW_WEB_PIN=...] node scripts/walk.mjs [base-url]   (default: vite preview on 127.0.0.1:7308)
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { chromium } from "playwright";
 
 const pin = process.env.FRAMEFLOW_WEB_PIN;
-if (!pin) { console.error("FRAMEFLOW_WEB_PIN is not set"); process.exit(2); }
 let base = process.argv[2];
 let server;
 if (!base) {
@@ -26,6 +26,11 @@ for (const width of [1440, 390]) {
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.goto(base + "/");
+  await page.waitForSelector(".mast, #pin", { timeout: 15000 });
+  if (await page.locator(".mast").count()) {
+    console.log(`${width}: open mode, no PIN screen`);
+  } else {
+  if (!pin) { console.error("locked mode: FRAMEFLOW_WEB_PIN is not set"); process.exit(2); }
   await page.fill("#pin", "00000000");
   await page.click("button[type=submit]");
   await page.waitForFunction(() => document.getElementById("pin-msg")?.textContent?.includes("doesn't open"), null, { timeout: 15000 })
@@ -34,6 +39,7 @@ for (const width of [1440, 390]) {
   await page.fill("#pin", pin);
   await page.click("button[type=submit]");
   await page.waitForSelector(".mast", { timeout: 15000 }).catch(() => fail(`${width}: right PIN did not open`));
+  }
   for (const v of views) {
     await page.goto(`${base}/#/${v}`);
     await page.waitForSelector(".page", { timeout: 15000 });
