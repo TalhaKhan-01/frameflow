@@ -49,6 +49,7 @@ module.exports = {
     {
       // Telegram bot + the daily tick (20:00 topic card, 22:30 auto-pick, 11:30 posting).
       name: "frameflow-bot",
+      treekill: false,   // a bot restart must not kill a video that is rendering (jobs run in their own sessions)
       cwd: ROOT,
       script: "/home/talha-khan/.local/bin/uv",
       interpreter: "none",
