@@ -203,6 +203,59 @@ def instagram(video_id):
     return {"url": url, "mode": "pilot"}
 
 
+def carousel(caption_file, images):
+    """A photo carousel (Habit cards, 1080x1350): upload all slides at once, keep 4:5, caption, share, return the link."""
+    caption = Path(caption_file).read_text()
+    connect()
+    ab("open", "https://www.instagram.com/", timeout=90)
+    time.sleep(5)
+    click(r'link "New post')
+    time.sleep(2)
+    try:
+        click(r'link "Post Post"')
+        time.sleep(2)
+    except PilotError:
+        pass
+    ab("upload", "input[type=file]", *images, timeout=600)
+    time.sleep(6)
+    js("(() => { const b=[...document.querySelectorAll('button')].find(x=>x.textContent.trim()==='OK'); b&&b.click(); return 1; })()")
+    js("(() => { const s=[...document.querySelectorAll('svg[aria-label]')].find(x=>/select crop/i.test(x.getAttribute('aria-label'))); if(!s) return 0; (s.closest('button,[role=button]')||s).dispatchEvent(new MouseEvent('click',{bubbles:true})); return 1; })()")
+    time.sleep(1)
+    js("(() => { const e=[...document.querySelectorAll('span,div')].find(e=>e.children.length===0 && e.textContent.trim()==='4:5'); e&&(e.closest('button,[role=button]')||e).click(); return !!e; })()")
+    nxt = "(() => { const n=[...document.querySelectorAll('div[role=button],button')].find(e=>e.textContent.trim()==='Next'); n&&n.click(); return !!n; })()"
+    js(nxt)
+    time.sleep(3)
+    js(nxt)   # past the filters step
+    wait_for("!!document.querySelector('div[role=dialog] div[contenteditable=true]')", 60, what="the caption box")
+    ab("focus", "div[role=dialog] div[contenteditable=true]")
+    ab("press", "Control+a")
+    ab("press", "Backspace")
+    for i, line in enumerate(caption.split("\n")):
+        if i:
+            ab("press", "Enter")
+        if line:
+            ab("keyboard", "inserttext", line)
+    first = caption.split("\n")[0].strip()
+    if first[:40] not in str(js("document.querySelector('div[role=dialog] div[contenteditable=true]').innerText")):
+        raise PilotError("the caption didn't take in Instagram's editor")
+    js("(() => { const n=[...document.querySelectorAll('div[role=dialog] div[role=button], div[role=dialog] button')].find(e=>e.textContent.trim()==='Share'); n&&n.click(); return !!n; })()")
+    wait_for("!/Sharing/.test(document.querySelector('div[role=dialog]')?.innerText||'')", 600, 10, "Instagram to finish sharing")
+    time.sleep(3)
+    ab("open", f"https://www.instagram.com/{IG_HANDLE}/", timeout=60)
+    time.sleep(5)
+    link = js("(() => { const a=[...document.querySelectorAll('a')].map(x=>x.href).find(h=>/\\/p\\//.test(h)); return a||''; })()")
+    m = re.search(r"/p/([A-Za-z0-9_-]+)", str(link))
+    if not m:
+        raise PilotError("shared, but the post's link wasn't found")
+    url = f"https://www.instagram.com/p/{m.group(1)}/"
+    ab("open", url, timeout=60)
+    time.sleep(5)
+    if first[:30] not in str(js("document.body.innerText")):
+        print("warning: caption not visible on the posted carousel", file=sys.stderr)
+        return {"url": url, "mode": "pilot", "caption_missing": True}
+    return {"url": url, "mode": "pilot"}
+
+
 def check():
     connect()
     ab("open", "https://studio.youtube.com", timeout=90)
@@ -216,11 +269,15 @@ def check():
 
 def main():
     ap = argparse.ArgumentParser(description="The Pilot in Frameflow's dedicated Chrome")
-    ap.add_argument("what", choices=["youtube", "instagram", "check"])
+    ap.add_argument("what", choices=["youtube", "instagram", "carousel", "check"])
     ap.add_argument("video_id", nargs="?")
+    ap.add_argument("images", nargs="*")
     a = ap.parse_args()
     try:
-        r = check() if a.what == "check" else (youtube if a.what == "youtube" else instagram)(a.video_id)
+        if a.what == "carousel":   # video_id holds the caption file here
+            r = carousel(a.video_id, a.images)
+        else:
+            r = check() if a.what == "check" else (youtube if a.what == "youtube" else instagram)(a.video_id)
     finally:
         ab("close", check=False)   # detaches; the dedicated Chrome keeps running under PM2
     print(json.dumps(r))

@@ -19,7 +19,7 @@ HELP = ("I'm Habit, Frameflow's bot.\n"
         "The video comes back here before 17:00: Approve, Revise (tell me what to change) or Reject. You can tap any time,\n"
         "even at night: I act on it when the laptop starts at 10:00.\n"
         "Approved before 11:30: posted at 11:30. Approved later: posted right away.\n\n"
-        "/status  where things are\n/profile [name]  model presets for experiments\n/feedback <notes>  your notes on the last video\n/log  what the current run is doing\n/ab  blind script test\n/pause  stop the daily runs\n/resume  start them again\n/retry  re-run a failed step")
+        "/status  where things are\n/cards  a Habit card post (carousel) for today\n/profile [name]  model presets for experiments\n/feedback <notes>  your notes on the last video\n/log  what the current run is doing\n/ab  blind script test\n/pause  stop the daily runs\n/resume  start them again\n/retry  re-run a failed step")
 
 
 def set_paused(flag):
@@ -79,6 +79,35 @@ def on_callback(cb):
     data = cb.get("data", "")
     telegram.answer(cb["id"])
     kind, _, rest = data.partition(":")
+    if kind.startswith("card"):   # Habit card posts (frameflow.cards)
+        from frameflow import cards
+        run_id = rest.split(":")[0]
+        cr = cards.get(run_id)
+        if not cr:
+            return telegram.send("That card post is gone.")
+        if kind == "cardpick" and cr["state"] == "topic-sent":
+            opts = json.loads(cr["options"])
+            choice = opts[int(rest.split(":")[1]) - 1]
+            cards.update(run_id, state="picked", chosen=json.dumps(choice, ensure_ascii=False), note=f"picked {choice['title'][:80]}")
+            telegram.clear_buttons(cr["preview_msg"])
+            telegram.send(f"Making the card post: {choice['title'][:120]}\nThe slides come back here in a few minutes.")
+            return cards.spawn("make", run_id)
+        if kind == "cardskip":
+            cards.update(run_id, state="skipped", note="skipped")
+            return telegram.clear_buttons(cr["preview_msg"], "No card post today.")
+        if kind == "cardok" and cr["state"] == "preview-sent":
+            telegram.clear_buttons(cr["preview_msg"], "Approved. Posting the carousel on Instagram and Facebook now.")
+            cards.update(run_id, state="posting", note="approved")
+            return cards.spawn("post", run_id)
+        if kind == "cardrev" and cr["state"] == "preview-sent":
+            if cr["revisions"] >= 2:
+                return telegram.send("That's 2 revisions already. Approve or Reject this one.")
+            cards.update(run_id, state="card-notes", note="waiting for notes")
+            return telegram.clear_buttons(cr["preview_msg"], "What should change on the slides? One message, please.")
+        if kind == "cardno" and cr["state"] == "preview-sent":
+            cards.update(run_id, state="rejected", note="rejected")
+            return telegram.clear_buttons(cr["preview_msg"], "Rejected, nothing posted.")
+        return telegram.send(f"That button is from an older step (the card post is now '{cr['state']}').")
     if kind == "ab":   # ab:<video>:<version shown as A>:<tap>
         video, first, tap = rest.split(":")
         chosen_v = first if tap == "A" else ("v2" if first == "v1" else "v1")
@@ -136,6 +165,9 @@ def on_text(text):
         return retry()
     if cmd == "/ab":
         return ab_test()
+    if cmd == "/cards":
+        from frameflow import cards
+        return cards.spawn("topics", "new")
     if cmd == "/profile":   # pipeline presets (models, rounds): /profile lists, /profile <name> switches for the next video
         from frameflow import profiles
         arg = t.split()[1] if len(t.split()) > 1 else ""
@@ -170,6 +202,18 @@ def on_text(text):
             lines = [l for l in logs[-1].read_text(errors="replace").splitlines() if l.strip() and "token" not in l.lower()][-6:]
             tail = f"\n\nLast lines of {logs[-1].name}:\n" + "\n".join(l[:160] for l in lines)
         return telegram.send(f"{run['day']} · {run['state']}\n{steps}{tail}")
+    from frameflow import cards
+    card_wait = cards.latest(("card-notes",))
+    if card_wait:
+        cards.update(card_wait["id"], notes=t, revisions=card_wait["revisions"] + 1, state="making", note="notes received")
+        telegram.send("Got it. Redoing the slides now.")
+        return cards.spawn("revise", card_wait["id"])
+    card_topic = cards.latest(("topic-sent",))
+    if card_topic and URL.search(t) and not latest(("topic-sent",)):
+        url = URL.search(t).group(0)
+        cards.update(card_topic["id"], state="picked", chosen=json.dumps({"kind": "story", "title": "", "url": url}), note=f"picked link {url}")
+        telegram.send("Making the card post from your link. The slides come back here in a few minutes.")
+        return cards.spawn("make", card_topic["id"])
     waiting = latest(("awaiting-notes",))
     if waiting:
         daily.update(waiting["day"], notes=t, revisions=waiting["revisions"] + 1, state="making", note="notes received")

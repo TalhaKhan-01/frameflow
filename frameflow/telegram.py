@@ -120,3 +120,24 @@ def updates(offset=None, wait=25):
     except (urllib.error.URLError, TimeoutError) as e:
         raise TelegramError(f"getUpdates: {_scrub(str(e))[:200]}") from None
     return d.get("result", [])
+
+
+def send_album(paths, caption=""):
+    """Up to 10 photos as one album (sendMediaGroup); the caption sits on the first photo. Returns the first message id."""
+    boundary = uuid.uuid4().hex
+    media = [{"type": "photo", "media": f"attach://p{i}", **({"caption": caption[:1024]} if i == 0 and caption else {})}
+             for i, _ in enumerate(paths[:10])]
+    body = bytearray()
+    for k, v in {"chat_id": str(chat_id()), "media": json.dumps(media)}.items():
+        body += f"--{boundary}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n".encode()
+    for i, p in enumerate(paths[:10]):
+        body += (f"--{boundary}\r\nContent-Disposition: form-data; name=\"p{i}\"; filename=\"{Path(p).name}\"\r\n"
+                 f"Content-Type: image/png\r\n\r\n").encode() + Path(p).read_bytes() + b"\r\n"
+    body += f"--{boundary}--\r\n".encode()
+    req = urllib.request.Request(_url("sendMediaGroup"), data=bytes(body), headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
+    try:
+        with urllib.request.urlopen(req, timeout=600) as r:
+            d = json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        raise TelegramError(f"sendMediaGroup: {e.code} {_scrub(e.read().decode('utf-8', 'replace'))[:300]}") from None
+    return d["result"][0]["message_id"]
