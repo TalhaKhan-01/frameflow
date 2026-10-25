@@ -3,9 +3,12 @@
     frameflow web export      write web/public/data/studio.enc (+ media) and betadoc/public/live.json (+ media)
     frameflow web refresh     export, then commit + push only web/public and betadoc/public
     frameflow web pin         print where the PIN lives (never the PIN itself)
+    frameflow web open|lock   switch the Studio between open (no PIN) and PIN-locked, then export
 
-The Studio is a static site, so the snapshot is locked with AES-GCM under a key derived from
-FRAMEFLOW_WEB_PIN (PBKDF2-SHA256); the page asks for the PIN and decrypts in the browser.
+Access lives in web/access.json ({"open": true|false}, tracked in git so the state is visible and reversible).
+Open: the snapshot is published as plain data/studio.json and the page shows it straight away.
+Locked: the snapshot is AES-GCM encrypted into data/studio.enc under a key derived from FRAMEFLOW_WEB_PIN
+(PBKDF2-SHA256); the page asks for the PIN and decrypts in the browser. Only one of the two files exists at a time.
 Media is copied only for items already posted in public. Paths, tokens and chat ids never leave the machine.
 """
 import base64
@@ -30,6 +33,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "frameflow.db"
 PLAN_DB = ROOT / "phasedoc" / "plan.db"
 WEB = ROOT / "web" / "public"
+ACCESS = ROOT / "web" / "access.json"
 BETA = ROOT / "betadoc" / "public"
 ITERATIONS = 600_000
 LANES = {"ai-news": "AI", "global-tech": "Tech", "india-tech": "India tech", "how-tech-works": "How tech works",
@@ -281,22 +285,41 @@ def pin():
         return value
 
 
+def is_open():
+    try:
+        return bool(json.loads(ACCESS.read_text()).get("open"))
+    except (OSError, ValueError):
+        return False   # no switch file: stay locked
+
+
+def set_access(open_):
+    ACCESS.write_text(json.dumps({"open": open_}) + "\n")
+    print(f"Studio is now {'open (no PIN)' if open_ else 'PIN-locked'}; exporting")
+    return export()
+
+
 def export():
     data = snapshot()
-    enc, key = WEB / "data" / "studio.enc", pin()
+    enc, plain = WEB / "data" / "studio.enc", WEB / "data" / "studio.json"
+    open_ = is_open()
+    key = None if open_ else pin()
     try:   # unchanged content (apart from the time stamp) keeps the old file, so a refresh has nothing to commit
-        old = decrypt(json.loads(enc.read_text()), key)
+        old = json.loads(plain.read_text()) if open_ else decrypt(json.loads(enc.read_text()), key)
         same = {**old, "generated": None} == {**data, "generated": None}
     except Exception:
         same = False
+    (enc if open_ else plain).unlink(missing_ok=True)   # one form at a time: the page tries studio.json first
     if same:
         print("snapshot unchanged")
         return old
     enc.parent.mkdir(parents=True, exist_ok=True)
-    enc.write_text(json.dumps(encrypt(data, key)))
+    if open_:
+        plain.write_text(json.dumps(data, ensure_ascii=False))
+    else:
+        enc.write_text(json.dumps(encrypt(data, key)))
     BETA.mkdir(parents=True, exist_ok=True)
     (BETA / "live.json").write_text(json.dumps(live(data), ensure_ascii=False, indent=1))
-    print(f"studio.enc: {len(data['runs'])} runs, {len(data['videos'])} videos, {len(data['cards'])} card posts, "
+    print(f"{'studio.json (open)' if open_ else 'studio.enc'}: {len(data['runs'])} runs, {len(data['videos'])} videos, {len(data['cards'])} card posts, "
           f"{len(data['lessons'])} lessons; live.json written")
     return data
 
@@ -325,6 +348,8 @@ def main(argv=None):
         export()
     elif a[0] == "refresh":
         print(refresh(" ".join(a[1:]) or "by hand"))
+    elif a[0] in ("open", "lock"):
+        set_access(a[0] == "open")
     elif a[0] == "pin":
         pin()
         print(f"FRAMEFLOW_WEB_PIN is in {secrets.SECRETS_FILE}")

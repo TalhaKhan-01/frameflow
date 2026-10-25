@@ -18,6 +18,22 @@ def test_round_trip_and_wrong_pin():
         webexport.decrypt(box, "00000000")
 
 
+def test_access_switch_writes_one_form(tmp_path, monkeypatch):
+    monkeypatch.setattr(webexport, "ACCESS", tmp_path / "access.json")
+    monkeypatch.setattr(webexport, "WEB", tmp_path / "public")
+    monkeypatch.setattr(webexport, "BETA", tmp_path / "beta")
+    monkeypatch.setattr(webexport, "snapshot", lambda: {"runs": [], "videos": [], "cards": [], "lessons": [], "generated": "t"})
+    monkeypatch.setattr(webexport, "live", lambda d: {})
+    monkeypatch.setattr(webexport, "pin", lambda: "12345678")
+    monkeypatch.setattr(webexport, "ITERATIONS", 1000)
+    assert not webexport.is_open()                       # no switch file: locked
+    webexport.set_access(True)
+    data = tmp_path / "public" / "data"
+    assert (data / "studio.json").exists() and not (data / "studio.enc").exists()
+    webexport.set_access(False)
+    assert (data / "studio.enc").exists() and not (data / "studio.json").exists()
+
+
 def test_scrub_drops_home_paths():
     assert webexport._scrub({"a": ["/home/someone/x/y/brief.json"]}) == {"a": ["brief.json"]}
 
@@ -41,9 +57,15 @@ def test_published_folders_hold_nothing_private():
                 assert v not in text, f"{f}: holds a secrets.env value"
 
 
-def test_live_snapshot_decrypts_with_the_pin():
-    box = json.loads((ROOT / "web" / "public" / "data" / "studio.enc").read_text())
-    data = webexport.decrypt(box, webexport.pin())
+def test_live_snapshot_opens():
+    """The published snapshot opens in whichever mode web/access.json sets (plain when open, PIN when locked)."""
+    folder = ROOT / "web" / "public" / "data"
+    if webexport.is_open():
+        data = json.loads((folder / "studio.json").read_text())
+        assert not (folder / "studio.enc").exists()
+    else:
+        data = webexport.decrypt(json.loads((folder / "studio.enc").read_text()), webexport.pin())
+        assert not (folder / "studio.json").exists()
     assert data["runs"] and data["videos"] and data["phasedoc"]
     for v in data["videos"]:
         assert ("media" in v) == (v["status"] == "posted")

@@ -1,5 +1,6 @@
-// Frameflow Studio: a read-only window on the daily pipeline. The snapshot (data/studio.enc) is
-// AES-GCM encrypted by `frameflow web export`; the PIN derives the key (PBKDF2-SHA256) here in the browser.
+// Frameflow Studio: a read-only window on the daily pipeline. Open mode (`frameflow web open`): the snapshot is
+// plain data/studio.json and shows at once. Locked mode (`frameflow web lock`): data/studio.enc is AES-GCM
+// encrypted by `frameflow web export`; the PIN derives the key (PBKDF2-SHA256) here in the browser.
 import "./style.css";
 
 type Any = any; // the snapshot is plain JSON from webexport.py
@@ -7,6 +8,7 @@ type Box = { v: number; iter: number; salt: string; iv: string; ct: string };
 
 const app = document.getElementById("app")!;
 let data: Any = null;
+let openMode = false; // true when the snapshot is published without a PIN
 
 const esc = (s: unknown) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -21,6 +23,14 @@ const store = {
   set: (v: string) => { try { sessionStorage.setItem("ff-pin", v); } catch { /* private mode */ } },
   clear: () => { try { sessionStorage.removeItem("ff-pin"); } catch { /* private mode */ } },
 };
+
+async function openSnapshot(): Promise<Any | null> {
+  try {
+    const r = await fetch("/data/studio.json", { cache: "no-store" });
+    if (!r.ok || !(r.headers.get("content-type") ?? "").includes("json")) return null; // SPA fallbacks answer with HTML
+    return await r.json();
+  } catch { return null; }
+}
 
 async function unlock(pin: string): Promise<Any> {
   const box: Box = await (await fetch("/data/studio.enc", { cache: "no-store" })).json();
@@ -80,7 +90,7 @@ function shell(active: string, body: string) {
   <header class="mast">
     <div class="mast-top">
       <span>Snapshot ${esc(time(gen))}</span>
-      <a href="#" id="lock-btn">Lock</a>
+      ${openMode ? "" : `<a href="#" id="lock-btn">Lock</a>`}
     </div>
     <a class="mast-title" href="#/today">The Habit Daily <span>Studio</span></a>
     <nav aria-label="Studio sections">${TABS.map(([k, l]) =>
@@ -88,7 +98,7 @@ function shell(active: string, body: string) {
   </header>
   <main class="page">${body}</main>
   <footer class="foot">Frameflow Studio · read-only · <a href="${esc(data.channels.youtube)}" rel="noopener">YouTube</a> · <a href="${esc(data.channels.instagram)}" rel="noopener">Instagram</a></footer>`;
-  document.getElementById("lock-btn")!.addEventListener("click", (e) => {
+  document.getElementById("lock-btn")?.addEventListener("click", (e) => {
     e.preventDefault(); store.clear(); data = null; location.hash = ""; lock();
   });
   window.scrollTo(0, 0);
@@ -292,6 +302,9 @@ function route() {
 }
 
 window.addEventListener("hashchange", route);
-const saved = store.get();
-if (saved) unlock(saved).then((d) => { data = d; route(); }).catch(() => { store.clear(); lock(); });
-else lock();
+openSnapshot().then((d) => {
+  if (d) { openMode = true; data = d; route(); return; }
+  const saved = store.get();
+  if (saved) unlock(saved).then((x) => { data = x; route(); }).catch(() => { store.clear(); lock(); });
+  else lock();
+});
