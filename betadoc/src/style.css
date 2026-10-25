@@ -79,6 +79,16 @@ section { padding: clamp(72px, 12vh, 140px) 16px; max-width: 1240px; margin: 0 a
 .counters dd small { font-size: .5em; color: var(--muted); }
 .counters div { display: flex; flex-direction: column-reverse; }
 
+.latest-link { margin: -8px 0 18px; font-size: .9rem; }
+button.btn { font: inherit; font-weight: 600; cursor: pointer; }
+.tour { padding: 0; border: 0; background: transparent; width: min(1100px, calc(100vw - 32px)); max-width: none; }
+.tour::backdrop { background: oklch(0.1 0.02 275 / .82); backdrop-filter: blur(6px); }
+.tour-box { position: relative; }
+.tour video { width: 100%; aspect-ratio: 16 / 10; display: block; border-radius: 14px; background: #000; box-shadow: 0 30px 90px oklch(0 0 0 / .6); }
+.tour-close { position: absolute; top: 12px; right: 12px; z-index: 2; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--night-2); color: var(--paper); font-size: 1rem; cursor: pointer; }
+.tour video::cue { font-family: var(--sans); background: oklch(0 0 0 / .7); }
+
 /* problem */
 .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; font-size: 1.12rem; color: var(--muted); }
 

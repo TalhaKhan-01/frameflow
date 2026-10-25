@@ -43,6 +43,14 @@ for (const [name, width, reduced] of [["desktop", 1440, false], ["phone", 390, f
         const c = document.getElementById("scrub"); const d = c.getContext("2d").getImageData(180, 320, 1, 1).data; return d[3];
       });
       if (!drawn) fail(`${tag}: scrub canvas never drew a frame`);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.click("#tour-open");
+      const ok = await page.waitForFunction(() => document.getElementById("tour").open && document.getElementById("tour-video").readyState >= 2,
+        null, { timeout: 20000 }).then(() => true).catch(() => false);
+      if (!ok) fail(`${tag}: tour video did not open and load`);
+      await page.waitForTimeout(1500);
+      await page.screenshot({ path: `walk/${tag}-tour.png` });
+      await page.click("#tour-close");
     }
     const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     if (over > 1) fail(`${tag}: horizontal overflow ${over}px`);

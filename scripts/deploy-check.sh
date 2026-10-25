@@ -6,7 +6,7 @@ CFG="$HOME/.config/vercel-personal/auth.json"
 TEAM=team_fds98RHa6xySDTWPlaNGxqcp
 case "${1:-studio}" in
   studio)  PROJECT=frameflow-studio;  PATHS="/ /data/studio.enc /media/2026-10-25-black-october/preview.mp4" ;;
-  betadoc) PROJECT=frameflow-betadoc; PATHS="/ /documentation.html /live.json /media/latest/preview.mp4" ;;
+  betadoc) PROJECT=frameflow-betadoc; PATHS="/ /documentation.html /live.json /media/latest/preview.mp4 /video/frameflow-tour.mp4 /video/frameflow-tour.vtt" ;;
   *) echo "usage: $0 studio|betadoc"; exit 2 ;;
 esac
 vercel --global-config "$HOME/.config/vercel-personal" whoami >/dev/null 2>&1 || true   # refreshes an expired token

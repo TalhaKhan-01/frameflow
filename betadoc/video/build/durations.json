@@ -1,0 +1,13 @@
+{
+ "pad": 0.7,
+ "scenes": {
+  "intro": 8.79,
+  "build": 9.236,
+  "checks": 7.42,
+  "approve": 8.316,
+  "studio": 7.905,
+  "video": 5.716,
+  "lessons": 5.73,
+  "outro": 2.781
+ }
+}

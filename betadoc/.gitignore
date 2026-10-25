@@ -1,3 +1,7 @@
 node_modules/
 dist/
 walk/
+video/frames/
+video/build/cache/
+video/samples/*.wav
+video/record.log

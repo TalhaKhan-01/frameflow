@@ -1,0 +1,45 @@
+{
+ "fps": 60,
+ "scenes": [
+  {
+   "id": "intro",
+   "frames": 569,
+   "start": 0
+  },
+  {
+   "id": "build",
+   "frames": 596,
+   "start": 9.483333333333333
+  },
+  {
+   "id": "checks",
+   "frames": 487,
+   "start": 19.416666666666668
+  },
+  {
+   "id": "approve",
+   "frames": 541,
+   "start": 27.533333333333335
+  },
+  {
+   "id": "studio",
+   "frames": 516,
+   "start": 36.55
+  },
+  {
+   "id": "video",
+   "frames": 403,
+   "start": 45.15
+  },
+  {
+   "id": "lessons",
+   "frames": 386,
+   "start": 51.86666666666667
+  },
+  {
+   "id": "outro",
+   "frames": 209,
+   "start": 58.3
+  }
+ ]
+}

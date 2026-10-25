@@ -1,0 +1,48 @@
+{
+ "provider": "kokoro",
+ "voice": "af_heart",
+ "speed": 0.85,
+ "pad": 0.7,
+ "scenes": [
+  {
+   "id": "intro",
+   "say": "Here's the idea. Every day, a short video about tech, A.I. or money gets made and posted, and nobody edits it by hand.",
+   "caption": "A Short a day, made and posted on its own."
+  },
+  {
+   "id": "build",
+   "say": "It starts with a story. Frameflow finds one, checks the facts, writes the script in Habit's voice, then draws and voices every scene.",
+   "caption": "Story, facts, script, drawn scenes, voice."
+  },
+  {
+   "id": "checks",
+   "say": "Then it checks its own work. Eleven automatic tests and a review against a quality bar, before anyone sees it.",
+   "caption": "11 automatic checks and a model review."
+  },
+  {
+   "id": "approve",
+   "say": "The owner gets one card on Telegram. Tap approve, and it posts at eleven thirty, on YouTube, Instagram and Facebook.",
+   "caption": "One tap on Telegram. Posted at 11:30 on three platforms."
+  },
+  {
+   "id": "studio",
+   "say": "You can watch all of it in the Studio. Here's today's run. The stories it found. The one it picked. And when it posts.",
+   "caption": "The Studio: today's run, live."
+  },
+  {
+   "id": "video",
+   "say": "Open a video. You'll see every check it passed, how the reviewer scored it, and the whole script.",
+   "caption": "Every check, every score, the full script."
+  },
+  {
+   "id": "lessons",
+   "say": "And it learns. Every review, and every note, becomes a lesson that shapes the next video.",
+   "caption": "Reviews and notes become lessons for the next video."
+  },
+  {
+   "id": "outro",
+   "say": "Have a look around. Today's run is live.",
+   "caption": "Have a look. It's live."
+  }
+ ]
+}
