@@ -7,6 +7,7 @@ An automated daily newsroom for one narrator, **Habit**: every day it picks a st
 **Live:**
 - Betadoc (story + docs): https://frameflow-betadoc.vercel.app
 - Studio (read-only; open for now, PIN lock switchable): https://frameflow-studio-tau.vercel.app
+- Source (public, view only): https://github.com/TalhaKhan-01/frameflow
 
 ## Layout
 | Path | Holds |
