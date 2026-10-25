@@ -115,7 +115,10 @@ def mix_v2(raw, out, voice_dir, plan, slots, total, sheet):
     m = json.loads(r.stderr[r.stderr.rindex("{"):])
     norm = (f"loudnorm=I={TARGET_LUFS}:TP={TRUE_PEAK}:LRA=11:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
             f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
-    media.ffmpeg("-i", str(raw), "-i", str(work / "premix.wav"), "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-af", norm,
+    # loudnorm's linear mode can let a short sound-effect transient through: a brickwall at -3 dBFS keeps the
+    # encoded true peak under -1 dBTP (sound-effect hits measured 0.0 dBTP without it)
+    media.ffmpeg("-i", str(raw), "-i", str(work / "premix.wav"), "-map", "0:v", "-map", "1:a", "-c:v", "copy",
+                 "-af", norm + ",alimiter=limit=0.708:attack=1:release=60:level=disabled",
                  "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-t", f"{total:.3f}", out)
     return out, tracks
 
