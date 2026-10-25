@@ -118,4 +118,4 @@ def require_approved(video_id):
 
 
 def listing():
-    return [dict(r) for r in db().execute("SELECT id, status, lane, review_total, qa_pass, title FROM videos ORDER BY created_at DESC")]
+    return [dict(r) for r in db().execute("SELECT id, status, lane, review_total, qa_pass, title, note FROM videos ORDER BY created_at DESC")]

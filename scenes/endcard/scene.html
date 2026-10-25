@@ -16,7 +16,8 @@
           const sc = FF.scene("__ID__", D, DUR, { seed: 61, drift: 1.02 });
           const { s, k, C, tl } = sc;
           const serif = FF.tok("--ff-display"), body = FF.tok("--ff-body"), hand = FF.tok("--ff-hand");
-          const follow = FF.at(D, "follow", Math.min(1.0, DUR * 0.4));
+          // never before the cover moment: the thumbnail frame is taken at coverAt (word timings can run early)
+          const follow = Math.max(FF.at(D, "follow", Math.min(1.0, DUR * 0.4)), (D.coverAt ?? 0.7) + 0.2);
 
           // Habit mark (as on the channel avatar): "h" in a ring, red dot, smile line
           const mark = FF.el("g", {}, s);

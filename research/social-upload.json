@@ -8,7 +8,7 @@
  "instagram": {
   "secrets_file": "~/.config/frameflow/secrets.env",
   "token_file": "~/.config/frameflow/instagram-token.json",
-  "api_version": "v23.0"
+  "api_version": "v26.0"
  },
  "youtube_studio": {
   "session": "frameflow-yt",

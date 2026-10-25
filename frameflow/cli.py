@@ -105,7 +105,7 @@ def main():
     elif a.cmd == "status":
         from frameflow import videos
         for v in videos.listing():
-            print(f"{v['status']:18} {v['review_total'] or '-':>2}/12 qa:{'ok' if v['qa_pass'] else '--'}  {v['lane']:15} {v['id']}")
+            print(f"{v['status']:18} {v['review_total'] or '-':>2}/{20 if (v['note'] or '').startswith('v2') else 12} qa:{'ok' if v['qa_pass'] else '--'}  {v['lane']:15} {v['id']}")
     elif a.cmd in ("approve", "reject"):
         from frameflow import videos
         videos.set_status(a.video_id, "approved" if a.cmd == "approve" else "rejected", getattr(a, "why", ""))
