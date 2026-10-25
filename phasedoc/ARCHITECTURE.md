@@ -47,7 +47,7 @@ The top row is the groundwork. The two rows below are the daily pipeline, from a
     <text x="870" y="332" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">auto QA, AI review, Talha</text></g>
   <g id="comp-publish"><rect x="590" y="284" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
     <text x="675" y="312" text-anchor="middle" fill="currentColor" font-weight="600">Publish</text>
-    <text x="675" y="332" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">pack + manual upload</text></g>
+    <text x="675" y="332" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">pack, Pilot + API upload</text></g>
   <g id="comp-feedback"><rect x="400" y="284" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
     <text x="485" y="312" text-anchor="middle" fill="currentColor" font-weight="600">Feedback</text>
     <text x="485" y="332" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">48 h stats, weekly lessons</text></g>
@@ -78,10 +78,23 @@ The top row is the groundwork. The two rows below are the daily pipeline, from a
 | `assets` | Keyless stock, licence ledger, music and sound effects | P5 |
 | `render` | One-command render | P6 |
 | `qa` | Automatic checks, AI review, approval gate | P6 |
-| `publish` | Publish pack, post log | P7 |
+| `publish` | Publish pack (cover, credits), YouTube by The Pilot in Studio until the API audit, Instagram by API (The Pilot for long Reels), post log | P7 |
 | `feedback` | 48-hour stats and weekly learning | P7 |
 | `launch` | Pilot, cadence week, retrospective | P8 |
 | `writer` | shorts-writer skill: persona, hooks, beat sheet, slop linter, voice markup | P9 |
 | `director` | shorts-director skill: storyboard, metaphor bank, compiler | P9 |
 | `sound` | SFX library v2, cue-sheet mix, energy-curve beds | P9 |
 | `pilot` | Black October pilot video | P9 |
+
+## The v2 pipeline as it runs today (2026-10-25)
+One command per video, `frameflow make2 <brief.json>`, then Talha's approval, then `frameflow publish` / `upload`:
+
+1. **Brief** (`briefs/<slug>.json`): sourced facts and cautions.
+2. **Writer** (shorts-writer skill, Opus): angles, 20-hook room, judge keeps 3, beat script in Habit's voice with delivery markup. Budget 50-86 s.
+3. **Director** (shorts-director skill): storyboard (world, metaphor, scene template, cues, transitions, sound cues, music).
+4. **Cover** (`frameflow.cover`): cover title, drawing and stat. `compile_plan` appends the **house end card** (cover moment, spoken follow line, Follow button).
+5. **Render** (`pipeline.render`): Chatterbox voice → Whisper word timings → captions in the script's spelling → HyperFrames drawn scenes (Paper Press) → score + SFX mix, loudnorm and limiter → `final.mp4` + `cover.png`.
+6. **Checks**: 9 QA gates (length, visual events, re-hooks, size, loudness, black frames, caption WER, voice start, licences), then review v2 (Opus, 10 rows, pass at 15/20 with no row at 0). On a fail, the fixes go back to the writer and director (at most 2 rounds).
+7. **Approval**: Talha watches and says approve (`frameflow approve`). This is the only human step.
+8. **Publish**: pack (titles, description with sources and CC BY music credits, tags, caption). YouTube is uploaded and published by The Pilot in Studio; Instagram goes by API, or by The Pilot for Reels the API won't take. Then `frameflow posted` records the links.
+9. **Feedback**: 48-hour stats and the weekly learnings report (P7.3, P7.4: still to build).
