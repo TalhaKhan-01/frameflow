@@ -43,7 +43,7 @@ function lock(message = "") {
       <form id="pin-form" autocomplete="off">
         <label for="pin">Studio PIN</label>
         <div class="pin-row">
-          <input id="pin" name="pin" inputmode="numeric" autocomplete="one-time-code" maxlength="12" required aria-describedby="pin-msg" />
+          <input id="pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="12" required aria-describedby="pin-msg" />
           <button type="submit">Open</button>
         </div>
         <p id="pin-msg" class="pin-msg" role="alert">${esc(message)}</p>
