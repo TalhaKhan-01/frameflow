@@ -66,6 +66,30 @@ def visual_events(path, fps=12, changed=0.7, min_sep=0.5):
     return events, len(frames) / fps
 
 
+PAPER = (0xF3, 0xEE, 0xE4)   # Paper Press background (--ff-bg)
+
+
+def blank_spans(path, fps=4, ink=0.05, min_len=0.75):
+    """Stretches where the picture above the caption band is close to empty paper: under `ink` of its pixels differ
+    clearly from the background for at least `min_len` seconds. Calibrated on Black October (2026-10-25): flags the
+    near-empty frames the reviewer saw at 39, 43, 66 and 80 s; transitions (one frame) don't count."""
+    w, h = 270, 480
+    raw = subprocess.run([media.FFMPEG, "-loglevel", "error", "-i", str(path), "-vf", f"fps={fps},scale={w}:{h}", "-f", "rawvideo",
+                          "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
+    frames = np.frombuffer(raw, np.uint8).reshape(-1, h, w, 3).astype(np.int16)
+    y0, y1 = int(230 / 1920 * h), int(1280 / 1920 * h)
+    share = [(np.abs(fr[y0:y1] - np.array(PAPER)).sum(2) > 60).mean() for fr in frames]
+    spans, start = [], None
+    for i, s in enumerate(share + [1.0]):
+        if s < ink and start is None:
+            start = i
+        elif s >= ink and start is not None:
+            if (i - start) / fps >= min_len:
+                spans.append((round(start / fps, 2), round(i / fps, 2)))
+            start = None
+    return spans
+
+
 def rehook_gaps(out):
     """Longest stretch between re-hook moments, on the real voice timing (v2 plans with lines)."""
     plan = json.loads((out / "plan.json").read_text())
@@ -106,6 +130,9 @@ def run(out_dir):
         gate("events", rate >= V2["events_per_10s"] and max(gaps) <= V2["max_event_gap"],
              f"{rate:.1f} visual events per 10 s (min {V2['events_per_10s']}), longest gap {max(gaps):.1f} s (max {V2['max_event_gap']}) "
              f"at {ev[gaps.index(max(gaps)) - 1] if gaps.index(max(gaps)) else 0:.1f} s")
+        blanks = blank_spans(final)
+        gate("blank-frames", not [s for s in blanks if s[1] - s[0] >= 1.0],
+             f"near-empty picture (under 5% drawn, 0.75 s or more): {blanks or 'none'}; fails at 1 s or more")
         rg = rehook_gaps(out)
         gate("rehooks", rg <= V2["max_rehook_gap"], f"longest stretch without a re-hook {rg:.1f} s (max {V2['max_rehook_gap']})")
     v = [s for s in media.probe(final)["streams"] if s["codec_type"] == "video"][0]
@@ -118,7 +145,7 @@ def run(out_dir):
     gate("black", not black, f"{len(black)} black stretch(es) over {LIMITS['black_seconds']} s: {black[:3]}")
     script = json.loads((out / "script.json").read_text())
     words = json.loads((out / "voice" / "words.json").read_text())
-    err = captions.wer(" ".join(l["say"] for l in script["lines"]), " ".join(w["w"] for w in words))
+    err = captions.wer(re.sub(r"\[(chuckle|laugh)\]", " ", " ".join(l["say"] for l in script["lines"])), " ".join(w["w"] for w in words))
     gate("captions", err < LIMITS["wer"], f"word error rate {err:.1%} (max {LIMITS['wer']:.0%})")
     start = words[0]["s"] if words else None
     gate("voice-start", start is not None and start <= LIMITS["voice_start"], f"first word at {start} s")

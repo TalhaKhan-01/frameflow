@@ -70,10 +70,19 @@
             k.circle(doodle, dx, dy - 90, 60, { fill: C.ink });
             for (let j = -1; j <= 1; j++) { k.line(doodle, dx - 55, dy + j * 40, dx - 110, dy + j * 50); k.line(doodle, dx + 55, dy + j * 40, dx + 110, dy + j * 50); }
           }
+          // while the narrator introduces the speaker ("X says..."), the speaker and the quote marks are already up:
+          // the paper is never empty at the cut, and the who-beat later becomes a small nudge
+          const wordsAt = sc.beats.reduce((m, b, j) => (b.do === "words" ? Math.min(m, sc.when(b, j)) : m), 99);
+          const early = wordsAt > 0.4;
+          if (early) {
+            FF.draw(tl, marks, 0.05, 0.3);
+            tl.fromTo(who, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, onUpdate: place }, 0.1);
+          }
           sc.beats.forEach((b, j) => {
             const t = sc.when(b, j);
+            if (b.do === "who" && early) { tl.fromTo(who, { scale: 1.06 }, { scale: 1, duration: 0.25 }, t); return; }
             if (b.do === "words") {
-              FF.draw(tl, marks, t, 0.3);
+              if (!early) FF.draw(tl, marks, t, 0.3);
               const per = b.per ?? Math.min(0.12, 1.6 / spans.length);
               spans.forEach((sp, n) => tl.fromTo(sp, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.18, ease: "power2.out", onUpdate: place }, t + n * per));
             } else if (b.do === "mark") {

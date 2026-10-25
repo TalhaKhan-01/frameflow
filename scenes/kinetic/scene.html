@@ -47,8 +47,10 @@
           });
           const width = (it) => Math.min(it.t.getComputedTextLength(), 920);
 
+          // the first line is on screen within 0.3 s even when its cue word comes later: no empty paper at the cut
+          const firstLine = sc.beats.findIndex((b) => b.do === "line");
           sc.beats.forEach((b, i) => {
-            const at = sc.when(b, i);
+            const at = i === firstLine ? Math.min(sc.when(b, i), 0.3) : sc.when(b, i);
             if (b.do === "line") {
               const it = items[b.i ?? i];
               if (!it) return;

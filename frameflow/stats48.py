@@ -27,6 +27,21 @@ def _ig():
     return instagram
 
 
+def youtube_stats(url, since):
+    """Analytics API first (% viewed, average view seconds, watch time, shares, subs); public counts if it isn't on."""
+    import subprocess
+    m = re.search(r"(?:shorts/|v=|youtu\.be/)([A-Za-z0-9_-]{11})", url or "")
+    if m:
+        r = subprocess.run(["python3", "-I", str(SKILL / "youtube.py"), "--project", str(ROOT), "analytics", m.group(1),
+                            "--since", since or "2026-01-01"], capture_output=True, text=True, timeout=120)
+        if r.returncode == 0:
+            d = json.loads(r.stdout)
+            return {"views": d.get("views"), "avg_viewed_pct": d.get("averageViewPercentage"), "avg_view_s": d.get("averageViewDuration"),
+                    "minutes_watched": d.get("estimatedMinutesWatched"), "likes": d.get("likes"), "shares": d.get("shares"),
+                    "comments": d.get("comments"), "subs_gained": d.get("subscribersGained")}
+    return publish.youtube_public(url)
+
+
 def instagram_stats(url):
     ig = _ig()
     cfg = ig.config(str(ROOT))
@@ -70,16 +85,16 @@ def collect(video_id, send=True):
     row = con.execute("SELECT * FROM videos WHERE id=?", (video_id,)).fetchone()
     out = Path(row["out_dir"])
     t = videos.now()
-    yt = publish.youtube_public(row["youtube_url"])
+    yt = youtube_stats(row["youtube_url"], row["updated_at"][:10] if row["updated_at"] else None)
     ins, missing = instagram_stats(row["instagram_url"]) if row["instagram_url"] else ({}, ["no Instagram link"])
     keys = row.keys()
     fb, fb_missing = facebook_stats(out) if "facebook_url" in keys and row["facebook_url"] else ({}, [])
-    missing += fb_missing + ["YouTube % viewed and swipe-away (needs the YouTube Analytics scope)"]
+    missing += fb_missing + ([] if "avg_viewed_pct" in yt else ["YouTube % viewed (the YouTube Analytics API isn't enabled)"])
     for platform, s in (("youtube", yt), ("instagram", ins), ("facebook", fb)):
         if s:
             con.execute("INSERT INTO stats VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                         (video_id, platform, t, s.get("views"), s.get("likes"), s.get("comments"), s.get("shares"), s.get("saves"),
-                         None, None, None, json.dumps(s)))
+                         s.get("avg_viewed_pct"), None, s.get("subs_gained"), json.dumps(s)))
     con.commit()
     verdict = score_lessons(video_id, out, yt.get("views"))
     lines = [f"48 h stats: {row['title']}"]

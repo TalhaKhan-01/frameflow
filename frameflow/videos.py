@@ -86,6 +86,9 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
         if (q["pass"] and r["pass"]) or rounds >= 2:
             break
         rounds += 1   # the review's fixes go back to the writer and the director, then a fresh render
+        for name, g in q["gates"].items():   # failed automatic gates are the director's to fix too
+            if not g["pass"] and name in ("events", "blank-frames", "rehooks", "length"):
+                r.setdefault("fixes", []).append({"row": "pacing" if name != "rehooks" else "story", "fix": f"automatic check '{name}' failed: {g['detail']}"})
         (rout / f"review-round{rounds}.json").write_text(json.dumps(r, ensure_ascii=False, indent=1))
         d = direct.revise(brief_path, plan_path.parent, r, lane)
         if d["errors"]:

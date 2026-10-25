@@ -138,6 +138,14 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
                                            str(out / "final.mp4"), str(out / "instagram-caption.txt")])
         except Exception as e:
             results[platform] = {"error": str(e)[-600:]}
+    yt = results.get("youtube") or {}
+    if yt.get("url") and p.get("pinned_comment"):   # the pack's comment goes up under the Short (pinning stays a Studio click)
+        try:
+            vid = re.search(r"shorts/([A-Za-z0-9_-]{11})", yt["url"]).group(1)
+            results["youtube_comment"] = run(["python3", "-I", str(UPLOADER / "youtube.py"), "--project", str(ROOT), "comment", vid,
+                                              p["pinned_comment"]])
+        except Exception as e:
+            results["youtube_comment"] = {"error": str(e)[-300:]}
     (out / "upload.json").write_text(json.dumps(results, ensure_ascii=False, indent=1))
     links = {k: v["url"] for k, v in results.items() if isinstance(v, dict) and v.get("url")}
     con = videos.db()
