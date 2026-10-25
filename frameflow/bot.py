@@ -255,7 +255,7 @@ def loop():
                         on_callback(cb)
                     elif msg and msg.get("text"):
                         on_text(msg["text"])
-                except Exception as e:
+                except (Exception, SystemExit) as e:   # SystemExit too: a refused step must answer, not restart the bot
                     traceback.print_exc()
                     telegram.send(f"Something went wrong handling that: {str(e)[:200]}")
         except telegram.TelegramError as e:

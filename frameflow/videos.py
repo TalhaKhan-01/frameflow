@@ -132,12 +132,13 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
             "review": f"{r['total']}/{r.get('max', 12)}", "seconds": report["seconds"], "final": report["final"]}
 
 
-def set_status(video_id, status, note=""):
+def set_status(video_id, status, note="", force=False):
+    """force: Talha approves a video below the bar on purpose (its failures become lessons, see daily.approve)."""
     con = db()
     row = con.execute("SELECT * FROM videos WHERE id=?", (video_id,)).fetchone()
     if not row:
         raise SystemExit(f"no video {video_id}")
-    if status == "approved" and not (row["qa_pass"] and row["review_pass"]):
+    if status == "approved" and not force and not (row["qa_pass"] and row["review_pass"]):
         raise SystemExit(f"{video_id} has not passed qa and review; fix it before approving")
     con.execute("UPDATE videos SET status=?, note=?, updated_at=? WHERE id=?", (status, note or row["note"], now(), video_id))
     con.commit()

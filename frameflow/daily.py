@@ -319,7 +319,10 @@ def reflow(day):
 def approve(day):
     from frameflow import videos
     run = get(day)
-    videos.set_status(run["video_id"], "approved", "approved on Telegram")
+    row = videos.db().execute("SELECT * FROM videos WHERE id=?", (run["video_id"],)).fetchone()
+    below = not (row["qa_pass"] and row["review_pass"])
+    videos.set_status(run["video_id"], "approved", "approved anyway on Telegram (below the bar)" if below else "approved on Telegram",
+                      force=below)
     slot = at(day, cfg()["post_at"])
     t = now()
     post_at = slot if t < slot else t
@@ -328,6 +331,25 @@ def approve(day):
         telegram.clear_buttons(run["video_msg"])
     telegram.send(f"Approved. Posting {'at ' + slot.strftime('%H:%M on %a %d %b') if post_at == slot else 'now'} "
                   "on YouTube Shorts, Instagram and Facebook.")
+    if below:
+        keep_for_next(day, Path(row["out_dir"]))
+
+
+def keep_for_next(day, render_dir):
+    """Approved anyway: the failed checks and the reviewer's notes become lessons for the next videos."""
+    try:
+        from frameflow import lessons
+        r = lessons.distill(render_dir, source=f"{get(day)['video_id']} (approved anyway)",
+                            notes="Talha approved this video anyway although it is below the bar. "
+                                  "Make its failed checks and the reviewer's notes into lessons so the next videos avoid them.")
+        rows = {x["id"]: x for x in lessons.load()}
+        kept = [f"- {rows[i]['text']}" for i in r.get("reinforce", []) if i in rows]
+        kept += [f"- {x['text']}" for x in r.get("new", [])]
+        update(day, note=f"approved anyway: {len(r.get('new', []))} new lessons, {len(r.get('reinforce', []))} reinforced")
+        telegram.send("Kept for the next video:\n" + ("\n".join(kept)[:3500] or "- nothing new (already covered by existing lessons)"))
+    except Exception as e:
+        update(day, note=f"approved anyway, but saving lessons failed: {e}")
+        telegram.send(f"Approved, but I couldn't save its notes as lessons ({str(e)[:200]}). /retry won't redo this; tell me in chat.")
 
 
 # ---- post ----
