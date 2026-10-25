@@ -87,6 +87,8 @@ def direct(brief_path, out=None, lane="how-tech-works", skip_writer=False, skip_
     try:   # the learning loop: the current top lessons go into the writer's and director's house rules
         from frameflow import lessons
         (out / "lessons-used.json").write_text(json.dumps(lessons.write_files()))
+        from frameflow import profiles
+        profiles.snapshot(out)   # which profile (models, rounds) this video is made with
     except Exception as e:
         print(f"lessons: {e}")
     if not skip_writer:

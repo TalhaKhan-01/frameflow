@@ -88,15 +88,17 @@ def write(video_id):
         pass
     from frameflow import lessons
     taught = [l for l in lessons.load() if l["evidence"].startswith(slug) or slug in l["evidence"][:80]]
+    prof_file = Path(row["plan"]).parent / "profile.json"
+    profile = json.loads(prof_file.read_text()).get("profile") if prof_file.exists() else None
 
     fm = [f"type: source", f"kind: video", f"video_id: {yaml_str(video_id)}", f"date: {video_id[:10]}", f"lane: {row['lane']}",
           f"status: {row['status']}", "review: " + yaml_str(f"{rev.get('total', '?')}/{rev.get('max', 20)}"),
-          f"seconds: {rep.get('seconds', '')}"] + [f"{k}: {v}" for k, v in links.items()] + \
+          f"seconds: {rep.get('seconds', '')}"] + ([f"profile: {profile}"] if profile else []) + [f"{k}: {v}" for k, v in links.items()] + \
          [f"created: {video_id[:10]}", f"tags: [{', '.join(dict.fromkeys(tags))}]"]
     md = ["---", *fm, "---", f"# {row['title']}", "",
           f"[[{lane}]] video by [[Narrator Habit]], made by the [[Daily Automation]] pipeline. "
           f"Status **{row['status']}**, review **{rev.get('total', '?')}/{rev.get('max', 20)}**"
-          + (f", {rep['seconds']:.0f} s" if rep.get("seconds") else "") + ".", ""]
+          + (f", {rep['seconds']:.0f} s" if rep.get("seconds") else "") + (f", made with the **{profile}** profile" if profile else "") + ".", ""]
     if links:
         md += ["## Posted", *[f"- {k.capitalize()}: {v}" for k, v in links.items()], ""]
     if brief:

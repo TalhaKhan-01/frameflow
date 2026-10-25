@@ -90,7 +90,7 @@ SCHEMA_V2 = {"type": "object", "required": ["scores", "fixes", "summary"], "prop
     "summary": {"type": "string"}}}
 
 
-def keyframes_v2(out, every=3.0, cols=6):   # 3 s / 200 px since 2026-10-25: half the image tokens; QA gates watch every frame
+def keyframes_v2(out, every=3.0, cols=6, width=200):   # spacing and size come from the active profile (frameflow.profiles)
     """One frame every `every` seconds, in a grid (6 per row), each labelled with its time."""
     final = out / "final.mp4"
     total = media.duration(final)
@@ -99,7 +99,7 @@ def keyframes_v2(out, every=3.0, cols=6):   # 3 s / 200 px since 2026-10-25: hal
     for i, t in enumerate(times):
         f = out / f"kf{i}.jpg"
         media.ffmpeg("-ss", f"{t:.2f}", "-i", final, "-frames:v", "1", "-vf",
-                     f"scale=200:-2,drawtext=text='{t:.0f}s':x=8:y=8:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.6", f)
+                     f"scale={width}:-2,drawtext=text='{t:.0f}s':x=8:y=8:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.6", f)
         frames.append(f)
     for r in range(0, len(frames), cols):
         group = frames[r:r + cols]
@@ -118,9 +118,12 @@ def keyframes_v2(out, every=3.0, cols=6):   # 3 s / 200 px since 2026-10-25: hal
     return sheet
 
 
-def run_v2(out, plan, model="opus"):
-    from frameflow import qa
-    sheet = keyframes_v2(out)
+def run_v2(out, plan, model=None):
+    from frameflow import qa, profiles
+    pc = profiles.pipeline()   # the active profile's review settings
+    model = model or pc["review_model"]
+    sheet = keyframes_v2(out, pc["keyframe_every"], width=pc["keyframe_width"])
+    every_s = pc["keyframe_every"]
     ev, total = qa.visual_events(out / "final.mp4")
     gaps = [b - a for a, b in zip([0.0] + ev, ev + [total])]
     sfx = json.loads((out / "project" / "sfx.json").read_text()) if (out / "project" / "sfx.json").exists() else []
@@ -139,7 +142,7 @@ def run_v2(out, plan, model="opus"):
                  "after the story on purpose: judge the ending and the story on the last scene before it, and don't mark the "
                  "end card down as a goodbye." if plan["scenes"][-1]["type"] == "endcard" else "") +
               f"\n\nMusic plan: {music}\nSound cue sheet: {cue_sheet}\nMeasured: {len(ev) / total * 10:.1f} visual events per 10 s, "
-              f"longest gap {max(gaps):.1f} s, length {total:.1f} s.\n\nKey frames, one every 3 s with the time in the corner, left to right "
+              f"longest gap {max(gaps):.1f} s, length {total:.1f} s.\n\nKey frames, one every {every_s:g} s with the time in the corner, left to right "
               f"then top to bottom: {sheet}\nScore every row.")
     r = llm.call(prompt, SYSTEM_V2, SCHEMA_V2, model=model, tools="Read", add_dirs=[out], purpose=f"review2:{plan['id']}", effort="high")
     total_score = sum(r["scores"].values())

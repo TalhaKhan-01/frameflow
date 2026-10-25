@@ -46,6 +46,8 @@ def main():
         m2.add_argument("--skip-writer", action="store_true", help="reuse <out>/writer/script.json")
         m2.add_argument("--skip-director", action="store_true", help="reuse <out>/director/storyboard.json")
     sub.add_parser("status", help="list videos")
+    pf = sub.add_parser("profile", help="pipeline profiles: list | show | use <name> | save <name>")
+    pf.add_argument("args", nargs="*")
     ap_ = sub.add_parser("approve", help="Talha approves a video after watching it")
     ap_.add_argument("video_id")
     rj = sub.add_parser("reject", help="send a video back")
@@ -96,6 +98,9 @@ def main():
     elif a.cmd == "make":
         from frameflow import videos
         print(json.dumps(videos.make(a.idea_id), indent=1))
+    elif a.cmd == "profile":
+        from frameflow import profiles
+        profiles.main(a.args)
     elif a.cmd == "make2":
         from frameflow import videos
         print(json.dumps(videos.make2(a.brief, a.lane, a.out, a.skip_writer, a.skip_director), indent=1))

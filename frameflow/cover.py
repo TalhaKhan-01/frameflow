@@ -35,7 +35,9 @@ def brand():
     return json.loads(BRAND.read_text())
 
 
-def make(out_dir, model="haiku"):
+def make(out_dir, model=None):
+    from frameflow import profiles
+    model = model or profiles.pipeline()["cover_model"]
     out = Path(out_dir)
     path = out / "cover.json"
     if path.exists():

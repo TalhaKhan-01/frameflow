@@ -57,7 +57,9 @@ def loads(url, timeout=20):
         return getattr(e, "code", None) in (401, 403, 429)
 
 
-def build(url, title="", lane="", summary="", out=None, model="sonnet"):
+def build(url, title="", lane="", summary="", out=None, model=None):
+    from frameflow import profiles
+    model = model or profiles.pipeline()["brief_model"]
     prompt = (f"Story to research ({dt.date.today().isoformat()}):\nTitle: {title or '(from the link)'}\nLink: {url}\n"
               f"Lane: {lane}\nWhat we know so far: {summary or '-'}\nWrite the brief.")
     b = llm.call(prompt, SYSTEM, SCHEMA, model=model, tools="WebSearch,WebFetch", purpose=f"brief:{slugify(title or url)}",

@@ -1,0 +1,8 @@
+{
+  "_about": "token diet (from 2026-10-25): Opus only for the script draft, storyboard and review; Sonnet for hooks and fixes; Haiku for small jobs; 1 round each",
+  "pipeline": {"review_model": "opus", "keyframe_every": 3.0, "keyframe_width": 200, "max_auto_revisions": 1,
+               "brief_model": "sonnet", "cover_model": "haiku", "lessons_model": "haiku"},
+  "shorts-writer": {"writer_model": "opus", "hooks_model": "sonnet", "judge_model": "sonnet", "doctor_model": "sonnet", "doctor_rounds": 1},
+  "shorts-director": {"model": "opus", "doctor_model": "sonnet", "doctor_rounds": 1},
+  "social-caption": {"model": "sonnet"}
+}

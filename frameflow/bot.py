@@ -19,7 +19,7 @@ HELP = ("I'm Habit, Frameflow's bot.\n"
         "The video comes back here before 17:00: Approve, Revise (tell me what to change) or Reject. You can tap any time,\n"
         "even at night: I act on it when the laptop starts at 10:00.\n"
         "Approved before 11:30: posted at 11:30. Approved later: posted right away.\n\n"
-        "/status  where things are\n/feedback <notes>  your notes on the last video\n/log  what the current run is doing\n/ab  blind script test\n/pause  stop the daily runs\n/resume  start them again\n/retry  re-run a failed step")
+        "/status  where things are\n/profile [name]  model presets for experiments\n/feedback <notes>  your notes on the last video\n/log  what the current run is doing\n/ab  blind script test\n/pause  stop the daily runs\n/resume  start them again\n/retry  re-run a failed step")
 
 
 def set_paused(flag):
@@ -136,6 +136,17 @@ def on_text(text):
         return retry()
     if cmd == "/ab":
         return ab_test()
+    if cmd == "/profile":   # pipeline presets (models, rounds): /profile lists, /profile <name> switches for the next video
+        from frameflow import profiles
+        arg = t.split()[1] if len(t.split()) > 1 else ""
+        if arg:
+            if arg not in profiles.names():
+                return telegram.send(f"No profile '{arg}'. Profiles: {', '.join(profiles.names())}")
+            profiles.use(arg)
+            return telegram.send(f"Switched to '{arg}'. The next video is made with it (a video already in progress keeps its settings).")
+        active = profiles.pipeline().get("profile")
+        lines = [f"{'▶ ' if n == active else '  '}{n}: {json.loads((profiles.PROFILES / (n + '.json')).read_text()).get('_about', '')}" for n in profiles.names()]
+        return telegram.send("Profiles (/profile <name> to switch):\n" + "\n".join(lines))
     if cmd == "/feedback":   # Talha's notes on the latest posted (or made) video -> lessons for every next video
         words = t[len("/feedback"):].strip()
         if not words:
