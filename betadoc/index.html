@@ -34,7 +34,7 @@
         <p class="lede">Frameflow makes a daily 60–110 second Short for <b>Habit</b>, a narrator who explains tech, AI and money. It posts to YouTube, Instagram and Facebook at 11:30. The owner's whole job is one tap on Telegram.</p>
         <div class="ctas">
           <a class="btn" href="https://frameflow-studio-tau.vercel.app" rel="noopener">Open the live Studio</a>
-          <button class="btn ghost" type="button" id="tour-open"><span aria-hidden="true">▶</span> Watch the 1-minute tour</button>
+          <a class="btn ghost" href="#tour"><span aria-hidden="true">▶</span> Watch the 1-minute tour</a>
         </div>
         <p class="latest-link"><a href="#latest-yt" id="watch-link" rel="noopener" target="_blank">Watch the latest Short on YouTube ↗</a></p>
         <div class="wire" aria-live="polite">
@@ -64,6 +64,18 @@
       <div class="problem-grid">
         <p>Find a story worth telling today. Check the facts. Write a hook that holds people past the first two seconds. Draw it, voice it, cut it, mix it. Then post it three times, with three sets of captions.</p>
         <p>Do that by hand and the habit breaks in a week. Skip the checks and you post something wrong. Hand it to a generic AI tool and every video looks the same.</p>
+      </div>
+    </section>
+
+    <!-- TOUR: narrated walk through the working product (the Studio) -->
+    <section class="tour" id="tour" aria-labelledby="tour-title">
+      <p class="eyebrow">The tour · 1 minute</p>
+      <h2 id="tour-title">See it run, <em>in the Studio</em>.</h2>
+      <div class="tour-frame">
+        <video id="tour-video" controls playsinline preload="metadata" poster="/video/tour-poster.jpg">
+          <source src="/video/frameflow-tour.mp4" type="video/mp4" />
+          <track kind="captions" src="/video/frameflow-tour.vtt" srclang="en" label="English" default />
+        </video>
       </div>
     </section>
 
@@ -196,15 +208,6 @@
     </section>
   </main>
   <footer class="foot">Frameflow · a personal project by Talha Khan · fonts Fraunces, Space Grotesk, JetBrains Mono (OFL)</footer>
-  <dialog class="tour" id="tour" aria-label="Frameflow tour video">
-    <div class="tour-box">
-      <video id="tour-video" controls playsinline preload="none" poster="/video/tour-poster.jpg">
-        <source src="/video/frameflow-tour.mp4" type="video/mp4" />
-        <track kind="captions" src="/video/frameflow-tour.vtt" srclang="en" label="English" default />
-      </video>
-      <button class="tour-close" type="button" id="tour-close" aria-label="Close the tour">✕</button>
-    </div>
-  </dialog>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

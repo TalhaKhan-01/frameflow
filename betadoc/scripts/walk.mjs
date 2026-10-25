@@ -43,14 +43,14 @@ for (const [name, width, reduced] of [["desktop", 1440, false], ["phone", 390, f
         const c = document.getElementById("scrub"); const d = c.getContext("2d").getImageData(180, 320, 1, 1).data; return d[3];
       });
       if (!drawn) fail(`${tag}: scrub canvas never drew a frame`);
-      await page.evaluate(() => window.scrollTo(0, 0));
-      await page.click("#tour-open");
-      const ok = await page.waitForFunction(() => document.getElementById("tour").open && document.getElementById("tour-video").readyState >= 2,
-        null, { timeout: 20000 }).then(() => true).catch(() => false);
-      if (!ok) fail(`${tag}: tour video did not open and load`);
+      await page.click('a[href="#tour"]');
       await page.waitForTimeout(1500);
+      const inView = await page.evaluate(() => { const r = document.getElementById("tour-video").getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; });
+      if (!inView) fail(`${tag}: the tour button did not bring the video into view`);
+      const ok = await page.evaluate(async () => { const v = document.getElementById("tour-video"); v.muted = true;
+        try { await v.play(); } catch { return false; } await new Promise((r) => setTimeout(r, 1500)); const t = v.currentTime; v.pause(); return v.readyState >= 2 && t > 0; });
+      if (!ok) fail(`${tag}: tour video did not play`);
       await page.screenshot({ path: `walk/${tag}-tour.png` });
-      await page.click("#tour-close");
     }
     const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     if (over > 1) fail(`${tag}: horizontal overflow ${over}px`);

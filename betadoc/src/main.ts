@@ -54,18 +54,10 @@ sound.addEventListener("click", () => {
   sound.textContent = video.muted ? "Sound off" : "Sound on";
 });
 
-// ---------- tour dialog (narrated demo)
-const tour = document.getElementById("tour") as HTMLDialogElement;
+// ---------- tour (narrated demo): only one video plays at a time
 const tourVideo = document.getElementById("tour-video") as HTMLVideoElement;
-document.getElementById("tour-open")!.addEventListener("click", () => {
-  tour.showModal();
-  video.pause();
-  tourVideo.play().catch(() => {});
-});
-const closeTour = () => { tourVideo.pause(); tour.close(); };
-document.getElementById("tour-close")!.addEventListener("click", closeTour);
-tour.addEventListener("click", (e) => { if (e.target === tour) closeTour(); });
-tour.addEventListener("close", () => { tourVideo.pause(); if (!reduced) video.play().catch(() => {}); });
+tourVideo.addEventListener("play", () => video.pause());
+tourVideo.addEventListener("pause", () => { if (!reduced) video.play().catch(() => {}); });
 
 // ---------- scrubbed frames (the wow moment) ----------
 const N = 72;
