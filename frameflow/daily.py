@@ -268,6 +268,38 @@ def revise(day):
     video_card(day)
 
 
+def reflow(day):
+    """Re-review a made video with the current review (flow row included); weak flow -> a flow-only revision -> new card."""
+    from frameflow import direct, pipeline, review, videos
+    run = get(day)
+    row = videos.db().execute("SELECT * FROM videos WHERE id=?", (run["video_id"],)).fetchone()
+    if run.get("video_msg"):
+        telegram.clear_buttons(run["video_msg"])
+    telegram.send("Re-checking this video's flow with the new review before you approve it. A fresh card follows.")
+    update(day, state="making", note="reflow: re-review with the flow row")
+    r = review.run(Path(row["out_dir"]))
+    flow = r["scores"].get("flow", 2)
+    update(day, note=f"reflow review {r['total']}/{r['max']}, flow {flow}")
+    if flow < 2:
+        fixes = [x for x in r.get("fixes", []) if x["row"] == "flow"] or [{"row": "flow", "fix": "Smooth the seams between parts."}]
+        d = direct.revise(run["brief"], Path(row["plan"]).parent, {"fixes": fixes}, run["lane"])
+        if d["errors"]:
+            raise RuntimeError(f"revised plan invalid: {d['errors']}")
+        report = pipeline.render(Path(d["plan"]), Path(d["plan"]).parent / "render", "looks")
+        q, r = videos.check(Path(report["final"]).parent)
+        con = videos.db()
+        con.execute("UPDATE videos SET qa_pass=?, review_total=?, review_pass=?, status=?, note=?, updated_at=? WHERE id=?",
+                    (int(q["pass"]), r["total"], int(r["pass"]), "awaiting-approval" if q["pass"] and r["pass"] else "needs-work",
+                     f"v2 flow revision (review {r['total']}/{r['max']}, flow {r['scores'].get('flow')})", videos.now(), run["video_id"]))
+        con.commit()
+        update(day, note=f"after flow revision: review {r['total']}/{r['max']}, flow {r['scores'].get('flow')}")
+    else:
+        con = videos.db()
+        con.execute("UPDATE videos SET review_total=?, review_pass=?, updated_at=? WHERE id=?", (r["total"], int(r["pass"]), videos.now(), run["video_id"]))
+        con.commit()
+    video_card(day)
+
+
 def approve(day):
     from frameflow import videos
     run = get(day)
@@ -388,7 +420,7 @@ def status_text():
 
 def main():
     ap = argparse.ArgumentParser(description="Frameflow daily automation")
-    ap.add_argument("step", choices=["scout", "make", "revise", "post", "tick", "status"])
+    ap.add_argument("step", choices=["scout", "make", "revise", "reflow", "post", "tick", "status"])
     ap.add_argument("day", nargs="?")
     ap.add_argument("--day", dest="day_opt")
     a = ap.parse_args()
@@ -402,6 +434,8 @@ def main():
             make(day)
         elif a.step == "revise":
             revise(day)
+        elif a.step == "reflow":
+            reflow(day)
         elif a.step == "post":
             post(day)
         elif a.step == "tick":
@@ -409,7 +443,7 @@ def main():
         else:
             print(status_text())
     except Exception as e:
-        if day and a.step in ("make", "revise", "post", "scout") and get(day):
+        if day and a.step in ("make", "revise", "reflow", "post", "scout") and get(day):
             update(day, state="failed", job_pid=None, note=f"{a.step} failed: {e}")
             try:
                 telegram.send(f"The {a.step} step for {day} failed: {str(e)[:300]}\nReply /retry to try again.")
