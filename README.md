@@ -1,24 +1,46 @@
 # Frameflow
 
-Automated short vertical videos (9:16, under 60 s) for YouTube Shorts and Instagram Reels: idea → script → voice → visuals → captions → render → review. Free tools only.
+An automated daily newsroom for one narrator, **Habit**: every day it picks a story, writes it, storyboards it, renders a 60–110 s vertical Short, checks it, and posts it to YouTube Shorts, Instagram Reels and a Facebook Page at 11:30, plus a carousel card post from the same brief. The owner approves on Telegram; nothing posts without that tap.
 
-**Status:** research. Everything for Frameflow is in this one repo: code, config and the Obsidian vault (`vault/`).
+**Status:** running daily since 25 Oct 2026 (first fully automatic post 26 Oct). Build tracked in the phasedoc (`phasedoc/BUILDPLAN.md`, cockpit http://127.0.0.1:7300).
+
+**Live:**
+- Betadoc (story + docs): https://frameflow-betadoc.vercel.app
+- Studio (PIN-locked, read-only): https://frameflow-studio-tau.vercel.app
 
 ## Layout
 | Path | Holds |
 |---|---|
-| `vault/` | Obsidian vault: docs, decisions, research, knowledge graph (open this folder in Obsidian) |
-| `research/niche-study.json` | Lanes and queries for the `niche-study` skill |
-| `data/` | Local SQLite data (gitignored) |
-| `frameflow/` | Pipeline code (to come) |
+| `frameflow/` | Pipeline (Python): `daily.py` + `bot.py` (schedule, Telegram), `brief.py` → `direct.py` → `pipeline.py` → `qa.py` + `review.py`, `cards.py`, `publish.py`, `lessons.py`, `library.py`, `stats48.py`, `cleanup.py`, `webexport.py` |
+| `scenes/` | HyperFrames scene templates and the shared theme (fonts bundled, OFL) |
+| `research/` | Niche config, lessons ledger, asset library, house rules |
+| `briefs/`, `plans/` | Sourced briefs and scene plans |
+| `web/` | Studio web app (Vite + TS), Vercel project `frameflow-studio` |
+| `betadoc/` | Betadoc site (Vite + TS, GSAP, WebGL), Vercel project `frameflow-betadoc`; concept in `betadoc/CONCEPT.md` |
+| `phasedoc/` | Build plan (`plan.py`, `plan.db`, generated `BUILDPLAN.md`) |
+| `scripts/deploy-check.sh` | Waits for the Vercel build of HEAD and probes the live site |
+| `ecosystem.config.js` | Personal PM2 apps: `frameflow-bot`, `frameflow-chrome`, `phasedoc-frameflow` |
+| `data/`, `out/`, `logs/`, `vault/` | Local only (gitignored): SQLite, renders, logs, the Obsidian vault |
 
-Tools are separate Claude skills in `~/Talha_Khan/Claude/skills/`. This repo holds their config and the pipeline code.
+## Run
+```
+uv sync                                    # Python env (one per project)
+uv run frameflow --help                    # every command
+uv run frameflow make2 briefs/<brief>.json # one video end to end
+uv run pytest -q                           # tests
+PM2_HOME=~/.pm2-personal pm2 start ecosystem.config.js && pm2 save
+```
+The daily run needs no command: `frameflow-bot` ticks every 30 s and follows the schedule in `research/automation.json`.
 
-## Run the niche study
+## Studio and betadoc
 ```
-python3 -I ~/Talha_Khan/Claude/skills/niche-study/scripts/niche_study.py --project . collect --dry-run
-python3 -I ~/Talha_Khan/Claude/skills/niche-study/scripts/niche_study.py --project . all
+uv run frameflow web export     # snapshot -> web/public/data/studio.enc (AES-GCM, PIN) + betadoc/public/live.json
+uv run frameflow web refresh    # export, then commit + push only web/public and betadoc/public (runs after each post)
+cd web && npm ci && npm run build && FRAMEFLOW_WEB_PIN=... npm run walk
+cd betadoc && npm ci && npm run build && npm run walk
+scripts/deploy-check.sh studio|betadoc
 ```
+Both deploy from git pushes (personal Vercel `talha-785b`). Only already-public media is copied into `web/public` and `betadoc/public`.
 
 ## Secrets
-Keys live in `~/.config/frameflow/secrets.env` (mode 600) or the environment. See `.env.example`. Never commit them.
+Keys live in `~/.config/frameflow/secrets.env` (mode 600) or the environment; names in `.env.example`. Never commit them. The Studio PIN is `FRAMEFLOW_WEB_PIN` there.
