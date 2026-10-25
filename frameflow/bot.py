@@ -35,12 +35,16 @@ def latest(states):
 
 
 def retry():
-    run = latest(("failed",))
+    run = latest(("failed", "waiting-limit"))
     if not run:
         return telegram.send("Nothing has failed. /status shows where things are.")
     day = run["day"]
+    step = daily.last_step(run)
     if run["approved_at"] and run["video_id"]:
         daily.update(day, state="queued", note="retry: post")
+    elif run["video_id"] and step in ("revise", "reflow"):   # re-run the step that stopped, not just the card
+        daily.update(day, state="making", note=f"retry: {step}")
+        daily.spawn(step, day)
     elif run["video_id"]:   # the video exists: send its card again
         daily.update(day, note="retry: video card")
         try:

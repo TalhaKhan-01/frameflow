@@ -14,6 +14,7 @@ answering while a video renders. Nothing is ever posted without Talha's Approve.
 import argparse
 import datetime as dt
 import json
+import re
 import os
 import sqlite3
 import subprocess
@@ -247,6 +248,11 @@ def revise(day):
     run = get(day)
     row = videos.db().execute("SELECT * FROM videos WHERE id=?", (run["video_id"],)).fetchone()
     notes = (run["notes"] or "").strip()
+    rev_file = Path(row["out_dir"]) / "review.json"
+    if re.search(r"review", notes, re.I) and len(notes) < 80 and rev_file.exists():   # "use the reviewer's notes"
+        fixes = json.loads(rev_file.read_text()).get("fixes", [])
+        notes = "\n".join(f"{x['row']}: {x['fix']}" for x in fixes) or notes
+        update(day, note="using the reviewer's notes as the revision notes")
     update(day, state="making", note=f"revising with Talha's notes: {notes[:200]}")
     try:
         from frameflow import lessons
@@ -352,6 +358,12 @@ def tick():
         weekly()
     for run in [dict(r) for r in db().execute("SELECT * FROM runs WHERE state NOT IN ('posted','skipped','rejected')")]:
         day = run["day"]
+        if run["state"] == "waiting-limit":
+            m = re.search(r"retry at (\S+) \(step (\w+)\)", (run.get("log") or "").strip().splitlines()[-1])
+            if m and t >= dt.datetime.fromisoformat(m.group(1)):
+                update(day, state="making" if m.group(2) != "post" else "posting", note=f"usage limit reset: re-running {m.group(2)}")
+                spawn(m.group(2), day)
+            continue
         if run["state"] == "topic-sent":
             deadline = at((dt.date.fromisoformat(day) - dt.timedelta(days=1)).isoformat(), c["auto_pick_at"])
             if t >= deadline and json.loads(run["options"] or "[]"):
@@ -396,6 +408,28 @@ def weekly():
     for r in lessons.promotable():
         telegram.send(f"Lesson {r['id']} ({r['area']}) helped in {r['helped']} videos:\n\"{r['text']}\"\nMake it a permanent house rule?",
                       [[("✅ Make permanent", f"promote:{r['id']}"), ("Keep testing", f"keep:{r['id']}")]])
+
+
+def limit_reset(message):
+    """'You've hit your session limit · resets 8:20pm (...)' -> the ISO time to retry (2 minutes after the reset)."""
+    m = re.search(r"limit.*?resets\s+(\d{1,2})(?::(\d{2}))?\s*([ap]m)", message, re.I)
+    if not m:
+        return None
+    h, mi, ap = int(m.group(1)), int(m.group(2) or 0), m.group(3).lower()
+    h = h % 12 + (12 if ap == "pm" else 0)
+    when = dt.datetime.combine(dt.date.today(), dt.time(h, mi)) + dt.timedelta(minutes=2)
+    if when < now() - dt.timedelta(hours=1):
+        when += dt.timedelta(days=1)
+    return when.replace(microsecond=0).isoformat()
+
+
+def last_step(run):
+    """The step that was running when a run stopped (from its log)."""
+    for line in reversed((run.get("log") or "").splitlines()):
+        m = re.search(r"\(step (\w+)\)|(\w+) failed:|spawned (\w+)", line)
+        if m:
+            return next(g for g in m.groups() if g)
+    return "make"
 
 
 def spawn_scout(day):
@@ -443,6 +477,14 @@ def main():
         else:
             print(status_text())
     except Exception as e:
+        reset = limit_reset(str(e))
+        if day and reset and get(day):   # Claude usage limit: not a failure, a wait; tick re-runs the step at the reset time
+            update(day, state="waiting-limit", job_pid=None, post_at=get(day).get("post_at"), note=f"{a.step} paused by the usage limit; retry at {reset} (step {a.step})")
+            try:
+                telegram.send(f"Paused by the Claude usage limit. I'll carry on by myself at {reset[11:16]}.")
+            except Exception:
+                pass
+            sys.exit(0)
         if day and a.step in ("make", "revise", "reflow", "post", "scout") and get(day):
             update(day, state="failed", job_pid=None, note=f"{a.step} failed: {e}")
             try:
