@@ -19,7 +19,7 @@ HELP = ("I'm Habit, Frameflow's bot.\n"
         "The video comes back here before 17:00: Approve, Revise (tell me what to change) or Reject. You can tap any time,\n"
         "even at night: I act on it when the laptop starts at 10:00.\n"
         "Approved before 11:30: posted at 11:30. Approved later: posted right away.\n\n"
-        "/status  where things are\n/log  what the current run is doing\n/ab  blind script test\n/pause  stop the daily runs\n/resume  start them again\n/retry  re-run a failed step")
+        "/status  where things are\n/feedback <notes>  your notes on the last video\n/log  what the current run is doing\n/ab  blind script test\n/pause  stop the daily runs\n/resume  start them again\n/retry  re-run a failed step")
 
 
 def set_paused(flag):
@@ -136,6 +136,18 @@ def on_text(text):
         return retry()
     if cmd == "/ab":
         return ab_test()
+    if cmd == "/feedback":   # Talha's notes on the latest posted (or made) video -> lessons for every next video
+        words = t[len("/feedback"):].strip()
+        if not words:
+            return telegram.send("Write it after the command, e.g. /feedback the hook was slow and the music too loud.")
+        from frameflow import lessons, videos
+        row = videos.db().execute("SELECT id, out_dir FROM videos WHERE status IN ('posted','approved','awaiting-approval') "
+                                  "ORDER BY updated_at DESC LIMIT 1").fetchone()
+        if not row:
+            return telegram.send("No video to attach that to yet.")
+        r = lessons.distill(row["out_dir"], notes=words, source=f"{row['id']} (Talha's feedback)")
+        new = "\n".join(f"- {x['text']}" for x in r.get("new", [])) or "(it matched lessons already in the ledger; they got stronger)"
+        return telegram.send(f"Thanks. From your feedback on {row['id']}:\n{new}\nThese go into every next script and storyboard.")
     if cmd == "/log":   # the latest run's step-by-step log and the last lines of its current job
         run = (latest(("topic-sent", "picked", "making", "video-sent", "awaiting-notes", "queued", "posting", "failed", "posted")) or {})
         if not run:
