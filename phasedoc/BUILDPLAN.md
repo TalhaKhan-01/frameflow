@@ -13,10 +13,11 @@
       _Note 2026-10-23:_ Talha confirmed 2FA (authenticator app) on both Google accounts and Instagram, 2026-10-23.
     - [x] **P0.1.2** YouTube Data API key works  
       _Acceptance:_ a channels.list call for UCrcF7Q5J4kEENdJuA8BPQxQ with YOUTUBE_API_KEY from ~/.config/frameflow/secrets.env returns the channel title (1 quota unit); key value never printed
-    - [ ] **P0.1.3** Stock media API keys (Pexels, Pixabay)  
+    - [~] **P0.1.3** Stock media API keys (Pexels, Pixabay)  
       _Acceptance:_ secrets check shows PEXELS_API_KEY and PIXABAY_API_KEY set, and one search call to each returns at least 1 result
       _Note 2026-10-23:_ Pexels and Pixabay key requests are paused (2026-10-23). Keyless sources are covered by P5.1; tick when keys exist, or cancel if the keyless sources prove enough.
       _Note 2026-10-24:_ 2026-10-24: P5.1 now covers stock images without keys (Openverse, Wikimedia Commons, NASA). Pexels/Pixabay would add stock VIDEO; keep this open until their key requests reopen.
+      _Note 2026-10-25:_ 2026-10-25: Pexels/Pixabay keys still on their waitlist. Free alternatives now in frameflow/assets.py: Unsplash photos (free key UNSPLASH_ACCESS_KEY, pending Talha), and video from NASA, Wikimedia Commons (webm converted to mp4) and Internet Archive's Prelinger collection (uploader licences elsewhere on the Archive are unreliable). Licence filter now also drops CC NC and ND. Live: search + get --video downloaded one clip per source.
     - [x] **P0.1.4** YouTube channel and Instagram Creator account exist  
       _Acceptance:_ curl -s -o /dev/null -w '%{http_code}' returns 200 for https://www.youtube.com/channel/UCrcF7Q5J4kEENdJuA8BPQxQ and https://www.instagram.com/madebythirdspace/
   - **P0.2 Repository and vault** (3/3)

@@ -72,9 +72,10 @@ def main():
     for k in ("avg-viewed", "swiped", "yt-shares", "yt-subs", "ig-plays", "ig-likes", "ig-comments", "ig-shares", "ig-saves", "ig-avg-watch", "ig-follows"):
         stt.add_argument("--" + k, type=float)
     sub.add_parser("learn", help="weekly learning report into the vault")
-    asx = sub.add_parser("assets", help="keyless stock images (Openverse, Wikimedia Commons, NASA)")
+    asx = sub.add_parser("assets", help="free stock images (Openverse, Commons, NASA, Unsplash) or --video (NASA, Commons, Internet Archive)")
     asx.add_argument("action", choices=["search", "get"])
     asx.add_argument("query")
+    asx.add_argument("--video", action="store_true", help="search video sources instead of images")
     q = sub.add_parser("qa", help="automatic quality gates on a render folder")
     q.add_argument("out_dir")
     v = sub.add_parser("validate", help="check a scene plan")
@@ -141,12 +142,12 @@ def main():
     elif a.cmd == "assets":
         from frameflow import assets
         if a.action == "search":
-            res, errs = assets.search(a.query)
+            res, errs = assets.search(a.query, video=a.video)
             for r in res:
                 print(f"{r['source']:18} {r['licence'][:28]:28} {r['author'][:24]:24} {r['title'][:50]}")
             print(f"errors: {errs or 'none'}")
         else:
-            print(json.dumps(assets.get(a.query), ensure_ascii=False, indent=1))
+            print(json.dumps(assets.get(a.query, video=a.video), ensure_ascii=False, indent=1))
     elif a.cmd == "qa":
         from frameflow import qa
         sys.argv = ["qa", a.out_dir]
