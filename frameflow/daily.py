@@ -239,8 +239,12 @@ def video_card(day):
             f"{'PASS' if rev.get('pass') else 'below the bar'} · QA {'all pass' if not failed else 'failed: ' + ', '.join(failed)}\n"
             + (f"\nReviewer's remaining notes:\n{fixes}\n" if fixes else "")
             + f"\nApprove before {cfg()['post_at']} and it posts at {cfg()['post_at']}; later approval posts right away.")
+    # Talha decides: Approve is always offered; below the bar it says so and the failures are listed above.
     approvable = bool(row["qa_pass"] and row["review_pass"])
-    buttons = [[("✅ Approve", f"approve:{day}")] if approvable else [],
+    if not approvable:
+        why = [f"- {k}: {gates[k].get('detail', '')[:150]}" for k in failed] + ([] if rev.get("pass") else ["- review below the bar"])
+        text = text.replace("\nApprove before", "\nBelow the bar:\n" + "\n".join(why) + "\n\nApprove before", 1)
+    buttons = [[("✅ Approve" if approvable else "⚠️ Approve anyway", f"approve:{day}")],
                [("✏️ Revise", f"revise:{day}"), ("❌ Reject", f"reject:{day}")]]
     msg = telegram.send_file("video", prev, caption=text[:1024], buttons=[b for b in buttons if b],
                              extra={"supports_streaming": "true", "width": 720, "height": 1280})
