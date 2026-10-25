@@ -20,7 +20,7 @@ BRIEFS = ROOT / "briefs"
 UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Frameflow/0.1 (+personal research)"}
 MIN_FACTS = 8
 
-SYSTEM = """You are the researcher for a daily 50-90 second explainer channel (narrator: Habit; audience: Indians aged
+SYSTEM = """You are the researcher for a daily 60-110 second explainer channel (narrator: Habit; audience: Indians aged
 18-30 who are curious about tech, AI and money, most don't code). Research the story with web search and fetch,
 reading the original reporting and at least two independent outlets. Return a brief:
 - topic: one sentence, what happened and why it matters now.

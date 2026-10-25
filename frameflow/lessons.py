@@ -49,10 +49,11 @@ def today():
     return dt.date.today().isoformat()
 
 
-def distill(render_dir, notes="", source=None):
+def distill(render_dir, notes="", source=None, owner_only=False):
+    """owner_only: lessons from Talha's words alone (the /feedback command), without re-reading the reviewer's notes."""
     out = Path(render_dir)
-    rev = json.loads((out / "review.json").read_text()) if (out / "review.json").exists() else {}
-    qa = json.loads((out / "qa.json").read_text()) if (out / "qa.json").exists() else {}
+    rev = {} if owner_only else (json.loads((out / "review.json").read_text()) if (out / "review.json").exists() else {})
+    qa = {} if owner_only else (json.loads((out / "qa.json").read_text()) if (out / "qa.json").exists() else {})
     failed = [f"{k}: {g.get('detail', '')}" for k, g in qa.get("gates", {}).items() if not g.get("pass")]
     rows = load()
     active = [r for r in rows if r["status"] == "active"]

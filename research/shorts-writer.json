@@ -2,10 +2,10 @@
   "_about": "Frameflow config for the shorts-writer skill (~/Talha_Khan/Claude/skills/shorts-writer).",
   "persona_file": "vault/Wiki/Concepts/Narrator Habit.md",
   "length": [
-    50,
-    86
+    60,
+    110
   ],
-  "_length": "86 s, not 90: the pipeline appends the ~3 s house end card (spoken follow line) after the script",
+  "_length": "60-110 s since 2026-10-25 (Talha: longer is fine if the pace stays calm); the pipeline adds the ~3-4 s end card; set by the profile",
   "words_per_second": 3.3,
   "humour": true,
   "writer_model": "opus",

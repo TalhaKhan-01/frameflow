@@ -1,5 +1,5 @@
 {
-  "_about": "the original setup (until 2026-10-25): Opus everywhere, 2 fix rounds, 2 automatic revisions, dense keyframes",
+  "_about": "the original setup (until 2026-10-25): Opus everywhere, 2 fix rounds, 2 automatic revisions, dense keyframes; calm pace and 60-110 s scripts (Talha's feedback 2026-10-25)",
   "pipeline": {
     "review_model": "opus",
     "keyframe_every": 2.0,
@@ -8,14 +8,23 @@
     "brief_model": "sonnet",
     "cover_model": "sonnet",
     "lessons_model": "sonnet",
-    "assets": true
+    "assets": true,
+    "max_seconds": 120.0,
+    "target_seconds": [
+      60.0,
+      115.0
+    ]
   },
   "shorts-writer": {
     "writer_model": "opus",
     "hooks_model": "opus",
     "judge_model": "sonnet",
     "doctor_model": "opus",
-    "doctor_rounds": 2
+    "doctor_rounds": 2,
+    "length": [
+      60,
+      110
+    ]
   },
   "shorts-director": {
     "model": "opus",
@@ -24,5 +33,19 @@
   },
   "social-caption": {
     "model": "sonnet"
+  },
+  "voice-pace": {
+    "default_wpm": 172,
+    "beats": {
+      "hook": 184,
+      "loop": 174,
+      "and": 170,
+      "but": 166,
+      "therefore": 170,
+      "twist": 162,
+      "payoff": 164,
+      "ending": 160,
+      "outro": 182
+    }
   }
 }

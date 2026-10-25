@@ -1,3 +1,4 @@
 Keep a single ending beat after the payoff (one closing question or one practical takeaway, not both stacked) and a short tail (about 10 s or less); fold any extra stat into the scene before. Never write a follow call to action: the pipeline's end card adds it.
-When revising a script, keep the first draft's voice, jokes and rhythm; fix only what the notes name. In a blind test the owner preferred the first draft over the final revised one.
 Make the script flow for a first-time viewer: every part should lead into the next, and when the story moves on, the viewer should know what is being answered now and why. Use whatever fits the moment (a spoken question, a 'but' or 'so', a callback, a quick bridge) and vary it; never just jump to an answer the viewer wasn't set up for.
+When revising a script, keep the first draft's voice, jokes and rhythm; fix only what the notes name. In a blind test the owner preferred the first draft over the final revised one.
+Give each scene only one new fact, and when the video runs longer, add a bridge line that links the previous fact to the next instead of adding another fact.

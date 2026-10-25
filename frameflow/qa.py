@@ -11,7 +11,7 @@ Exit 0 when every gate passes. Writes <out-dir>/qa.json. Gates:
   voice-start first word within 0.3 s
   licences    every asset ledger row has source, licence, url and author; music and voice rows present
 Version-2 plans (Quality Bar v2) add:
-  length      50-90 s target, 95 s hard limit
+  length      the active profile's target and hard limit (since 2026-10-25: 60-115 s, 120 s)
   events      visual events (frame changes) at least 4 per 10 s, and no stretch over 2.5 s without one
   rehooks     no stretch over 10.5 s between re-hook beats (but/twist/loop or a 'rehook' device) on the real voice timing
 """
@@ -119,6 +119,10 @@ def run(out_dir):
     plan = json.loads((out / "plan.json").read_text()) if (out / "plan.json").exists() else {}
     v2 = plan.get("version", 1) >= 2
     L = {**LIMITS, **(V2 if v2 else {})}
+    if v2:   # length limits follow the active profile (frameflow.profiles: max_seconds, target_seconds)
+        from frameflow import profiles
+        pc = profiles.pipeline()
+        L["max_seconds"], L["target_seconds"] = float(pc["max_seconds"]), tuple(pc["target_seconds"])
     secs = media.duration(final)
     gate("length", secs <= L["max_seconds"], f"{secs:.2f} s (max {L['max_seconds']:.0f})")
     lo, hi = L["target_seconds"]

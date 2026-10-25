@@ -156,7 +156,7 @@ def on_text(text):
                                   "ORDER BY updated_at DESC LIMIT 1").fetchone()
         if not row:
             return telegram.send("No video to attach that to yet.")
-        r = lessons.distill(row["out_dir"], notes=words, source=f"{row['id']} (Talha's feedback)")
+        r = lessons.distill(row["out_dir"], notes=words, source=f"{row['id']} (Talha's feedback)", owner_only=True)
         new = "\n".join(f"- {x['text']}" for x in r.get("new", [])) or "(it matched lessons already in the ledger; they got stronger)"
         return telegram.send(f"Thanks. From your feedback on {row['id']}:\n{new}\nThese go into every next script and storyboard.")
     if cmd == "/log":   # the latest run's step-by-step log and the last lines of its current job
