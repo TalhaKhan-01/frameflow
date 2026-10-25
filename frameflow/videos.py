@@ -106,6 +106,8 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
                 (plan["id"], None, str(plan_path), str(rout), plan["lane"], plan["title"], int(q["pass"]), r["total"], int(r["pass"]),
                  status, f"v2 from {brief_path}; {rounds} review round(s)", now(), now()))
     con.commit()
+    from frameflow import vaultnote
+    vaultnote.safe_write(plan["id"])   # the video's page in the vault (facts, sources, review)
     return {"video": plan["id"], "status": status, "qa": {k: g["pass"] for k, g in q["gates"].items()},
             "review": f"{r['total']}/{r.get('max', 12)}", "seconds": report["seconds"], "final": report["final"]}
 

@@ -166,6 +166,8 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
     if all(pl in links for pl in platforms):
         con.execute("UPDATE videos SET status='posted' WHERE id=?", (video_id,))
     con.commit()
+    from frameflow import vaultnote
+    vaultnote.safe_write(video_id)   # add the links to the video's vault page
     return results
 
 
@@ -187,6 +189,8 @@ def posted(video_id, yt_url, ig_url):
     con.execute("UPDATE videos SET status='posted', youtube_url=?, instagram_url=?, updated_at=? WHERE id=?",
                 (yt_url, ig_url, videos.now(), video_id))
     con.commit()
+    from frameflow import vaultnote
+    vaultnote.safe_write(video_id)
     return {"video": video_id, "status": "posted"}
 
 

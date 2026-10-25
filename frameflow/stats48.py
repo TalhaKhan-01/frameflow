@@ -107,6 +107,8 @@ def collect(video_id, send=True):
         lines.append("Not available yet: " + "; ".join(missing))
     if send:
         telegram.send("\n".join(lines))
+    from frameflow import vaultnote
+    vaultnote.safe_write(video_id)   # results into the video's vault page
     return {"youtube": yt, "instagram": ins, "facebook": fb, "missing": missing, "verdict": verdict}
 
 
