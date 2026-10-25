@@ -1,2 +1,3 @@
-Keep a single ending beat after the payoff (one closing question or one practical takeaway, not both stacked); never write a follow call to action, the pipeline's end card adds it.
+Keep a single ending beat after the payoff (one closing question or one practical takeaway, not both stacked) and a short tail (about 10 s or less); fold any extra stat into the scene before. Never write a follow call to action: the pipeline's end card adds it.
 When revising a script, keep the first draft's voice, jokes and rhythm; fix only what the notes name. In a blind test the owner preferred the first draft over the final revised one.
+Voice every question the video answers: before each new section, the narrator says a short spoken question or a clear bridge from the previous point, and the on-screen heading uses the same wording. Never show a question heading that the narration skips.
