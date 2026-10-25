@@ -299,7 +299,7 @@
     - [x] **P10.1.1** Bot online and locked to Talha  
       _Acceptance:_ PM2 app frameflow-bot runs with long polling; TELEGRAM_BOT_TOKEN read from secrets.env; messages from any chat but Talha's are ignored; /status answers
       _Note 2026-10-25:_ 2026-10-25: waiting for Talha to create the bot with @BotFather and add TELEGRAM_BOT_TOKEN.
-      _Note 2026-10-25:_ 2026-10-25: PM2 frameflow-bot online (long polling, @FrameFlowHabitBot); token from secrets.env, never printed; chat_id ********** (Talha) is the only chat handled; /status answered in Telegram.
+      _Note 2026-10-25:_ 2026-10-25: PM2 frameflow-bot online (long polling, @FrameFlowHabitBot); token from secrets.env, never printed; Talha's chat (TELEGRAM_CHAT_ID) is the only chat handled; /status answered in Telegram.
     - [~] **P10.1.2** Approval state machine  
       _Acceptance:_ a run moves topic-sent -> picked -> making -> video-sent -> approved/revise/rejected -> queued -> posted, persisted in SQLite so a restart resumes it
       _Note 2026-10-25:_ 2026-10-25: runs table in data/frameflow.db (topic-sent, picked, making, video-sent, awaiting-notes, queued, posting, posted / skipped / rejected / failed); /retry resumes a failed step. Built; first full run starts tonight.

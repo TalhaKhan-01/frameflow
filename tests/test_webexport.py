@@ -45,7 +45,7 @@ def test_published_folders_hold_nothing_private():
         values = [line.split("=", 1)[1].strip() for line in secrets_file.read_text().splitlines()
                   if "=" in line and not line.lstrip().startswith("#") and len(line.split("=", 1)[1].strip()) >= 8]
     patterns = [r"AIza[0-9A-Za-z_-]{20,}", r"ghp_[0-9A-Za-z]{20,}", r"sk-ant-", r"EAA[0-9A-Za-z]{30,}",
-                r"\d{9,10}:[A-Za-z0-9_-]{30,}", r"/home/talha", r"**********"]
+                r"\d{9,10}:[A-Za-z0-9_-]{30,}", r"/home/talha"]   # secret values, the chat id included, are checked below
     for folder in (ROOT / "web" / "public", ROOT / "betadoc" / "public", ROOT / "web" / "src", ROOT / "betadoc" / "src"):
         for f in folder.rglob("*"):
             if not f.is_file() or f.suffix in (".mp4", ".jpg", ".png", ".webp", ".woff2"):

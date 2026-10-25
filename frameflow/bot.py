@@ -239,7 +239,7 @@ def on_text(text):
 
 
 def loop():
-    me = telegram.config()["chat_id"]
+    me = telegram.chat_id()
     offset, last_tick = None, 0.0
     print("frameflow-bot polling", flush=True)
     while True:

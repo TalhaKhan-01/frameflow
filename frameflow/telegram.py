@@ -55,10 +55,14 @@ def keyboard(buttons):
 
 
 def chat_id():
-    cid = config().get("chat_id")
-    if not cid:
-        raise TelegramError("no chat_id in research/automation.json yet: send /start to the bot")
-    return cid
+    """The only chat the bot talks to: TELEGRAM_CHAT_ID in secrets.env (kept out of the repo, which is public)."""
+    try:
+        return int(secrets.get("TELEGRAM_CHAT_ID"))
+    except SystemExit:
+        cid = config().get("chat_id")   # older setups kept it in research/automation.json
+        if not cid:
+            raise TelegramError("TELEGRAM_CHAT_ID is not set in secrets.env: send /start to the bot to find it") from None
+        return cid
 
 
 def send(text, buttons=None, chat=None):

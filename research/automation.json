@@ -1,6 +1,5 @@
 {
- "_about": "Daily automation (vault Decisions/Daily Automation.md). Times are IST; the laptop is on 10:00-17:00. 14:00 topic card for tomorrow, 15:00 auto-pick, video ready before 17:00, approval any time (Telegram keeps taps while the laptop is off), post 11:30 the next day. chat_id is the only Telegram chat the bot listens to.",
- "chat_id": **********,
+ "_about": "Daily automation (vault Decisions/Daily Automation.md). Times are IST; the laptop is on 10:00-17:00. 14:00 topic card for tomorrow, 15:00 auto-pick, video ready before 17:00, approval any time (Telegram keeps taps while the laptop is off), post 11:30 the next day. The only Telegram chat the bot listens to is TELEGRAM_CHAT_ID in secrets.env.",
  "topic_card_at": "14:00",
  "auto_pick_at": "15:00",
  "post_at": "11:30",

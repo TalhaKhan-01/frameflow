@@ -44,4 +44,7 @@ scripts/deploy-check.sh studio|betadoc
 Both deploy from git pushes (personal Vercel `talha-785b`). Only already-public media is copied into `web/public` and `betadoc/public`.
 
 ## Secrets
-Keys live in `~/.config/frameflow/secrets.env` (mode 600) or the environment; names in `.env.example`. Never commit them. The Studio PIN is `FRAMEFLOW_WEB_PIN` there.
+Keys live in `~/.config/frameflow/secrets.env` (mode 600) or the environment; names in `.env.example`. Never commit them. The Studio PIN is `FRAMEFLOW_WEB_PIN` there, and the one Telegram chat the bot talks to is `TELEGRAM_CHAT_ID`.
+
+## Licence
+Copyright © 2026 Talha Khan. All rights reserved. The code is public to read and learn from; no licence is granted to copy, modify or redistribute it. Bundled third-party pieces keep their own licences (fonts OFL-1.1, rough.js MIT, three.js MIT, GSAP standard licence, Open Peeps CC0 in `scenes/_cast/`, Kokoro voice model Apache-2.0); each video's asset ledger lists what it used.
