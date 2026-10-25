@@ -305,6 +305,17 @@ TASKS = [
      "Vercel project frameflow-betadoc (root betadoc/) is git-connected; scripts/deploy-check.sh betadoc passes; the Studio link on it opens the PIN screen", "betadoc"),
     ("P13.2.4", "P13.2", "Narrated demo video in the hero",
      "betadoc/video renders a deterministic 60 fps narrated tour (betadoc narrate.py, voice Talha picked) with captions; it streams from the live site", "betadoc"),
+    ("P14", "", "Control panel (local experiment: Code/frameflow-control, 127.0.0.1:7310)", "", ""),
+    ("P14.1", "P14", "Watch: now, today's schedule, runs, jobs, services, connections, activity, machine",
+     "the panel renders every section from live data; headless walk at 1440 and 390 px: 0 console errors, no horizontal overflow", "control"),
+    ("P14.2", "P14", "Control: pick, approve, revise, reject, post time, post now, retry, one-platform retry, stop, card posts",
+     "sandboxed tests: each action follows the run's state like the Telegram bot, refuses stale clicks and never re-posts a partly posted video; the real runs and config are unchanged by the tests", "control"),
+    ("P14.3", "P14", "Settings and services: schedule, platforms, profile, Studio, restarts, lessons, feedback",
+     "sandboxed tests: schedule and platform validation, the pause/resume flag, the restart whitelist; settings land in automation.json", "control"),
+    ("P14.4", "P14", "Security: this machine only, a token per start, Origin and Host checks",
+     "tests: a foreign Host gets 403, a POST without the token or from a foreign Origin gets 403, path tricks on media and logs are refused; the LAN address is refused", "control"),
+    ("P14.5", "P14", "Health alerts on Telegram from the same checks",
+     "an expired account token, Chrome down or disk over 90% sends one Telegram alert (not one per tick); tested with a forced failure", "control"),
 ]
 
 
