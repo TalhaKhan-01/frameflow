@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Frameflow · a Short a day, on its own</title>
+  <meta name="description" content="Frameflow picks a story, writes it, draws it, voices it, checks it and posts it to YouTube, Instagram and Facebook every day. The owner just taps Approve." />
+  <meta property="og:title" content="Frameflow · a Short a day, on its own" />
+  <meta property="og:description" content="An automated newsroom for one narrator, Habit: tech, AI and money explained in 60-110 s Shorts." />
+  <meta property="og:image" content="/media/latest/cover.jpg" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preload" as="image" href="/media/latest/poster.jpg" />
+</head>
+<body>
+  <canvas id="ink" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="/">frame<span>flow</span></a>
+    <nav aria-label="Page">
+      <a href="#how">How it works</a>
+      <a href="#matrix">What's built</a>
+      <a href="/documentation.html">Docs</a>
+      <a class="btn-sm" href="https://frameflow-studio-tau.vercel.app" rel="noopener">Open the Studio</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO: cinematic + live product -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Night edition · an automated newsroom</p>
+        <h1 id="hero-title"><span class="line">One story a day.</span><span class="line">Written, drawn, voiced,</span><span class="line">checked and <em>posted</em></span><span class="line">on its own.</span></h1>
+        <p class="lede">Frameflow makes a daily 60–110 second Short for <b>Habit</b>, a narrator who explains tech, AI and money. It posts to YouTube, Instagram and Facebook at 11:30. The owner's whole job is one tap on Telegram.</p>
+        <div class="ctas">
+          <a class="btn" href="https://frameflow-studio-tau.vercel.app" rel="noopener">Open the live Studio</a>
+          <a class="btn ghost" href="#latest-yt" id="watch-link" rel="noopener" target="_blank">Watch the latest Short ↗</a>
+        </div>
+        <div class="wire" aria-live="polite">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="wire-text">Live wire: loading today's run…</span>
+        </div>
+      </div>
+      <figure class="phone" aria-label="The latest posted Short">
+        <div class="phone-frame">
+          <video id="hero-video" muted loop playsinline preload="metadata" poster="/media/latest/poster.jpg" src="/media/latest/preview.mp4"></video>
+          <button class="sound" id="sound" aria-pressed="false">Sound off</button>
+        </div>
+        <figcaption id="latest-title">The latest Short</figcaption>
+      </figure>
+      <dl class="counters" aria-label="Live numbers">
+        <div><dt>ideas collected</dt><dd data-count="ideas">–</dd></div>
+        <div><dt>Shorts posted</dt><dd data-count="videos_posted">–</dd></div>
+        <div><dt>lessons learned</dt><dd data-count="lessons">–</dd></div>
+        <div><dt>build tasks passed</dt><dd><span data-count="leaves_done">–</span><small>/<span data-count="leaves_total">–</span></small></dd></div>
+      </dl>
+    </section>
+
+    <!-- PROBLEM -->
+    <section class="problem" id="problem" aria-labelledby="problem-title">
+      <p class="eyebrow">The problem</p>
+      <h2 id="problem-title">A daily Short is a <em>daily job</em>.</h2>
+      <div class="problem-grid">
+        <p>Find a story worth telling today. Check the facts. Write a hook that holds people past the first two seconds. Draw it, voice it, cut it, mix it. Then post it three times, with three sets of captions.</p>
+        <p>Do that by hand and the habit breaks in a week. Skip the checks and you post something wrong. Hand it to a generic AI tool and every video looks the same.</p>
+      </div>
+    </section>
+
+    <!-- PRODUCT: the wow moment -->
+    <section class="build" id="how" aria-labelledby="build-title">
+      <div class="build-pin">
+        <div class="build-copy">
+          <p class="eyebrow">The product</p>
+          <h2 id="build-title">Watch a Short <em>build itself</em>.</h2>
+          <ol class="stages">
+            <li data-stage="0"><b>Topic</b><span>12 sources scanned. Three stories ranked for today's lane go to Telegram at 14:00.</span></li>
+            <li data-stage="1"><b>Brief</b><span>The picked story gets a sourced fact sheet. Every number has a link and a caution list.</span></li>
+            <li data-stage="2"><b>Script</b><span>A writer skill in Habit's voice: a hook room of 20, and a story that re-hooks every 10 s.</span></li>
+            <li data-stage="3"><b>Storyboard</b><span>A director skill picks a visual metaphor per beat and times drawn motion to the words.</span></li>
+            <li data-stage="4"><b>Render</b><span>Deterministic HTML scenes, a local voice, original music and sound, mixed to −14 LUFS.</span></li>
+            <li data-stage="5"><b>Checks</b><span>11 automatic gates plus a model review against the quality bar. One automatic revision.</span></li>
+          </ol>
+        </div>
+        <div class="scrub">
+          <div class="phone-frame small"><canvas id="scrub" width="360" height="640" aria-label="Frames of the latest Short, scrubbed by scrolling"></canvas></div>
+          <ul class="gates" id="gates" aria-label="Automatic checks of the latest Short"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- DAILY CLOCK -->
+    <section class="clock" aria-labelledby="clock-title">
+      <p class="eyebrow">A day in the newsroom</p>
+      <h2 id="clock-title">The owner taps twice. <em>Frameflow does the rest.</em></h2>
+      <ol class="timeline">
+        <li><time>14:00</time><div class="tg"><b>Topic card</b><p>Three stories for tomorrow, with why-now and sources. Tap 1, 2 or 3, or paste a link.</p><span class="keys"><i>1</i><i>2</i><i>3</i><i>Skip</i></span></div></li>
+        <li><time>15:00</time><div class="tg"><b>Auto-pick</b><p>No tap by 15:00? Story #1 is picked and the Short starts on its own.</p></div></li>
+        <li><time>by 17:00</time><div class="tg"><b>Video card</b><p>A preview, the cover, the review score and what any failed check found.</p><span class="keys"><i>Approve</i><i>Revise</i><i>Reject</i></span></div></li>
+        <li><time>11:30</time><div class="tg"><b>Posted</b><p>YouTube Shorts, Instagram Reels and the Facebook Page, each with its own captions and tags. A carousel card post goes out with it.</p></div></li>
+        <li><time>+48 h</time><div class="tg"><b>Stats and lessons</b><p>Views and watch-through come back. What helped or hurt becomes a lesson for the next scripts.</p></div></li>
+      </ol>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section class="arch" aria-labelledby="arch-title">
+      <p class="eyebrow">Architecture</p>
+      <h2 id="arch-title">One laptop, a few model calls, <em>a lot of craft</em>.</h2>
+      <div class="arch-panel">
+        <svg viewBox="0 0 1000 430" role="img" aria-labelledby="arch-svg-title" class="arch-svg">
+          <title id="arch-svg-title">Frameflow pipeline: sources to brief, writer and director, render, checks, Telegram approval, publishing, stats, lessons and library feeding back into the writer</title>
+          <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrow-head"/></marker></defs>
+          <g class="node"><rect x="20" y="40" width="150" height="70" rx="10"/><text x="95" y="72">News sources</text><text x="95" y="92" class="sub">12 feeds, ranked</text></g>
+          <g class="node"><rect x="215" y="40" width="150" height="70" rx="10"/><text x="290" y="72">Sourced brief</text><text x="290" y="92" class="sub">facts + cautions</text></g>
+          <g class="node hot"><rect x="410" y="40" width="170" height="70" rx="10"/><text x="495" y="72">Writer + Director</text><text x="495" y="92" class="sub">voice + storyboard</text></g>
+          <g class="node"><rect x="625" y="40" width="150" height="70" rx="10"/><text x="700" y="72">Render</text><text x="700" y="92" class="sub">scenes, local voice</text></g>
+          <g class="node hot"><rect x="820" y="40" width="160" height="70" rx="10"/><text x="900" y="72">Checks</text><text x="900" y="92" class="sub">11 gates + review</text></g>
+          <g class="node lamp"><rect x="820" y="180" width="160" height="70" rx="10"/><text x="900" y="212">Telegram</text><text x="900" y="232" class="sub">owner approves</text></g>
+          <g class="node"><rect x="600" y="180" width="175" height="70" rx="10"/><text x="687" y="212">Post at 11:30</text><text x="687" y="232" class="sub">YouTube · Instagram · FB</text></g>
+          <g class="node"><rect x="400" y="180" width="155" height="70" rx="10"/><text x="477" y="212">48 h stats</text><text x="477" y="232" class="sub">views, watch-through</text></g>
+          <g class="node hot"><rect x="200" y="180" width="155" height="70" rx="10"/><text x="277" y="212">Lessons</text><text x="277" y="232" class="sub">top 8 into prompts</text></g>
+          <g class="node"><rect x="20" y="180" width="140" height="70" rx="10"/><text x="90" y="212">Asset library</text><text x="90" y="232" class="sub">hooks, facts, ideas</text></g>
+          <g class="node lamp"><rect x="600" y="330" width="175" height="70" rx="10"/><text x="687" y="362">Studio (this demo)</text><text x="687" y="382" class="sub">PIN-locked snapshot</text></g>
+          <g class="edges">
+            <path d="M170 75H213"/><path d="M365 75H408"/><path d="M580 75H623"/><path d="M775 75H818"/>
+            <path d="M900 110V178"/><path d="M820 215H777"/><path d="M600 215H557"/><path d="M400 215H357"/><path d="M200 215H162"/>
+            <path d="M277 180C277 140 420 140 470 112" class="loop"/><path d="M90 180C90 140 380 140 440 112" class="loop"/>
+            <path d="M687 250V328"/>
+          </g>
+        </svg>
+      </div>
+      <p class="note">Models write, direct and review. Everything else (voice, music, sound effects, rendering, checks) runs locally and deterministically, so a scene renders the same way every time.</p>
+    </section>
+
+    <!-- FEATURE MATRIX -->
+    <section class="matrix" id="matrix" aria-labelledby="matrix-title">
+      <p class="eyebrow">What's built</p>
+      <h2 id="matrix-title">Honest status, <em>not a brochure</em>.</h2>
+      <p class="lede small">Built = running and its acceptance test passed. Partial = running, first real days still being watched. Roadmap = planned.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Capability</th><th scope="col">Status</th><th scope="col">Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Daily topic scouting and ranking</td><td><span class="st built">built</span></td><td>12 sources, lane rotation tech → AI → money</td></tr>
+            <tr><td>Sourced brief with fact checks</td><td><span class="st built">built</span></td><td>every fact carries its link; cautions travel to the script</td></tr>
+            <tr><td>Writer and director skills in Habit's voice</td><td><span class="st built">built</span></td><td>hook room, re-hooks, visual metaphors timed to words</td></tr>
+            <tr><td>Deterministic render, drawn scenes, captions</td><td><span class="st built">built</span></td><td>local voice, original music and sound, −14 LUFS</td></tr>
+            <tr><td>Automatic checks and model review</td><td><span class="st built">built</span></td><td>11 gates, a 10-row review, one automatic revision</td></tr>
+            <tr><td>Asset library and disk cleanup</td><td><span class="st built">built</span></td><td>facts, spare hooks, analogies and scene ideas reused</td></tr>
+            <tr><td>Studio web app (this demo)</td><td><span class="st built">built</span></td><td>PIN-locked, refreshes itself after each post</td></tr>
+            <tr><td>Telegram approvals, revise loop, approve-anyway</td><td><span class="st partial">partial</span></td><td>running since 25 Oct; first week under watch</td></tr>
+            <tr><td>Posting at 11:30 on three platforms</td><td><span class="st partial">partial</span></td><td>first fully automatic post: 26 Oct</td></tr>
+            <tr><td>Habit card carousel posts</td><td><span class="st partial">partial</span></td><td>first one live; captions now posted by API</td></tr>
+            <tr><td>48 h stats on every platform</td><td><span class="st partial">partial</span></td><td>YouTube full; Instagram and Facebook insights wait on permissions</td></tr>
+            <tr><td>Lessons scored by results</td><td><span class="st partial">partial</span></td><td>starts once three videos have stats</td></tr>
+            <tr><td>Seven days with no hand on the keyboard</td><td><span class="st plan">roadmap</span></td><td>the goal for week one</td></tr>
+            <tr><td>YouTube upload by API</td><td><span class="st plan">roadmap</span></td><td>waits on Google's audit; Studio upload by browser until then</td></tr>
+            <tr><td>Narrated demo video</td><td><span class="st plan">roadmap</span></td><td>this page uses the real Short instead</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section class="roadmap" aria-labelledby="road-title">
+      <p class="eyebrow">Roadmap</p>
+      <h2 id="road-title">Next, <em>in this order</em>.</h2>
+      <ol class="road">
+        <li><b>Week one, unattended</b><span>Seven days posted with only Telegram taps; check every caption and link.</span></li>
+        <li><b>Health alerts</b><span>Warn before a logged-out browser, an expiring token, a full disk or a usage limit stops a day.</span></li>
+        <li><b>Quality polish</b><span>No empty frames, maps and 2.5D scenes, music that builds to the payoff, drawn icons on cards.</span></li>
+        <li><b>Learning that proves itself</b><span>Lessons promoted to house rules only after they helped three videos.</span></li>
+      </ol>
+    </section>
+
+    <!-- DEPLOYMENT -->
+    <section class="deploy" aria-labelledby="deploy-title">
+      <p class="eyebrow">Deployment</p>
+      <h2 id="deploy-title">Where it <em>runs</em>.</h2>
+      <div class="deploy-grid">
+        <article><h3>The newsroom: one laptop</h3><p>The bot, the daily scheduler and a dedicated browser for posting run under a process manager and come back after reboots. The laptop is on 10:00–17:00; a step stopped by a shutdown restarts itself, and a usage limit just waits for its reset.</p></article>
+        <article><h3>The Studio: static, PIN-locked</h3><p>After each post the pipeline exports a snapshot, encrypts it with the Studio PIN (AES-GCM, key from PBKDF2) and pushes it. The host only ever stores ciphertext and media that is already public.</p></article>
+        <article><h3>No cloud twin, on purpose</h3><p>Rendering and posting need the owner's signed-in accounts and a few hours of compute a day, so Frameflow runs where those live. The Studio is the safe window onto it.</p></article>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta" aria-labelledby="cta-title">
+      <h2 id="cta-title">See today's run <em>live</em>.</h2>
+      <p>The Studio shows every run, every check and every lesson. Ask Talha for the PIN.</p>
+      <div class="ctas center">
+        <a class="btn" href="https://frameflow-studio-tau.vercel.app" rel="noopener">Open the Studio</a>
+        <a class="btn ghost" href="/documentation.html">Read the docs</a>
+      </div>
+      <p class="follow">Follow Habit: <a href="https://www.youtube.com/channel/UCrcF7Q5J4kEENdJuA8BPQxQ" rel="noopener">YouTube</a> · <a href="https://www.instagram.com/madebythirdspace/" rel="noopener">Instagram</a></p>
+    </section>
+  </main>
+  <footer class="foot">Frameflow · a personal project by Talha Khan · fonts Fraunces, Space Grotesk, JetBrains Mono (OFL)</footer>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

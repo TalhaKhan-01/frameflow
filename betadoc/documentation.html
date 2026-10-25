@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Frameflow · documentation</title>
+  <meta name="description" content="How to use Frameflow day to day: the Telegram bot, the Studio, the daily schedule, the pipeline and its commands." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <canvas id="ink" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="top">
+    <a class="brand" href="/">frame<span>flow</span></a>
+    <nav aria-label="Page">
+      <a href="/">Overview</a>
+      <a class="btn-sm" href="https://frameflow-studio-tau.vercel.app" rel="noopener">Open the Studio</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="doc">
+      <nav class="toc" aria-label="Contents">
+        <p class="eyebrow">Contents</p>
+        <ol>
+          <li><a href="#manual">1. User manual</a></li>
+          <li><a href="#studio">2. The Studio</a></li>
+          <li><a href="#day">3. A day in the life</a></li>
+          <li><a href="#arch">4. Technical architecture</a></li>
+          <li><a href="#quality">5. Quality checks</a></li>
+          <li><a href="#cli">6. Command reference</a></li>
+          <li><a href="#ops">7. Running it</a></li>
+        </ol>
+      </nav>
+
+      <article class="doc-body">
+        <p class="eyebrow">Documentation</p>
+        <h1>Frameflow, <em>by hand</em>.</h1>
+        <p>Frameflow makes one Short a day for <b>Habit</b>, a narrator who explains tech, AI and money in 60–110 seconds, and posts it on YouTube Shorts, Instagram Reels and a Facebook Page. Every step runs by itself; the owner approves on Telegram. This page explains how to drive it.</p>
+
+        <h2 id="manual">1. User manual</h2>
+        <h3>The Telegram bot</h3>
+        <p>The bot answers only the owner's chat; messages from anyone else are ignored. It sends cards with buttons, and accepts these commands:</p>
+        <table>
+          <thead><tr><th scope="col">Command</th><th scope="col">What it does</th></tr></thead>
+          <tbody>
+            <tr><td><code>/status</code></td><td>Where today's run is, and what's queued.</td></tr>
+            <tr><td><code>/log</code></td><td>The current run's step-by-step log and the last lines of its job.</td></tr>
+            <tr><td><code>/retry</code></td><td>Re-runs the step that stopped (after an error or a usage limit).</td></tr>
+            <tr><td><code>/pause</code> · <code>/resume</code></td><td>Stops or restarts the daily runs. Anything already approved still posts.</td></tr>
+            <tr><td><code>/cards</code></td><td>Starts a Habit card post (a carousel) for today.</td></tr>
+            <tr><td><code>/feedback &lt;notes&gt;</code></td><td>Your notes on the last video; they become lessons for every next one.</td></tr>
+            <tr><td><code>/profile [name]</code></td><td>Lists or switches the model presets for experiments; reversible.</td></tr>
+            <tr><td><code>/ab</code></td><td>A blind test: two scripts for one story, you tap the better one.</td></tr>
+          </tbody>
+        </table>
+        <h3>The buttons</h3>
+        <ul>
+          <li><b>Topic card</b>: <code>1</code> <code>2</code> <code>3</code> picks a story, <code>Skip</code> skips the day. Pasting a link picks that link instead.</li>
+          <li><b>Video card</b>: <code>Approve</code> queues it for 11:30 (or posts at once after 11:30). <code>Revise</code> asks what to change; your next message is the notes (write "use the reviewer's notes" to apply the review's fixes). At most two revisions. <code>Reject</code> drops it; a reason you send after is kept as a lesson.</li>
+          <li><b>Approve anyway</b>: when a video misses an automatic check or the review bar, the card lists what failed and the button says so. Approving it posts the video and turns its failures into lessons for the next videos.</li>
+          <li><b>Card post</b>: approved separately, posted with the Short.</li>
+        </ul>
+        <p>Taps made while the laptop is off are handled when it starts at 10:00.</p>
+
+        <h2 id="studio">2. The Studio</h2>
+        <p>The Studio is a read-only web app: <a href="https://frameflow-studio-tau.vercel.app" rel="noopener">frameflow-studio-tau.vercel.app</a>. Enter the PIN once per browser session. It has six pages:</p>
+        <ul>
+          <li><b>Today</b>: each run's progress from topic card to posted, the three options with their scores, the Short, its card post and links.</li>
+          <li><b>Videos</b>: every Short. A posted one plays here, with its automatic checks, the review row by row, the fixes asked for, keyframes and the full script.</li>
+          <li><b>Card posts</b>: the carousel slides, caption and links.</li>
+          <li><b>Lessons</b>: what each video taught the next one, by area, with how often each lesson was seen and whether it helped.</li>
+          <li><b>Library</b>: spare hooks, verified facts with sources, analogies and scene ideas offered to new videos.</li>
+          <li><b>Build</b>: progress of the build plan and model tokens per day.</li>
+        </ul>
+        <p>Only videos and posts that are already public appear in full. Anything else shows its title and scores only.</p>
+
+        <h2 id="day">3. A day in the life</h2>
+        <ol>
+          <li><b>14:00</b>: the topic card for tomorrow arrives. The lane rotates tech → AI → money.</li>
+          <li><b>15:00</b>: with no tap, story #1 is picked. The brief is built from sources and checked.</li>
+          <li><b>15:00–17:00</b>: script, storyboard, render, checks, review, and at most one automatic revision. The video card arrives; a card post is made from the same brief.</li>
+          <li><b>Any time</b>: the owner taps Approve, Revise or Reject.</li>
+          <li><b>11:30 next day</b>: the Short and the card post go out on all three platforms, each with its own captions, then the links come back to Telegram and the Studio refreshes.</li>
+          <li><b>+48 h</b>: stats are collected, lessons are scored, reusable pieces go to the library and bulky files are cleaned up.</li>
+          <li><b>Sunday</b>: lessons that helped three or more videos are offered as permanent house rules.</li>
+        </ol>
+
+        <h2 id="arch">4. Technical architecture</h2>
+        <table>
+          <thead><tr><th scope="col">Part</th><th scope="col">How</th></tr></thead>
+          <tbody>
+            <tr><td>Ideas</td><td>12 sources collected and ranked by one cheap model call per day.</td></tr>
+            <tr><td>Brief</td><td>The picked story is researched into facts with links and a list of cautions.</td></tr>
+            <tr><td>Script and storyboard</td><td>Two skills: a writer in Habit's voice and a director that picks visual metaphors and times motion to the words. The best active lessons and library items are offered to both.</td></tr>
+            <tr><td>Render</td><td>HTML scene templates rendered frame by frame (deterministic), a local text-to-speech voice, licensed or original music and sound effects, captions timed to the words, loudness to −14 LUFS.</td></tr>
+            <tr><td>Checks</td><td>Automatic gates on the file plus a model review against the quality bar; one automatic revision with the reviewer's notes.</td></tr>
+            <tr><td>Approval</td><td>A Telegram bot with a small state machine stored in SQLite, so a restart resumes where it stopped.</td></tr>
+            <tr><td>Publishing</td><td>Captions per platform from one skill; Instagram and Facebook through the Meta Graph API; YouTube through a dedicated, signed-in browser until API uploads are approved.</td></tr>
+            <tr><td>Learning</td><td>A lessons ledger fed by reviews, failed checks, owner notes and 48 h stats; the top 8 per area go into the prompts.</td></tr>
+            <tr><td>Studio</td><td>A static site. After each post the snapshot is exported, encrypted with AES-GCM under a key derived from the PIN (PBKDF2-SHA256, 600,000 rounds) and pushed; the browser decrypts it.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="quality">5. Quality checks</h2>
+        <p>Every Short is checked automatically before it reaches Telegram:</p>
+        <ul>
+          <li><b>Length</b> within the target; <b>size</b> 1080×1920.</li>
+          <li><b>Something new on screen</b> at least every 2.5 s; <b>a re-hook</b> at least every 10.5 s.</li>
+          <li><b>No black stretches</b> and <b>no near-empty frames</b>.</li>
+          <li><b>Loudness</b> −15 to −13 LUFS, true peak under −1 dBTP.</li>
+          <li><b>Captions</b> match the voice (word error rate under 10%); <b>voice starts</b> at once.</li>
+          <li><b>Licences</b>: every image, voice and music asset has a row with its licence and origin.</li>
+          <li><b>Cover</b> numbers must be numbers the script actually says.</li>
+        </ul>
+        <p>The model review then scores hook, story, humour, visual storytelling, pacing, sound, captions, sources, honesty, ending and flow, 0–2 each.</p>
+
+        <h2 id="cli">6. Command reference</h2>
+        <pre><code>frameflow make2 &lt;brief.json&gt;      brief -> script -> storyboard -> render -> checks -> review
+frameflow direct &lt;brief.json&gt;     script, storyboard and scene plan only
+frameflow render &lt;plan.json&gt;      scene plan -> final.mp4
+frameflow qa &lt;out-dir&gt;            the automatic checks on a render
+frameflow review &lt;out-dir&gt;        the model review
+frameflow ideas collect|rank|list
+frameflow status | approve &lt;id&gt; | reject &lt;id&gt; &lt;why&gt;
+frameflow publish &lt;id&gt; | upload &lt;id&gt; | posted &lt;id&gt; ...
+frameflow profile list|show|use &lt;name&gt;
+frameflow web export | refresh | pin   Studio snapshot (PIN-locked)</code></pre>
+
+        <h2 id="ops">7. Running it</h2>
+        <ul>
+          <li>Three long-running processes under a process manager: the bot (with the 30-second daily tick), the posting browser and the internal build cockpit. They come back after a reboot.</li>
+          <li>Python with <code>uv</code> (one environment), Node only for the HTML renderer and these two web pages.</li>
+          <li>Secrets live in one file outside the repository (mode 600); none reach git or the web.</li>
+          <li>A model usage limit pauses the step and re-runs it after the reset. A step stopped by a shutdown restarts itself.</li>
+          <li>The Studio and this site deploy from the repository on every push.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+  <footer class="foot">Frameflow · documentation · <a href="/">back to the overview</a></footer>
+  <script type="module" src="/src/docs.ts"></script>
+</body>
+</html>
