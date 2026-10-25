@@ -1,4 +1,4 @@
-// Deterministic 60 fps capture of the live betadoc and Studio for the narrated tour (betadoc skill, step 5).
+// Deterministic 60 fps capture of the live Studio (the working product) for the narrated tour (betadoc skill, step 5).
 // A virtual clock is injected before any page script (rAF, performance.now, Date, timers, CSS/WAAPI animations and
 // <video> playback); every frame advances it by exactly 1/60 s, waits for two real paints and takes a screenshot.
 // Scenes are timed to the narration in build/durations.json; each scene gets its voice slot so moves fill it.
@@ -10,7 +10,6 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
 const argv = process.argv.slice(2);
 const opt = (k, d) => (argv.includes(k) ? argv[argv.indexOf(k) + 1] : d);
-const SITE = opt("--site", "https://frameflow-betadoc.vercel.app");
 const STUDIO = opt("--studio", "https://frameflow-studio-tau.vercel.app");
 const ONLY = opt("--only", "");
 const PIN = process.env.FRAMEFLOW_WEB_PIN;
@@ -144,80 +143,92 @@ async function open(url, anchor) {
   await page.evaluate(() => document.fonts.ready);
   await settle();
 }
-const linear = (t) => t;
-// pinned build section: ScrollTrigger pins at the section's top for 2.6 viewports
-const pinRange = async () => { const s = await top(".build"); return [s, s + H * 2.6]; };
+const nav = (label) => page.locator(".mast nav a", { hasText: label });
+async function go(label) {
+  await clickOn(nav(label), 0.8);
+  await settle(6);
+  await page.locator(".page").first().waitFor({ state: "visible" });
+}
 
-// ---------------------------------------------------------------- scenes (ids match script.json)
+// ---------------------------------------------------------------- scenes (ids match script.json): the Studio only
 const SCENES = {
-  async intro(slot) {
-    await open(SITE + "/", ".hero h1");
-    await hold(Math.min(3, slot * 0.35));
-    const p = await box(page.locator(".phone-frame"));
-    await moveTo(p.x, p.y, 1.6);
-    await hold(Math.max(0, slot - 3 - 1.6 - 1.2));
-    await moveTo(W * 0.32, H * 0.82, 1.2);
-  },
-  async build(slot) {
-    const [s, e] = await pinRange();
-    await scrollTo(s, 1.6);
-    await scrollTo(s + (e - s) * 0.58, Math.max(1, slot - 1.6), linear);
-  },
-  async checks(slot) {
-    const [s, e] = await pinRange();
-    await scrollTo(e - 4, Math.max(1, slot - 1.4), linear);
-    await hold(1.4);
-  },
-  async approve(slot) {
-    await scrollTo(await top(".clock", 70), 1.6);
-    const end = await top(".timeline li:nth-child(4)", H * 0.45);
-    await scrollTo(end, Math.max(1, slot - 2.2), linear);
-    await hold(0.6);
-  },
-  async studio(slot) {
+  async unlock(slot) {
     await open(STUDIO + "/", "#pin");
-    await hold(0.5);
-    await clickOn(page.locator("#pin"), 0.7);
+    await hold(0.8);
+    await clickOn(page.locator("#pin"), 0.8);
     for (const ch of PIN) { await page.keyboard.type(ch); await hold(0.08); }
     await clickOn(page.locator("button[type=submit]"), 0.5);
     for (let i = 0; i < 400 && !(await page.locator(".mast").count()); i++) await tick();   // PBKDF2 runs in real time
-    await hold(0.8);
-    const opt = await box(page.locator(".options li.picked"));
-    await moveTo(opt.x - 120, opt.y, 1.2);
-    await hold(Math.max(0.5, slot - 6));
-    const q = await box(page.locator(".run .pill"));
-    await moveTo(q.x, q.y, 0.9);
+    await settle(6);
+    const t = await box(page.locator(".lead h1"));
+    await moveTo(t.x + 200, t.y + 40, 1.0);
+  },
+  async today(slot) {
+    await scrollTo(await top(".run", 150), 1.2);
+    const opts = page.locator(".options li");
+    const per = Math.max(0.6, (slot - 1.6) / 3);
+    for (let i = 0; i < 3; i++) {
+      const p = await box(opts.nth(i));
+      await moveTo(p.x - 140, p.y, Math.min(0.9, per * 0.6));
+      await hold(per * 0.4);
+    }
+  },
+  async progress(slot) {
+    const steps = page.locator(".steps li");
+    const per = Math.max(0.5, (slot - 1.2) / 4);
+    for (const i of [1, 2, 3, 4]) {
+      const p = await box(steps.nth(i));
+      await moveTo(p.x, p.y + 4, per * 0.6);
+      await hold(per * 0.4);
+    }
+    const q = await box(page.locator(".run .pill").first());
+    await moveTo(q.x, q.y, 0.8);
   },
   async video(slot) {
-    await page.goto(STUDIO + "/#/video/2026-10-25-black-october");
-    await page.locator("video").waitFor({ state: "visible" });
-    await page.evaluate(() => { const v = document.querySelector("video"); v.muted = true; v.play(); });
-    await settle(10);
-    const v = await box(page.locator("video"));
-    await moveTo(v.x, v.y, 0.8);
-    await hold(Math.min(2.5, slot * 0.3));
-    await scrollTo(await top(".gates", 120), 1.6);
-    await hold(Math.max(0.5, (slot - 6.5) / 2));
-    await scrollTo(await top(".scores", 140), 1.4);
-    await hold(Math.max(0.5, (slot - 6.5) / 2));
-  },
-  async lessons(slot) {
     await page.evaluate(() => window.scrollTo(0, 0));
     await settle(4);
-    await clickOn(page.locator('nav a[href="#/lessons"]'), 0.8);
-    await settle(10);
-    await hold(1.2);
+    await go("Videos");
+    await hold(0.8);
+    await clickOn(page.locator("a.vcard", { hasText: "Black October" }), 0.9);
+    await page.locator("video").waitFor({ state: "visible" });
+    await page.evaluate(() => { const v = document.querySelector("video"); v.muted = true; v.play(); });
+    await settle(6);
+    const v = await box(page.locator("video"));
+    await moveTo(v.x + 60, v.y + 80, 1.0);
+  },
+  async checks(slot) {
+    await scrollTo(await top(".gates", 160), 1.6);
+    await hold(Math.max(0.4, (slot - 3.2) / 2));
+    await scrollTo(await top(".scores", 200), 1.6);
+  },
+  async cards(slot) {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await settle(4);
+    await go("Card posts");
+    await page.evaluate(() => { document.querySelector(".slides").style.scrollSnapType = "none"; });   // snapping fights a stepped scroll
+    await scrollTo(await page.evaluate(() => document.querySelector(".slides").closest(".cardpost").getBoundingClientRect().top + window.scrollY - 150), 1.0);
+    const sl = await box(page.locator(".slides"));
+    await moveTo(sl.x, sl.y, 0.6);
+    const k = n(Math.max(1, slot - 3.4));
+    const max = await page.evaluate(() => { const e = document.querySelector(".slides"); return e.scrollWidth - e.clientWidth; });
+    for (let i = 1; i <= k; i++) {
+      await page.evaluate((x) => { document.querySelector(".slides").scrollLeft = x; }, max * ease(i / k));
+      await tick();
+    }
+  },
+  async lessons(slot) {
+    await go("Lessons");
+    await hold(0.8);
     await clickOn(page.locator('.filters button[data-a="writer"]'), 0.8);
-    await hold(0.6);
-    await scrollTo(260, Math.max(1, slot - 4.2));
+    await hold(0.5);
+    await scrollTo(240, Math.max(1, slot - 3.6));
   },
   async outro(slot) {
-    await open(SITE + "/", ".hero h1");
-    await page.evaluate((y) => window.scrollTo(0, y), await top(".cta", 120));
-    await settle(30);
-    const p = await box(page.locator(".cta .btn").first());
-    await moveTo(p.x, p.y, 1.2);
-    await hold(Math.max(0.5, slot - 1.2));
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await settle(4);
+    await go("Today");
+    const t = await box(page.locator(".mast-title"));
+    await moveTo(t.x, t.y + 30, 1.0);
   },
 };
 
@@ -225,7 +236,7 @@ const SCENES = {
 if (!ONLY) rmSync(FRAMES, { recursive: true, force: true });
 mkdirSync(FRAMES, { recursive: true });
 const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--autoplay-policy=no-user-gesture-required"] });
-const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1, colorScheme: "dark" });
+const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1, colorScheme: "light" });
 await ctx.addInitScript(CLOCK);
 page = await ctx.newPage();
 page.on("pageerror", (e) => console.error("page error:", String(e)));

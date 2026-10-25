@@ -176,6 +176,7 @@
       _Acceptance:_ betadoc/video renders a deterministic 60 fps narrated tour (betadoc narrate.py, voice Talha picked) with captions; it streams from the live site
       _Note 2026-10-25:_ 2026-10-25: not started; the hero plays the real posted Short instead. Needs Talha's voice pick (betadoc narrate.py audition).
       _Note 2026-10-25:_ 2026-10-25: Talha picked voice A (Kokoro af_heart) from 4 samples sent to Telegram (af_heart, am_michael, bm_george, Habit's Chatterbox). betadoc/video: script.json (8 scenes, speed 0.85, 144-189 wpm), record.mjs (virtual clock incl. <video> stepping; live betadoc + Studio, PIN masked), mix.mjs. 61.8 s, 3707 frames, 0 repeated frames inside scroll motion, -18.2 LUFS, captions; contact sheet checked. Hero 'Watch the 1-minute tour' dialog; deploy-check betadoc LIVE OK at fabd507 (tour mp4 + vtt 200, range 206, moov first); live walk opens and loads the tour.
+      _Note 2026-10-25:_ 2026-10-25: redone per Talha: the tour is now captured only in the working product (the live Studio), as the betadoc skill's step 5 says, not the selling page. 8 scenes (unlock, today, progress, video, checks, cards, lessons, outro), same voice af_heart 0.85 (139-176 wpm), 51.5 s, 3090 frames; 0 repeats in mid-motion; card carousel slide fixed (scroll-snap off while stepping). Contact sheets checked.
 - **P2 Voice** (3/3)
   - [x] **P2.1** Local text-to-speech installed in the project  
     _Acceptance:_ uv run python -m frameflow.voice sample "Hello from Frameflow" writes a WAV longer than 1 s using Kokoro, with no global installs

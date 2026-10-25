@@ -2,44 +2,44 @@
  "fps": 60,
  "scenes": [
   {
-   "id": "intro",
-   "frames": 569,
+   "id": "unlock",
+   "frames": 390,
    "start": 0
   },
   {
-   "id": "build",
-   "frames": 596,
-   "start": 9.483333333333333
+   "id": "today",
+   "frames": 455,
+   "start": 6.5
   },
   {
-   "id": "checks",
-   "frames": 487,
-   "start": 19.416666666666668
-  },
-  {
-   "id": "approve",
-   "frames": 541,
-   "start": 27.533333333333335
-  },
-  {
-   "id": "studio",
-   "frames": 516,
-   "start": 36.55
+   "id": "progress",
+   "frames": 459,
+   "start": 14.083333333333334
   },
   {
    "id": "video",
-   "frames": 403,
-   "start": 45.15
+   "frames": 480,
+   "start": 21.733333333333334
+  },
+  {
+   "id": "checks",
+   "frames": 369,
+   "start": 29.733333333333334
+  },
+  {
+   "id": "cards",
+   "frames": 342,
+   "start": 35.88333333333333
   },
   {
    "id": "lessons",
    "frames": 386,
-   "start": 51.86666666666667
+   "start": 41.583333333333336
   },
   {
    "id": "outro",
    "frames": 209,
-   "start": 58.3
+   "start": 48.016666666666666
   }
  ]
 }

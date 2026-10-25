@@ -1,12 +1,12 @@
 {
  "pad": 0.7,
  "scenes": {
-  "intro": 8.79,
-  "build": 9.236,
-  "checks": 7.42,
-  "approve": 8.316,
-  "studio": 7.905,
-  "video": 5.716,
+  "unlock": 5.807,
+  "today": 6.887,
+  "progress": 6.944,
+  "video": 7.296,
+  "checks": 5.45,
+  "cards": 5.006,
   "lessons": 5.73,
   "outro": 2.781
  }
