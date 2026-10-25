@@ -19,7 +19,7 @@ HELP = ("I'm Habit, Frameflow's bot.\n"
         "The video comes back here before 17:00: Approve, Revise (tell me what to change) or Reject. You can tap any time,\n"
         "even at night: I act on it when the laptop starts at 10:00.\n"
         "Approved before 11:30: posted at 11:30. Approved later: posted right away.\n\n"
-        "/status  where things are\n/ab  blind script test\n/pause  stop the daily runs\n/resume  start them again\n/retry  re-run a failed step")
+        "/status  where things are\n/log  what the current run is doing\n/ab  blind script test\n/pause  stop the daily runs\n/resume  start them again\n/retry  re-run a failed step")
 
 
 def set_paused(flag):
@@ -136,6 +136,17 @@ def on_text(text):
         return retry()
     if cmd == "/ab":
         return ab_test()
+    if cmd == "/log":   # the latest run's step-by-step log and the last lines of its current job
+        run = (latest(("topic-sent", "picked", "making", "video-sent", "awaiting-notes", "queued", "posting", "failed", "posted")) or {})
+        if not run:
+            return telegram.send("No runs yet.")
+        steps = "\n".join(l[11:16] + l[19:] for l in (run.get("log") or "").strip().splitlines()[-12:])
+        logs = sorted(daily.LOGS.glob(f"daily-{run['day']}-*.log"), key=lambda p: p.stat().st_mtime)
+        tail = ""
+        if logs:
+            lines = [l for l in logs[-1].read_text(errors="replace").splitlines() if l.strip() and "token" not in l.lower()][-6:]
+            tail = f"\n\nLast lines of {logs[-1].name}:\n" + "\n".join(l[:160] for l in lines)
+        return telegram.send(f"{run['day']} · {run['state']}\n{steps}{tail}")
     waiting = latest(("awaiting-notes",))
     if waiting:
         daily.update(waiting["day"], notes=t, revisions=waiting["revisions"] + 1, state="making", note="notes received")

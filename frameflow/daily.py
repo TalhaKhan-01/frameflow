@@ -192,9 +192,13 @@ def make(day):
     from frameflow import brief, videos
     run = get(day)
     story = chosen(run)
-    update(day, state="making", note="making: research brief")
-    path = brief.build(story["url"], story.get("title", ""), run["lane"], story.get("summary", ""))
-    update(day, brief=str(path), note=f"brief {path.name}; make2 started")
+    if run.get("brief") and Path(run["brief"]).exists():   # a retry reuses the research it already did
+        path = Path(run["brief"])
+        update(day, state="making", note=f"reusing brief {path.name}; make2 started")
+    else:
+        update(day, state="making", note="making: research brief")
+        path = brief.build(story["url"], story.get("title", ""), run["lane"], story.get("summary", ""))
+        update(day, brief=str(path), note=f"brief {path.name}; make2 started")
     r = videos.make2(str(path), run["lane"])
     if r.get("status") == "plan-invalid":
         raise RuntimeError(f"plan invalid after the director's fix: {r.get('errors')}")
