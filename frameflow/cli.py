@@ -48,7 +48,8 @@ def main():
         m2.add_argument("--skip-director", action="store_true", help="reuse <out>/director/storyboard.json")
     sub.add_parser("status", help="list videos")
     wb = sub.add_parser("web", help="Studio web app snapshot: export | pin")
-    wb.add_argument("action", choices=["export", "pin"])
+    wb.add_argument("action", choices=["export", "refresh", "pin"])
+    wb.add_argument("reason", nargs="*")
     pf = sub.add_parser("profile", help="pipeline profiles: list | show | use <name> | save <name>")
     pf.add_argument("args", nargs="*")
     ap_ = sub.add_parser("approve", help="Talha approves a video after watching it")
@@ -112,7 +113,7 @@ def main():
         print(json.dumps(direct.direct(a.brief, a.out, a.lane, a.skip_writer, a.skip_director), indent=1))
     elif a.cmd == "web":
         from . import webexport
-        webexport.main([a.action])
+        webexport.main([a.action, *a.reason])
     elif a.cmd == "status":
         from frameflow import videos
         for v in videos.listing():

@@ -1,6 +1,7 @@
 """Snapshot for the Studio web app (web/) and the betadoc's live numbers (betadoc/).
 
     frameflow web export      write web/public/data/studio.enc (+ media) and betadoc/public/live.json (+ media)
+    frameflow web refresh     export, then commit + push only web/public and betadoc/public
     frameflow web pin         print where the PIN lives (never the PIN itself)
 
 The Studio is a static site, so the snapshot is locked with AES-GCM under a key derived from
@@ -282,8 +283,17 @@ def pin():
 
 def export():
     data = snapshot()
-    (WEB / "data").mkdir(parents=True, exist_ok=True)
-    (WEB / "data" / "studio.enc").write_text(json.dumps(encrypt(data, pin())))
+    enc, key = WEB / "data" / "studio.enc", pin()
+    try:   # unchanged content (apart from the time stamp) keeps the old file, so a refresh has nothing to commit
+        old = decrypt(json.loads(enc.read_text()), key)
+        same = {**old, "generated": None} == {**data, "generated": None}
+    except Exception:
+        same = False
+    if same:
+        print("snapshot unchanged")
+        return old
+    enc.parent.mkdir(parents=True, exist_ok=True)
+    enc.write_text(json.dumps(encrypt(data, key)))
     BETA.mkdir(parents=True, exist_ok=True)
     (BETA / "live.json").write_text(json.dumps(live(data), ensure_ascii=False, indent=1))
     print(f"studio.enc: {len(data['runs'])} runs, {len(data['videos'])} videos, {len(data['cards'])} card posts, "
@@ -291,10 +301,30 @@ def export():
     return data
 
 
+def refresh(reason):
+    """Re-export and publish only the snapshot folders (commit + push; Vercel deploys the Studio and the betadoc)."""
+    try:
+        export()
+        paths = ["web/public", "betadoc/public"]
+        git = lambda *a: subprocess.run(["git", "-C", str(ROOT), *a], capture_output=True, text=True)
+        git("add", "--", *paths)
+        if not git("diff", "--cached", "--quiet", "--", *paths).returncode:
+            return "no change"
+        r = git("commit", "-m", f"Studio snapshot: {reason}", "--", *paths)
+        if r.returncode:
+            return f"commit failed: {r.stderr.strip()[:200]}"
+        r = git("push", "-q", "origin", "HEAD:main")
+        return "pushed" if not r.returncode else f"push failed: {r.stderr.strip()[:200]}"
+    except Exception as e:   # the Studio is a window, never a reason for a daily step to fail
+        return f"refresh failed: {e}"
+
+
 def main(argv=None):
     a = (argv if argv is not None else sys.argv[1:]) or ["export"]
     if a[0] == "export":
         export()
+    elif a[0] == "refresh":
+        print(refresh(" ".join(a[1:]) or "by hand"))
     elif a[0] == "pin":
         pin()
         print(f"FRAMEFLOW_WEB_PIN is in {secrets.SECRETS_FILE}")

@@ -360,6 +360,8 @@ def post(run):
     update(run, state="posted" if not errors else "failed", links=json.dumps(links), note=f"posted {links} errors {list(errors)}")
     telegram.send("Card post live:\n" + "\n".join(f"{k.capitalize()}: {v}" for k, v in links.items())
                   + ("\nNot posted: " + "; ".join(f"{k}: {v[:150]}" for k, v in errors.items()) if errors else ""))
+    from frameflow import webexport
+    update(run, note="studio: " + webexport.refresh("card post " + run))
 
 
 def spawn(step, run):

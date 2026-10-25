@@ -369,6 +369,8 @@ def post(day):
     if missing:
         lines.append(f"Not posted: {', '.join(missing)} (I'll look into it; the details are in the log).")
     telegram.send("\n".join(lines))
+    from frameflow import webexport
+    update(day, note=f"studio: {webexport.refresh(f'posted {day}')}")
 
 
 # ---- tick: called by the bot every 30 s ----
@@ -401,6 +403,8 @@ def tick():
             update(run["day"], note=f"cleanup: {freed}")
         except Exception as e:
             print(f"cleanup {run['day']}: {e}", file=sys.stderr)
+        from frameflow import webexport
+        update(run["day"], note="studio: " + webexport.refresh("48 h stats " + run["day"]))
     if t.weekday() == 6 and t.hour >= 21:
         weekly()
     for run in [dict(r) for r in db().execute("SELECT * FROM runs WHERE state NOT IN ('posted','skipped','rejected')")]:
