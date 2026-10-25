@@ -61,7 +61,7 @@ def distill(render_dir, notes="", source=None):
               f"\nReview scores: {json.dumps(rev.get('scores', {}))}\nFailed checks: {failed or 'none'}\nOwner's words: {notes or 'none'}")
     if not (rev.get("fixes") or failed or notes):
         return {"new": [], "reinforce": []}
-    r = llm.call(prompt, SYSTEM, SCHEMA, model="sonnet", purpose=f"lessons:{out.parent.name}", effort="low")
+    r = llm.call(prompt, SYSTEM, SCHEMA, model="haiku", purpose=f"lessons:{out.parent.name}", effort="low")
     src = source or out.parent.name
     for rid in r["reinforce"]:
         for row in rows:

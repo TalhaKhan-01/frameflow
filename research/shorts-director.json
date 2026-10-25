@@ -11,5 +11,8 @@
     "Use the news-snapshot template at most once, and only with the source URL from the script's fact ids",
     "Open on a strong visual world, never on a plain title card"
   ],
-  "lessons_file": "research/lessons-director.txt"
+  "lessons_file": "research/lessons-director.txt",
+  "doctor_model": "sonnet",
+  "doctor_rounds": 1,
+  "_models": "2026-10-25: Opus only for the script draft / storyboard; Sonnet for hooks, judge and fix rounds; 1 fix round (vault Docs/Tokens Per Video.md)"
 }

@@ -71,6 +71,9 @@ def make(idea_id):
             "seconds": report["seconds"], "final": report["final"]}
 
 
+MAX_ROUNDS = 1   # one targeted revision; after that Talha judges on Telegram (revisions can flatten the voice: lesson L4)
+
+
 def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_director=False, quality="looks"):
     """Quality v2: brief -> writer + director skills -> plan -> render -> qa -> review v2 -> awaiting approval."""
     from frameflow import direct
@@ -84,7 +87,7 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
         rout = Path(report["final"]).parent
         q, r = check(rout)
         weak_flow = r.get("scores", {}).get("flow", 2) < 2
-        if (q["pass"] and r["pass"] and not weak_flow) or rounds >= 2:
+        if (q["pass"] and r["pass"] and not weak_flow) or rounds >= MAX_ROUNDS:
             break
         if q["pass"] and r["pass"] and weak_flow:   # good enough overall but hard to follow: fix only the flow, keep the rest (lesson L4)
             r = {**r, "fixes": [x for x in r.get("fixes", []) if x["row"] == "flow"] or

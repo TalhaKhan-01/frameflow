@@ -19,5 +19,9 @@
     "Brand names are said plainly (Wikipedia, Cloudflare); no slogans or praise of companies",
     "Spell numbers for the voice (twenty twelve, thirty-four million); digits are for the screen only"
   ],
-  "lessons_file": "research/lessons-writer.txt"
+  "lessons_file": "research/lessons-writer.txt",
+  "hooks_model": "sonnet",
+  "doctor_model": "sonnet",
+  "doctor_rounds": 1,
+  "_models": "2026-10-25: Opus only for the script draft / storyboard; Sonnet for hooks, judge and fix rounds; 1 fix round (vault Docs/Tokens Per Video.md)"
 }

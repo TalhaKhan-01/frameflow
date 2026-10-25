@@ -35,7 +35,7 @@ def brand():
     return json.loads(BRAND.read_text())
 
 
-def make(out_dir, model="sonnet"):
+def make(out_dir, model="haiku"):
     out = Path(out_dir)
     path = out / "cover.json"
     if path.exists():
