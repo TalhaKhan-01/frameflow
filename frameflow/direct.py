@@ -57,8 +57,8 @@ def compile_plan(brief, script, storyboard, lane, plan_id, cover_data=None):
             "open_loop": script["open_loop"], "concept": storyboard.get("concept", ""), "scenes": scenes}
 
 
-WRITER_ROWS = {"hook", "story", "persona_humour", "honesty", "ending", "sources"}
-DIRECTOR_ROWS = {"visual_storytelling", "pacing", "sound_plan", "captions", "sources", "honesty"}
+WRITER_ROWS = {"hook", "story", "flow", "persona_humour", "honesty", "ending", "sources"}
+DIRECTOR_ROWS = {"visual_storytelling", "flow", "pacing", "sound_plan", "captions", "sources", "honesty"}
 
 
 def revise(brief_path, out, review, lane="how-tech-works"):

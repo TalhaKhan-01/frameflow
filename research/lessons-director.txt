@@ -1,3 +1,3 @@
 Never leave a frame near-empty while the narrator is speaking: every key phrase (stat, rating, quote intro) needs its visual on screen from the first frame and held until the line ends. Check keyframes at each narration cue for blank pages.
 Time each reveal visual to its narration cue and in the storyboard order. Show the big number, the object or the quote card on the cue word, hold it until the line ends, and don't show later text early.
-An on-screen question heading (kicker) must use the narrator's own spoken words for that question. If the line doesn't ask a question out loud, the kicker is a short label, never a question the voice skips.
+Keep the picture in step with the voice: headings, labels and on-screen questions should match what is being said at that moment and help the viewer follow where the story is going, not introduce a question or point the narration never makes.

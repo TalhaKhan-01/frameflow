@@ -83,8 +83,12 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
         report = pipeline.render(plan_path, plan_path.parent / "render", quality)
         rout = Path(report["final"]).parent
         q, r = check(rout)
-        if (q["pass"] and r["pass"]) or rounds >= 2:
+        weak_flow = r.get("scores", {}).get("flow", 2) < 2
+        if (q["pass"] and r["pass"] and not weak_flow) or rounds >= 2:
             break
+        if q["pass"] and r["pass"] and weak_flow:   # good enough overall but hard to follow: fix only the flow, keep the rest (lesson L4)
+            r = {**r, "fixes": [x for x in r.get("fixes", []) if x["row"] == "flow"] or
+                 [{"row": "flow", "fix": "The reviewer found the flow weak; smooth the seams between parts without changing the voice or jokes."}]}
         rounds += 1   # the review's fixes go back to the writer and the director, then a fresh render
         for name, g in q["gates"].items():   # failed automatic gates are the director's to fix too
             if not g["pass"] and name in ("events", "blank-frames", "rehooks", "length"):

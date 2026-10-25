@@ -58,13 +58,19 @@ def keyframes(out):
     return sheet, plan
 
 
-ROWS_V2 = ["hook", "story", "persona_humour", "visual_storytelling", "pacing", "sound_plan", "captions", "sources", "honesty", "ending"]
-PASS_V2 = 15   # of 20, and no row at 0
+ROWS_V2 = ["hook", "story", "flow", "persona_humour", "visual_storytelling", "pacing", "sound_plan", "captions", "sources", "honesty", "ending"]
+PASS_V2 = 16   # of 22, and no row at 0 (was 15 of 20 before the flow row, 2026-10-25)
 
 SYSTEM_V2 = """You review Frameflow Shorts (Quality Bar v2) before a human approves them. Be strict, specific and fair.
 Score each row 0 (fails), 1 (weak) or 2 (strong):
 - hook: the first line stops a scrolling thumb within 2 s with a concrete, honest stake or image, and the video pays it off.
 - story: And-But-Therefore shape; an open loop early; a re-hook (twist, question, reveal) at least every ~10 s; the payoff answers the loop.
+- flow: a first-time viewer can follow without effort. Each part leads into the next (because, but, so, a callback, a bridge);
+  when the video moves to a new part of the story, the viewer knows what is being answered now and why it matters, however that
+  is done (a spoken question, a bridge, a visual that sets it up). What is on screen at a moment (headings, labels) agrees with what
+  is being said then. No jumps, no orphan facts, no heading that the voice never addresses. Judge it by playing the script in your
+  head as someone who knows nothing about the topic. For a score below 2, name the exact seam (between which lines or scenes) and
+  what the viewer is missing there; describe the problem, don't prescribe one fixed technique.
 - persona_humour: sounds like the named narrator (a sharp, friendly, slightly goofy friend), mostly informative with 3-5 light comic beats
   that each carry a fact; no AI-sounding phrasing; one line played straight.
 - visual_storytelling: drawn worlds and metaphors that SHOW the idea (not slides of numbers); the metaphor maps onto the real mechanism;
