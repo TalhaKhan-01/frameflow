@@ -1,7 +1,7 @@
 """The Studio board (P15): a make goes desk by desk, every desk's gate before the next, one delivery render.
 
-    writer + director (their own lints)  ->  narrator: voice + timing checks  ->  script editor: table read  ->  scenes  ->  standards  ->
-    animatic: a 12 fps draft  ->  screening on the animatic  ->  delivery render (once)  ->  QA  ->  final check
+    packaging (the promise)  ->  writer + director (their own lints)  ->  narrator: voice + timing checks  ->  script editor: table read  ->  scenes  ->  standards  ->
+    animatic: a 12 fps draft  ->  art director  ->  screening on the animatic  ->  delivery render (once)  ->  QA  ->  final check
 
 Fix loops happen before the delivery render, while a fix is still a text edit, bounded by the profile:
   timing_fix_rounds    narrator checks (re-hooks, caption accuracy, length, voice start) or the table read failed -> one
@@ -16,7 +16,7 @@ import json
 import shutil
 from pathlib import Path
 
-from frameflow import animatic, direct, pipeline, precheck, profiles, progress, qa, review, standards
+from frameflow import animatic, artdirect, direct, pipeline, precheck, profiles, progress, qa, review, standards
 
 
 def _revise(brief_path, plan_path, fixes, lane, label, desk):
@@ -60,8 +60,32 @@ def gap_fix(rout, anim):
             f"2.5 s." + LOCAL)
 
 
+CAPTION = Path.home() / "Talha_Khan" / "Claude" / "skills" / "social-caption" / "scripts" / "caption.py"
+
+
+def package(brief_path, out_dir):
+    """Packaging desk, before the writer: title, cover line and hook promise naming one stake (social-caption concept).
+    The brief carries it as `package`, so the writer delivers it; cover.make starts from its cover line."""
+    b = json.loads(Path(brief_path).read_text())
+    if b.get("package"):
+        return b["package"]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with progress.step("packaging: the promise before writing", desk="packaging") as info:
+        direct.skill([CAPTION, "--project", direct.ROOT, "concept", brief_path, "--out", out_dir / "package.json"], timeout=600, strict=True)
+        pkg = json.loads((out_dir / "package.json").read_text())
+        info.update({"title": pkg["title"], "cover_line": pkg["cover_line"], "hook_promise": pkg["hook_promise"][:160],
+                     "pass": not pkg.get("problems")})
+    b["package"] = {k: pkg[k] for k in ("title", "cover_line", "hook_promise")}
+    Path(brief_path).write_text(json.dumps(b, ensure_ascii=False, indent=1))
+    return b["package"]
+
+
 def make(brief_path, lane, out=None, skip_writer=False, skip_director=False, quality="looks"):
     pc = profiles.pipeline()
+    if not skip_writer:
+        import re
+        slug = re.sub(r"[^a-z0-9]+", "-", Path(brief_path).stem.lower()).strip("-")
+        package(brief_path, Path(out) if out else direct.ROOT / "out" / slug)
     with progress.step("script and storyboard (writer + director)", desk="writer"):
         d = direct.direct(brief_path, out, lane, skip_writer, skip_director)
     if d["errors"]:
@@ -108,12 +132,15 @@ def run(brief_path, plan_path, lane, quality="looks"):
         with progress.step("animatic (12 fps draft render)", desk="animatic") as info:
             anim = animatic.make(rout)
             info.update({"events": anim["detail"], "pass": anim["pass"], "render_seconds": anim["render_seconds"]})
+        with progress.step("art director (stills of the draft)", desk="artdirector") as info:
+            art = artdirect.run(rout)
+            info.update({"pass": art["pass"], "problems": [p for c in art["checks"].values() for p in c["problems"]][:6]})
         plan = json.loads((rout / "plan.json").read_text())
         with progress.step("screening on the animatic", desk="screening") as info:
             scr = review.screen_animatic(rout, plan, anim)
             info.update({"total": scr["total"], "max": scr["max"], "pass": scr["pass"],
                          "swipe_risks": [f"{x['t']:.0f}s {x['why']}"[:160] for x in scr.get("swipe_risks", [])]})
-        if (scr["pass"] and anim["pass"] and std["pass"]) or not animatic_left:
+        if (scr["pass"] and anim["pass"] and std["pass"] and art["pass"]) or not animatic_left:
             break
         animatic_left -= 1
         rounds["animatic"] += 1
@@ -121,7 +148,7 @@ def run(brief_path, plan_path, lane, quality="looks"):
         fixes += [{"row": "pacing", "fix": f"from the swipe read: around {x['t']:.0f} s a viewer would leave: {x['why']}"} for x in scr.get("swipe_risks", [])[:2]]
         if not anim["pass"]:
             fixes.append({"row": "pacing", "fix": gap_fix(rout, anim)})
-        fixes += standards.fixes(std)
+        fixes += standards.fixes(std) + artdirect.fixes(art)
         _revise(brief_path, plan_path, fixes, lane, f"animatic fix {rounds['animatic']}: rewrite from the screening", "director")
         table_done = False
     report = pipeline.deliver_stage(rout, quality)

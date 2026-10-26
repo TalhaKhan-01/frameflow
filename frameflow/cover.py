@@ -49,6 +49,9 @@ def make(out_dir, model=None, notes=""):
         if not bad_numbers(c, text):   # a cached cover is reused only while it still matches the (maybe revised) script
             return c
     ask = f"\n\nThe channel owner asks for this cover: {notes}" if notes else ""
+    if not notes and (out / "package.json").exists():   # the packaging desk decided the promise before the script was written
+        pkg = json.loads((out / "package.json").read_text())
+        ask = f"\n\nThe package decided before writing: title \"{pkg['title']}\", cover line \"{pkg['cover_line']}\". Keep the cover on that stake."
     c = llm.call(f"Video title: {script['title']}\nScript:\n{text}{ask}", SYSTEM.format(icons=", ".join(scene_plan.ICONS)), SCHEMA,
                  model=model, purpose=f"cover:{out.name}", effort="low")
     if bad_numbers(c, text):   # the cover becomes the thumbnail: its numbers must be the script's (it once said 80% vs 20% for 83.2% vs 36.1%)
