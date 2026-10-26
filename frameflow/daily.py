@@ -141,7 +141,7 @@ def source_of(url):
 
 def scout(day=None):
     day = day or (now().date() + dt.timedelta(days=1)).isoformat()
-    if get(day) and get(day)["state"] not in ("failed",):
+    if get(day) and get(day)["state"] not in ("failed", "scouting"):
         return get(day)
     lane = lane_for(day)
     opts = options_for(lane, cfg()["options"])
@@ -512,8 +512,8 @@ def main():
     day = a.day or a.day_opt
     try:
         if a.step == "scout":
-            if day and get(day) and get(day)["state"] == "scouting":   # spawned by the bot: replace the placeholder row
-                db().execute("DELETE FROM runs WHERE day=?", (day,)).connection.commit()
+            # the bot's placeholder row ('scouting') stays until scout() replaces it: deleting it first let the 30 s tick
+            # see no run and start a second scout, and two topic cards went out (2026-10-26)
             print(json.dumps(scout(day), indent=1, default=str)[:2000])
         elif a.step == "make":
             make(day)
