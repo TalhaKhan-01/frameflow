@@ -1,18 +1,18 @@
 {
- "generated": "2026-10-25T23:24:22",
+ "generated": "2026-10-26T11:31:07",
  "ideas": 764,
  "videos_made": 3,
  "videos_posted": 1,
  "card_posts": 1,
  "lessons": 20,
  "library": 99,
- "leaves_done": 76,
+ "leaves_done": 82,
  "leaves_partial": 26,
- "leaves_total": 116,
+ "leaves_total": 121,
  "today": {
   "day": "2026-10-26",
   "lane": "AI",
-  "state": "queued"
+  "state": "posting"
  },
  "latest": {
   "title": "Black October: Why Sites Went Offline to Patch PHP",
