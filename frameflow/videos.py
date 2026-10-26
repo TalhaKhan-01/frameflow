@@ -84,38 +84,16 @@ def make(idea_id):
 
 
 def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_director=False, quality="looks"):
-    """Quality v2: brief -> writer + director skills -> plan -> render -> qa -> review v2 -> awaiting approval."""
-    from frameflow import direct
-    with progress.step("script and storyboard (writer + director)"):
-        d = direct.direct(brief_path, out, lane, skip_writer, skip_director)
-    if d["errors"]:
-        return {"status": "plan-invalid", **d}
-    plan_path = Path(d["plan"])
-    rounds = 0
-    while True:
-        with progress.step(f"round {rounds + 1}: render and check"):
-            report = pipeline.render(plan_path, plan_path.parent / "render", quality)
-            rout = Path(report["final"]).parent
-            q, r = check(rout)
-        weak_flow = r.get("scores", {}).get("flow", 2) < 2
-        from frameflow import profiles   # automatic revisions allowed by the active profile (diet: 1; revisions can flatten the voice, L4)
-        if (q["pass"] and r["pass"] and not weak_flow) or rounds >= profiles.pipeline()["max_auto_revisions"]:
-            break
-        if q["pass"] and r["pass"] and weak_flow:   # good enough overall but hard to follow: fix only the flow, keep the rest (lesson L4)
-            r = {**r, "fixes": [x for x in r.get("fixes", []) if x["row"] == "flow"] or
-                 [{"row": "flow", "fix": "The reviewer found the flow weak; smooth the seams between parts without changing the voice or jokes."}]}
-        rounds += 1   # the review's fixes go back to the writer and the director, then a fresh render
-        for name, g in q["gates"].items():   # failed automatic gates are the director's to fix too
-            if not g["pass"] and name in ("events", "blank-frames", "rehooks", "length"):
-                r.setdefault("fixes", []).append({"row": "pacing" if name != "rehooks" else "story", "fix": f"automatic check '{name}' failed: {g['detail']}"})
-        (rout / f"review-round{rounds}.json").write_text(json.dumps(r, ensure_ascii=False, indent=1))
-        with progress.step(f"automatic revision {rounds}: rewrite from the review", fixes=len(r.get("fixes", []))):
-            d = direct.revise(brief_path, plan_path.parent, r, lane)
-        if d["errors"]:
-            break
+    """The Studio board (frameflow.board): desks and gates before one delivery render -> QA -> final check -> awaiting approval."""
+    from frameflow import board
+    b = board.make(brief_path, lane, out, skip_writer, skip_director, quality)
+    if b["status"] == "plan-invalid":
+        return b
+    plan_path, rout, report, q, r = Path(b["plan"]), Path(b["render"]), b["report"], b["qa"], b["review"]
     plan = json.loads(plan_path.read_text())
     status = "awaiting-approval" if q["pass"] and r["pass"] else "needs-work"
-    progress.note(f"result: {status}", qa=q["pass"], review=f"{r['total']}/{r.get('max', 12)}", rounds=rounds + 1)
+    progress.note(f"result: {status}", qa=q["pass"], review=f"{r['total']}/{r.get('max', 12)}", animatic=b["animatic_total"],
+                  fix_rounds_before_render=b["rounds"], delivery_renders=1)
     try:   # what this video teaches the next ones (frameflow.lessons)
         from frameflow import lessons
         with progress.step("lessons for the next videos"):
@@ -126,7 +104,8 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
     con.execute("INSERT OR REPLACE INTO videos (id, idea_id, plan, out_dir, lane, title, qa_pass, review_total, review_pass, status, note, created_at, updated_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (plan["id"], None, str(plan_path), str(rout), plan["lane"], plan["title"], int(q["pass"]), r["total"], int(r["pass"]),
-                 status, f"v2 from {brief_path}; {rounds} review round(s)", now(), now()))
+                 status, f"studio board from {brief_path}; fix rounds before the render: timing {b['rounds']['timing']}, animatic "
+                 f"{b['rounds']['animatic']}; one delivery render", now(), now()))
     con.commit()
     try:   # the asset library: record what was reused, then take this video's reusable assets (only if it passed)
         from frameflow import library
@@ -138,6 +117,11 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
     from frameflow import vaultnote
     with progress.step("vault note"):
         vaultnote.safe_write(plan["id"])   # the video's page in the vault (facts, sources, review)
+    try:   # the voice's real speaking rate -> the bar -> the writer's and director's next estimates
+        from frameflow import bar
+        bar.calibrate()
+    except (Exception, SystemExit) as e:
+        print(f"calibrate: {e}")
     return {"video": plan["id"], "status": status, "qa": {k: g["pass"] for k, g in q["gates"].items()},
             "review": f"{r['total']}/{r.get('max', 12)}", "seconds": report["seconds"], "final": report["final"]}
 

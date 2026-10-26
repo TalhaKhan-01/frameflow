@@ -166,40 +166,66 @@ def ledger_rows_v2(plan, tracks, sheet, voice_info, project_dir):
     return rows
 
 
-def render(plan_path, out_dir=None, quality="looks", mood=None, theme=None):
+def voice_stage(plan_path, out_dir=None):
+    """Narrator: plan -> script.json, voice takes, word timing. Returns the render folder."""
     plan = json.loads(Path(plan_path).read_text())
     errs = scene_plan.validate(plan)
     if errs:
         raise SystemExit("plan is not valid:\n" + "\n".join(errs))
     out = Path(out_dir or ROOT / "out" / plan["id"])
     out.mkdir(parents=True, exist_ok=True)
-    shutil.copy(plan_path, out / "plan.json")
+    if Path(plan_path).resolve() != (out / "plan.json").resolve():
+        shutil.copy(plan_path, out / "plan.json")
     script = build.voice_script(plan)
     (out / "script.json").write_text(json.dumps(script, ensure_ascii=False, indent=1))
     vdir = out / "voice"
-    with progress.step("voice (text to speech)", lines=len(script["lines"])) as pi:
+    with progress.step("voice (text to speech)", desk="narrator", lines=len(script["lines"])) as pi:
         info = voice.tts(out / "script.json", vdir)
         pi.update({"engine": info.get("engine"), "wpm": info.get("wpm")})
     shutil.copy(out / "script.json", vdir / "script.json")
-    with progress.step("caption timing (speech to words)") as pi:
+    with progress.step("caption timing (speech to words)", desk="narrator") as pi:
         words = captions.align(vdir)
-        word_error = captions.wer(voice.LAUGH.sub(" ", " ".join(l["say"] for l in script["lines"])), " ".join(w["w"] for w in words))
-        pi.update({"words": len(words), "word_error": f"{word_error:.1%}"})
-    with progress.step("build scenes (HyperFrames project)", scenes=len(plan["scenes"])) as pi:
-        proj, total = build.project(plan, out / "project", vdir, theme=theme)
+        pi.update({"words": len(words), "word_error": f"{_wer(out):.1%}"})
+    return out
+
+
+def _wer(out):
+    script = json.loads((out / "script.json").read_text())
+    words = json.loads((out / "voice" / "words.json").read_text())
+    return captions.wer(voice.LAUGH.sub(" ", " ".join(l["say"] for l in script["lines"])), " ".join(w["w"] for w in words))
+
+
+def build_stage(out, theme=None):
+    """The scenes as a HyperFrames project, on the voice's timing. Returns (project dir, seconds)."""
+    out = Path(out)
+    plan = json.loads((out / "plan.json").read_text())
+    with progress.step("build scenes (HyperFrames project)", desk="animator", scenes=len(plan["scenes"])) as pi:
+        proj, total = build.project(plan, out / "project", out / "voice", theme=theme)
         pi["video_seconds"] = round(total, 1)
-    with progress.step("render frames", quality=quality):
+    return proj, total
+
+
+def deliver_stage(out, quality="looks", mood=None):
+    """The delivery render (once), the mix, the cover frame, the asset ledger and report.json."""
+    out = Path(out)
+    plan = json.loads((out / "plan.json").read_text())
+    vdir, proj = out / "voice", out / "project"
+    info = json.loads((vdir / "durations.json").read_text())
+    words = json.loads((vdir / "words.json").read_text())
+    with progress.step("render frames", desk="animator", quality=quality):
         raw = build.render(proj, out / "raw.mp4", quality)
     slots = build.timings(plan, vdir)
     if plan.get("version", 1) >= 2:
         sheet = json.loads((proj / "sfx.json").read_text())
-        with progress.step("sound mix (voice, music, effects)"):
+        total = round(slots[-1][0] + slots[-1][1] + build.TAIL, 3)   # the composition's length, as build.project sets it
+        with progress.step("sound mix (voice, music, effects)", desk="animator"):
             final, tracks = mix_v2(raw, out / "final.mp4", vdir, plan, slots, total, sheet)
         rows = ledger_rows_v2(plan, tracks, sheet, info, proj)
         mood = "+".join(tracks) or "none"
     else:
         mood = mood or plan.get("music", {}).get("mood") or LANE_MOOD.get(plan["lane"], "calm-tech")
         starts = [s for s, _ in slots]
+        total = round(slots[-1][0] + slots[-1][1] + build.TAIL, 3)
         final = mix(raw, out / "final.mp4", vdir, mood, starts, total)
         rows = ledger_rows(plan, mood, ["whoosh-short"] * (len(starts) > 1), proj)
     (out / "assets.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1))
@@ -211,6 +237,34 @@ def render(plan_path, out_dir=None, quality="looks", mood=None, theme=None):
     progress.note("rendered", seconds=round(media.duration(final), 1), cover_at=cover_at)
     report = {"id": plan["id"], "final": str(final), "cover": str(out / "cover.png") if cover_at else None, "cover_at": cover_at, "seconds": round(media.duration(final), 2), "lufs": media.loudness(final),
               "voice_lufs": info["lufs"], "voice_engine": info.get("engine"), "wpm": info.get("wpm"),
-              "music_lufs_premix": media.loudness(out / "music-stem.wav"), "words": len(words), "wer": round(word_error, 4), "mood": mood, "quality": quality}
+              "music_lufs_premix": media.loudness(out / "music-stem.wav"), "words": len(words), "wer": round(_wer(out), 4), "mood": mood, "quality": quality}
     (out / "report.json").write_text(json.dumps(report, indent=1))
     return report
+
+
+def remix_stage(out):
+    """A new mix on the kept frame render (raw.mp4): for a change order that touches only music, effects or loudness.
+    The project is rebuilt first (build_stage) so its sound cue sheet is the director's new one."""
+    out = Path(out)
+    if not (out / "raw.mp4").exists():
+        return deliver_stage(out)   # the frames are gone (cleaned after posting): a full delivery render then
+    plan = json.loads((out / "plan.json").read_text())
+    vdir, proj = out / "voice", out / "project"
+    info = json.loads((vdir / "durations.json").read_text())
+    slots = build.timings(plan, vdir)
+    total = round(slots[-1][0] + slots[-1][1] + build.TAIL, 3)
+    sheet = json.loads((proj / "sfx.json").read_text())
+    with progress.step("sound mix only (frames kept)", desk="animator"):
+        final, tracks = mix_v2(out / "raw.mp4", out / "final.mp4", vdir, plan, slots, total, sheet)
+    (out / "assets.json").write_text(json.dumps(ledger_rows_v2(plan, tracks, sheet, info, proj), ensure_ascii=False, indent=1))
+    report = json.loads((out / "report.json").read_text()) if (out / "report.json").exists() else {"id": plan["id"], "final": str(final)}
+    report.update({"lufs": media.loudness(final), "music_lufs_premix": media.loudness(out / "music-stem.wav"), "mood": "+".join(tracks) or "none"})
+    (out / "report.json").write_text(json.dumps(report, indent=1))
+    return report
+
+
+def render(plan_path, out_dir=None, quality="looks", mood=None, theme=None):
+    """All three stages in a row (revise and reflow still use this; a make goes through frameflow.board)."""
+    out = voice_stage(plan_path, out_dir)
+    build_stage(out, theme)
+    return deliver_stage(out, quality, mood)

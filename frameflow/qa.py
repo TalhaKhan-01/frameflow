@@ -13,7 +13,8 @@ Exit 0 when every gate passes. Writes <out-dir>/qa.json. Every limit comes from 
 Version-2 plans (Quality Bar v2) add:
   length      the bar's target and hard limit
   events      visual events (frame changes) at least pacing.events_per_10s, no stretch over pacing.max_event_gap without one
-  rehooks     no stretch over pacing.max_rehook_gap between re-hook beats (but/twist/loop or a 'rehook' device) on the real voice timing
+  rehooks     no stretch over pacing.max_rehook_gap between re-hook beats (but/twist/loop/payoff or a 'rehook' device) on the
+              real voice timing, up to the house end card
 """
 import json
 import re
@@ -101,21 +102,35 @@ def blank_spans(path, fps=4, ink=0.025, min_len=0.75):
     return spans
 
 
-def rehook_gaps(out):
-    """Longest stretch between re-hook moments, on the real voice timing (v2 plans with lines)."""
+REHOOK_BEATS = ("but", "twist", "loop", "payoff")   # the payoff is the reveal that answers the loop: a re-hook moment too
+
+
+def rehook_stretch(out):
+    """The longest stretch between re-hook moments on the real voice: (seconds, (t, where it starts), (t, where it ends),
+    scenes inside). It ends where the house end card starts: the follow line is fixed and owes the viewer no re-hook
+    (before 26 Oct the measurement ran to the last second, so a long ending plus the end card failed on its own)."""
     plan = json.loads((out / "plan.json").read_text())
     dur = json.loads((out / "voice" / "durations.json").read_text())
     starts = {l["id"]: l["start"] for l in dur["lines"]}
-    marks = [0.0]
+    lid = lambda i, s, j: f"s{i}" if len(s["lines"]) == 1 else f"s{i}.{j}"
+    end = next((starts.get(lid(i, s, 0)) for i, s in enumerate(plan["scenes"]) if s["type"] == "endcard" and s.get("lines")), None)
+    end = end if end is not None else dur["total"]
+    marks = [(0.0, "the start")]
     for i, s in enumerate(plan["scenes"]):
         for j, line in enumerate(s.get("lines", [])):
-            lid = f"s{i}" if len(s["lines"]) == 1 else f"s{i}.{j}"
-            if line.get("beat") in ("but", "twist", "loop") or "rehook" in line.get("devices", []):
-                if lid in starts:
-                    marks.append(starts[lid])
-    marks.append(dur["total"])
-    gaps = [b - a for a, b in zip(marks, marks[1:])]
-    return max(gaps) if gaps else 0.0
+            t = starts.get(lid(i, s, j))
+            if t is not None and t < end and (line.get("beat") in REHOOK_BEATS or "rehook" in line.get("devices", [])):
+                marks.append((t, f"scene {i}: \"{line.get('say', '')[:60]}\""))
+    marks.append((end, "the end card" if end < dur["total"] else "the end"))
+    gap, a, b = max(((y[0] - x[0], x, y) for x, y in zip(marks, marks[1:])), key=lambda g: g[0])
+    inside = sorted({i for i, s in enumerate(plan["scenes"]) for j, _ in enumerate(s.get("lines", []))
+                     if a[0] < starts.get(lid(i, s, j), -1) < b[0]})
+    return gap, a, b, [f"scene {i}" for i in inside]
+
+
+def rehook_gaps(out):
+    """Longest stretch between re-hook moments, on the real voice timing (v2 plans with lines)."""
+    return rehook_stretch(out)[0]
 
 
 def run(out_dir):

@@ -3,11 +3,12 @@
   "pipeline": {
     "keyframe_every": 3.0,
     "keyframe_width": 200,
-    "max_auto_revisions": 1,
     "brief_model": "sonnet",
     "cover_model": "haiku",
     "lessons_model": "haiku",
-    "assets": true
+    "assets": true,
+    "timing_fix_rounds": 1,
+    "animatic_fix_rounds": 1
   },
   "shorts-writer": {
     "writer_model": "opus",

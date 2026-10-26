@@ -47,9 +47,11 @@ def test_animatic_measures_events_like_qa_on_the_delivery_render():
 def test_narrator_checks_give_qa_verdicts_before_any_picture():
     r = precheck.run(KIMI)
     q = json.loads((KIMI / "qa.json").read_text())["gates"]
-    for k in ("rehooks", "captions", "voice-start"):
+    for k in ("captions", "voice-start"):
         assert r["checks"][k]["pass"] == q[k]["pass"], k
-    assert "11.9" in r["checks"]["rehooks"]["detail"] and "11.9" in q["rehooks"]["detail"]
+    gap = qa.rehook_gaps(KIMI)   # the same measurement QA makes after the render (since 26 Oct: up to the end card)
+    assert f"{gap:.1f} s" in r["checks"]["rehooks"]["detail"] and r["checks"]["rehooks"]["pass"] == (gap <= 10.5)
+    assert "from 60.3 s" in r["checks"]["rehooks"]["fix"] and "scene 13" in r["checks"]["rehooks"]["fix"]
     assert r["checks"]["events"].get("advisory") and "events" not in [f["fix"].split("'")[1] for f in precheck.fixes(r)]
 
 

@@ -51,8 +51,10 @@ def pack_problems(p):
     return problems
 
 
-def publish(video_id):
-    row = videos.require_approved(video_id)
+def publish(video_id, owner_notes="", require=True):
+    """owner_notes: Talha's requested post-text changes (a change order); require=False lets a revision before approval
+    rewrite the pack."""
+    row = videos.require_approved(video_id) if require else videos.db().execute("SELECT * FROM videos WHERE id=?", (video_id,)).fetchone()
     out = Path(row["out_dir"])
     plan = json.loads(Path(row["plan"]).read_text())
     sources = sorted({u for s in plan["scenes"] for u in s.get("sources", [])})
@@ -64,6 +66,8 @@ def publish(video_id):
     brief = json.loads(brief_file.read_text()) if brief_file.exists() else {}
     inp = {"title": plan["title"], "script": script, "lane": plan["lane"], "sources": sources, "credits": credits,
            "facts": [f["text"] for f in brief.get("facts", [])], "cautions": brief.get("cautions", [])}
+    if owner_notes:
+        inp["owner_notes"] = owner_notes
     (out / "caption-input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1))
     import os
     import subprocess

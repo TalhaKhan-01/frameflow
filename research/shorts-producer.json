@@ -1,0 +1,96 @@
+{
+  "_about": "Frameflow config for the shorts-producer skill (~/Talha_Khan/Claude/skills/shorts-producer): the showrunner's targets, the stages each re-runs (frameflow.board / daily.revise names) and usual minutes.",
+  "model": "sonnet",
+  "stage_order": [
+    "writer",
+    "director",
+    "narrator",
+    "checks",
+    "scenes",
+    "standards",
+    "animatic",
+    "screening",
+    "render",
+    "remix",
+    "qc",
+    "final-check",
+    "cover",
+    "packaging"
+  ],
+  "targets": {
+    "words": {
+      "about": "the hook, story, lines, facts said, ending",
+      "stages": [
+        "writer",
+        "director",
+        "narrator",
+        "checks",
+        "scenes",
+        "standards",
+        "animatic",
+        "screening",
+        "render",
+        "qc",
+        "final-check"
+      ],
+      "minutes": 20
+    },
+    "visuals": {
+      "about": "a scene's drawing, metaphor, labels, on-screen text, motion, transitions",
+      "stages": [
+        "director",
+        "narrator",
+        "checks",
+        "scenes",
+        "standards",
+        "animatic",
+        "screening",
+        "render",
+        "qc",
+        "final-check"
+      ],
+      "minutes": 15
+    },
+    "voice": {
+      "about": "pace, pauses, emphasis, pronunciation (same words)",
+      "stages": [
+        "writer",
+        "narrator",
+        "checks",
+        "scenes",
+        "standards",
+        "animatic",
+        "screening",
+        "render",
+        "qc",
+        "final-check"
+      ],
+      "minutes": 12
+    },
+    "sound": {
+      "about": "music choice and level, sound effects, loudness",
+      "stages": [
+        "director",
+        "scenes",
+        "remix",
+        "qc"
+      ],
+      "minutes": 4
+    },
+    "cover": {
+      "about": "the cover / thumbnail text",
+      "stages": [
+        "cover"
+      ],
+      "minutes": 1
+    },
+    "post_text": {
+      "about": "titles, descriptions, captions, hashtags, pinned comment",
+      "stages": [
+        "packaging"
+      ],
+      "minutes": 1
+    }
+  },
+  "usage_log": "data/llm-usage.jsonl"
+}

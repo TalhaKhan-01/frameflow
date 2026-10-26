@@ -3,11 +3,12 @@
   "pipeline": {
     "keyframe_every": 2.0,
     "keyframe_width": 240,
-    "max_auto_revisions": 2,
     "brief_model": "sonnet",
     "cover_model": "sonnet",
     "lessons_model": "sonnet",
-    "assets": true
+    "assets": true,
+    "timing_fix_rounds": 2,
+    "animatic_fix_rounds": 2
   },
   "shorts-writer": {
     "writer_model": "opus",

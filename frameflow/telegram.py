@@ -81,6 +81,14 @@ def clear_buttons(message_id, note=None):
         send(note)
 
 
+def edit_buttons(message_id, buttons):
+    """Replace a message's buttons in place (the Revise issue toggles)."""
+    try:
+        api("editMessageReplyMarkup", chat_id=chat_id(), message_id=message_id, reply_markup=keyboard(buttons) or {"inline_keyboard": []})
+    except TelegramError:
+        pass
+
+
 def answer(callback_id, text=None):
     try:
         api("answerCallbackQuery", callback_query_id=callback_id, text=text)

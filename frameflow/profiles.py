@@ -6,7 +6,7 @@
     frameflow profile save <name>        keep the current settings as a new profile (try something, then save it)
 
 A profile (research/profiles/<name>.json) holds overrides per config file:
-  "pipeline"        -> research/pipeline.json        keyframes, fix rounds, small-job models
+  "pipeline"        -> research/pipeline.json        keyframes, fix rounds before the render (timing, animatic), small-job models
   "shorts-writer"   -> research/shorts-writer.json   writer_model, hooks_model, judge_model, doctor_model, doctor_rounds
   "shorts-director" -> research/shorts-director.json model, doctor_model, doctor_rounds
   "social-caption"  -> research/social-caption.json  model
@@ -26,7 +26,7 @@ PROFILES = RESEARCH / "profiles"
 FILES = {"pipeline": "pipeline.json", "shorts-writer": "shorts-writer.json", "shorts-director": "shorts-director.json",
          "social-caption": "social-caption.json", "voice-pace": "voice-pace.json", "shorts-screening": "shorts-screening.json"}
 PIPELINE_DEFAULTS = {"profile": "diet", "keyframe_every": 3.0, "keyframe_width": 200,
-                     "max_auto_revisions": 1, "brief_model": "sonnet", "cover_model": "haiku", "lessons_model": "haiku",
+                     "timing_fix_rounds": 1, "animatic_fix_rounds": 1, "brief_model": "sonnet", "cover_model": "haiku", "lessons_model": "haiku",
                      "assets": True}   # length and every threshold live in research/quality-bar.json (frameflow.bar)
 
 

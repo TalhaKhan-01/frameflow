@@ -60,6 +60,20 @@ def retry():
     telegram.send(f"Retrying {day}.")
 
 
+def revise_buttons(day, found, picks):
+    """Issue toggles (✓ when picked), five to a row, then All / Done / Cancel."""
+    nums = [(f"{'✓' if i in picks else ''}{i + 1}", f"iss:{day}:{i}") for i in range(len(found))]
+    rows = [nums[k:k + 5] for k in range(0, len(nums), 5)]
+    return rows + [[("All of them", f"issall:{day}"), ("Done picking", f"issdone:{day}"), ("Cancel", f"isscancel:{day}")]]
+
+
+def start_order(day):
+    """The showrunner reads the words and ticked issues in its own process (a Claude call); the order comes back here."""
+    daily.update(day, state="ordering", note="showrunner: reading the request")
+    telegram.send("Got it. Working out exactly what to change; I'll show you before anything is redone.")
+    daily.spawn("order", day)
+
+
 AB_FILE = daily.ROOT / "data" / "ab-tests.jsonl"
 
 
@@ -137,9 +151,47 @@ def on_callback(cb):
     elif kind == "revise" and run["state"] == "video-sent":
         if run["revisions"] >= daily.cfg()["max_revisions"]:
             return telegram.send(f"That's {run['revisions']} revisions already (the limit). Approve or Reject this one.")
-        daily.update(day, state="awaiting-notes", note="waiting for revision notes")
+        from frameflow import producer
+        found = producer.issues(day)
+        daily.update(day, state="awaiting-notes", revisions=run["revisions"] + 1, notes="", revise_picks="[]", order_file=None,
+                     note="revise: asking what to change")
         telegram.clear_buttons(run["video_msg"])
-        telegram.send("What should change? Write it in one message (words, pace, a scene, the ending...).")
+        text = ("What should change? Tap any known issue, or just tell me in your own words (one message, as loose as you like)."
+                + ("\n\nKnown issues:\n" + "\n".join(f"{i + 1}. {x[:220]}" for i, x in enumerate(found)) if found else ""))
+        msg = telegram.send(text, revise_buttons(day, found, []))
+        daily.update(day, order_msg=str(msg))
+    elif kind in ("iss", "issall", "issdone") and run["state"] == "awaiting-notes":
+        from frameflow import producer
+        found = producer.issues(day)
+        picks = json.loads(run.get("revise_picks") or "[]")
+        if kind == "iss":
+            n = int(rest.split(":")[1])
+            picks = [x for x in picks if x != n] if n in picks else sorted(picks + [n])
+        elif kind == "issall":
+            picks = list(range(len(found)))
+        daily.update(day, revise_picks=json.dumps(picks))
+        if kind != "issdone":
+            return telegram.edit_buttons(int(run["order_msg"]), revise_buttons(day, found, picks))
+        if not picks and not (run.get("notes") or "").strip():
+            return telegram.send("Tick at least one issue, or write what should change.")
+        telegram.clear_buttons(int(run["order_msg"]))
+        start_order(day)
+    elif kind == "ordgo" and run["state"] == "order-sent":
+        telegram.clear_buttons(int(run["order_msg"]))
+        daily.update(day, state="making", note="change order confirmed (Go)")
+        telegram.send("Go. Revising now; the new version comes back here.")
+        daily.spawn("revise", day)
+    elif kind == "ordchg" and run["state"] == "order-sent":
+        telegram.clear_buttons(int(run["order_msg"]))
+        daily.update(day, state="awaiting-notes", order_file=None, note="change order: Talha wants it different")
+        telegram.send("Tell me what to change instead, or what I got wrong (your ticked issues stay ticked).")
+    elif kind in ("ordno", "isscancel") and run["state"] in ("order-sent", "awaiting-notes"):
+        if run.get("order_msg"):
+            telegram.clear_buttons(int(run["order_msg"]))
+        daily.update(day, state="video-sent", order_file=None, revise_picks=None, revisions=max(run["revisions"] - 1, 0),
+                     note="revise cancelled")
+        telegram.send("Cancelled; nothing changes. Here is the video again.")
+        daily.video_card(day)
     elif kind == "reject" and run["state"] == "video-sent":
         from frameflow import videos
         videos.set_status(run["video_id"], "rejected", "rejected on Telegram")
@@ -218,9 +270,11 @@ def on_text(text):
         return cards.spawn("make", card_topic["id"])
     waiting = latest(("awaiting-notes",))
     if waiting:
-        daily.update(waiting["day"], notes=t, revisions=waiting["revisions"] + 1, state="making", note="notes received")
-        telegram.send("Got it. Revising now; the new version comes back here.")
-        return daily.spawn("revise", waiting["day"])
+        before = (waiting.get("notes") or "").strip()
+        daily.update(waiting["day"], notes=(f"{before}\nThen: {t}" if before else t), note="revise words received")
+        if waiting.get("order_msg"):
+            telegram.clear_buttons(int(waiting["order_msg"]))
+        return start_order(waiting["day"])
     open_topic = latest(("topic-sent",))
     m = URL.search(t)
     if open_topic and m:

@@ -47,7 +47,7 @@ def db():
     con.row_factory = sqlite3.Row
     con.executescript(SCHEMA)
     cols = {r[1] for r in con.execute("PRAGMA table_info(runs)")}
-    for c in ("posted_at", "stats_at"):   # added after the first runs table
+    for c in ("posted_at", "stats_at", "revise_picks", "order_file", "order_msg"):   # added after the first runs table
         if c not in cols:
             con.execute(f"ALTER TABLE runs ADD COLUMN {c} TEXT")
     return con
@@ -106,7 +106,10 @@ def job_alive(run):
         os.kill(pid, 0)
     except OSError:
         return False
-    return True
+    try:   # an exited job its parent hasn't reaped is a zombie: os.kill still succeeds (26 Oct: a dead make sat at 'making')
+        return Path(f"/proc/{pid}/stat").read_text().split(") ")[1][0] != "Z"
+    except (OSError, IndexError):
+        return False
 
 
 # ---- scout: tomorrow's lane, 3 stories, topic card ----
@@ -259,9 +262,20 @@ def video_card(day):
     update(day, state="video-sent", video_msg=msg, note=f"video card sent (approvable: {approvable})")
 
 
+def order(day):
+    """The showrunner's change order for Talha's Revise words and ticked issues, sent for Go / Change it / Cancel."""
+    from frameflow import producer
+    update(day, state="ordering", note="showrunner: reading the revise request")
+    o = producer.order(day)
+    msg = telegram.send(producer.message(o), [[("Go", f"ordgo:{day}"), ("Change it", f"ordchg:{day}"), ("Cancel", f"ordno:{day}")]])
+    update(day, state="order-sent", order_msg=str(msg), note="change order sent")
+
+
 def revise(day):
     from frameflow import direct, videos, pipeline
     run = get(day)
+    if run.get("order_file") and Path(run["order_file"]).exists() and run.get("state") == "making":   # a confirmed change order
+        return revise_order(day)
     row = videos.db().execute("SELECT * FROM videos WHERE id=?", (run["video_id"],)).fetchone()
     notes = (run["notes"] or "").strip()
     out = Path(row["out_dir"])
@@ -299,6 +313,20 @@ def revise(day):
                 (int(q["pass"]), r["total"], int(r["pass"]), "awaiting-approval" if q["pass"] and r["pass"] else "needs-work",
                  f"v2 revised from Talha's notes (round {run['revisions']})", videos.now(), run["video_id"]))
     con.commit()
+    with progress.step("send video card to Telegram"):
+        video_card(day)
+
+
+def revise_order(day):
+    from frameflow import producer, videos
+    run = get(day)
+    q, r = producer.apply(day)
+    con = videos.db()
+    con.execute("UPDATE videos SET qa_pass=?, review_total=?, review_pass=?, status=?, note=?, updated_at=? WHERE id=?",
+                (int(q["pass"]), r["total"], int(r["pass"]), "awaiting-approval" if q["pass"] and r["pass"] else "needs-work",
+                 f"revised by change order {Path(run['order_file']).stem} (round {run['revisions']})", videos.now(), run["video_id"]))
+    con.commit()
+    update(day, order_file=None, revise_picks=None, note=f"change order done: review {r['total']}/{r.get('max')}, QA {'pass' if q['pass'] else 'fail'}")
     with progress.step("send video card to Telegram"):
         video_card(day)
 
@@ -441,11 +469,12 @@ def tick():
         elif run["state"] == "queued" and run["post_at"] and t >= dt.datetime.fromisoformat(run["post_at"]):
             spawn("post", day)
             update(day, state="posting")
-        elif run["state"] in ("making", "posting", "picked") and not job_alive(run) and run.get("job_pid") \
+        elif run["state"] in ("making", "posting", "picked", "ordering") and not job_alive(run) and run.get("job_pid") \
                 and (now() - dt.datetime.fromisoformat(run["updated_at"])).total_seconds() > 60:
             # usually the laptop shut down mid-job (it runs 10:00-17:00): start the step again once, then ask
             restarts = (run.get("log") or "").count("restarted after stop")
-            step = "post" if run["state"] == "posting" else ("revise" if run.get("notes") and run.get("video_id") else "make")
+            step = ("post" if run["state"] == "posting" else "order" if run["state"] == "ordering"
+                    else ("revise" if run.get("notes") and run.get("video_id") else "make"))
             if restarts < 2:
                 update(day, note=f"restarted after stop ({run['state']})")
                 spawn(step, day)
@@ -529,6 +558,8 @@ def run_step(a, day):
         print(json.dumps(scout(day), indent=1, default=str)[:2000])
     elif a.step == "make":
         make(day)
+    elif a.step == "order":
+        order(day)
     elif a.step == "revise":
         revise(day)
     elif a.step == "reflow":
@@ -543,12 +574,12 @@ def run_step(a, day):
 
 def main():
     ap = argparse.ArgumentParser(description="Frameflow daily automation")
-    ap.add_argument("step", choices=["scout", "make", "revise", "reflow", "post", "tick", "status"])
+    ap.add_argument("step", choices=["scout", "make", "order", "revise", "reflow", "post", "tick", "status"])
     ap.add_argument("day", nargs="?")
     ap.add_argument("--day", dest="day_opt")
     a = ap.parse_args()
     day = a.day or a.day_opt
-    if day and a.step in ("make", "revise", "reflow", "post"):   # step-by-step progress for the control panel's Making view
+    if day and a.step in ("make", "order", "revise", "reflow", "post"):   # step-by-step progress for the control panel's Making view
         os.environ["FF_PROGRESS"] = str(ROOT / "logs" / f"progress-{day}.jsonl")
     try:
         with progress.step(a.step, day=day):
@@ -564,7 +595,7 @@ def main():
             except Exception:
                 pass
             sys.exit(0)
-        if day and a.step in ("make", "revise", "reflow", "post", "scout") and get(day):
+        if day and a.step in ("make", "order", "revise", "reflow", "post", "scout") and get(day):
             update(day, state="failed", job_pid=None, note=f"{a.step} failed: {e}")
             try:
                 telegram.send(f"The {a.step} step for {day} failed: {str(e)[:300]}\nReply /retry to try again.")
