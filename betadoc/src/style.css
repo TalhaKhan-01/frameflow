@@ -193,3 +193,16 @@ tbody tr:last-child td { border-bottom: 0; }
 @media (max-width: 820px) { .doc { grid-template-columns: 1fr; } .toc { position: static; } }
 
 @media (min-width: 821px) and (max-height: 960px) { .build-copy h2 { font-size: clamp(2rem, 3.6vw, 2.8rem); } }
+
+/* studio board (P15) */
+.board .desk-row { list-style: none; padding: 0; margin: 28px 0 18px; display: flex; flex-wrap: wrap; gap: 8px; counter-reset: desk; }
+.board .desk-row li { counter-increment: desk; font: 500 .9rem/1 var(--mono); padding: 10px 12px; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--night-2); color: var(--paper); }
+.board .desk-row li::before { content: counter(desk, decimal-leading-zero) " "; color: var(--muted); }
+.board .desk-row li.hot { border-color: var(--red); } .board .desk-row li.lamp { border-color: var(--lamp); color: var(--lamp); }
+.board-figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 0 0 12px; }
+.board-figs div { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--night-2); }
+.board-figs dt { color: var(--muted); font-size: .85rem; } .board-figs dd { margin: 4px 0 0; font: 600 1.8rem/1 var(--mono); color: var(--lamp); }
+.board-desks { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; font: .8rem var(--mono); }
+.board-desks li { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); }
+.board-desks li.ok { border-color: var(--good); } .board-desks li.no { border-color: var(--red); }

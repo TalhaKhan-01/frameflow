@@ -9,9 +9,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DESKS = [("showrunner", "Showrunner"), ("researcher", "Researcher"), ("factcheck", "Fact-checker"), ("packaging", "Packaging"),
-         ("writer", "Writer"), ("editor", "Script editor"), ("director", "Director"), ("narrator", "Narrator"),
-         ("standards", "Standards"), ("artdirector", "Art director"), ("animatic", "Animatic"), ("screening", "Screening"),
-         ("animator", "Render"), ("qc", "QC"), ("you", "You"), ("publisher", "Publisher"), ("analyst", "Analyst")]
+         ("writer", "Writer"), ("director", "Director"), ("narrator", "Narrator"), ("editor", "Script editor"),
+         ("standards", "Standards"), ("animatic", "Animatic"), ("artdirector", "Art director"), ("screening", "Screening"),
+         ("animator", "Render"), ("qc", "QC"), ("you", "You"), ("publisher", "Publisher"), ("analyst", "Analyst")]   # board.py's order
 BY_NAME = [("research brief", "researcher"), ("fact", "factcheck"), ("cover", "packaging"), ("card post", "packaging"),
            ("packaging", "packaging"), ("writer", "writer"), ("table read", "editor"), ("director", "director"),
            ("voice", "narrator"), ("caption timing", "narrator"), ("narrator", "narrator"), ("standards", "standards"),

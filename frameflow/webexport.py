@@ -261,7 +261,13 @@ def live(data):
                                   "seconds": latest["seconds"], "lufs": latest["lufs"], "wpm": latest["wpm"],
                                   "review_total": latest["review_total"], "links": latest["links"],
                                   "gates": {k: g["pass"] for k, g in gates.items()}, "media": media},
-            "channels": data["channels"]}
+            "channels": data["channels"],
+            "board": {**{k: v for k, v in (data.get("board") or {}).items() if k != "desks"},
+                      "latest": next(({"title": v["yt_title"] or v["title"], "renders": v["board"]["renders"],
+                                       "fix_rounds": v["board"]["fix_rounds"], "minutes": v["board"]["minutes"],
+                                       "animatic": v.get("animatic_total"), "final": v["review_total"], "max": v.get("review_max"),
+                                       "desks": [{"label": d["label"], "gate": d["gate"]} for d in v["board"]["desks"]]}
+                                      for v in data["videos"] if v.get("board")), None)}}
 
 
 def encrypt(obj, pin, iterations=ITERATIONS):
@@ -306,6 +312,20 @@ def set_access(open_):
     return export()
 
 
+def write_live(data):
+    """betadoc/public/live.json, rewritten only when its content (apart from the time stamp) changed."""
+    BETA.mkdir(parents=True, exist_ok=True)
+    new = live(data)
+    try:
+        old = json.loads((BETA / "live.json").read_text())
+        if {**old, "generated": None} == {**new, "generated": None}:
+            return False
+    except (OSError, ValueError):
+        pass
+    (BETA / "live.json").write_text(json.dumps(new, ensure_ascii=False, indent=1))
+    return True
+
+
 def export():
     data = snapshot()
     enc, plain = WEB / "data" / "studio.enc", WEB / "data" / "studio.json"
@@ -319,14 +339,14 @@ def export():
     (enc if open_ else plain).unlink(missing_ok=True)   # one form at a time: the page tries studio.json first
     if same:
         print("snapshot unchanged")
+        write_live(data)   # the betadoc's numbers can change shape without the snapshot changing (26 Oct: the board block)
         return old
     enc.parent.mkdir(parents=True, exist_ok=True)
     if open_:
         plain.write_text(json.dumps(data, ensure_ascii=False))
     else:
         enc.write_text(json.dumps(encrypt(data, key)))
-    BETA.mkdir(parents=True, exist_ok=True)
-    (BETA / "live.json").write_text(json.dumps(live(data), ensure_ascii=False, indent=1))
+    write_live(data)
     print(f"{'studio.json (open)' if open_ else 'studio.enc'}: {len(data['runs'])} runs, {len(data['videos'])} videos, {len(data['cards'])} card posts, "
           f"{len(data['lessons'])} lessons; live.json written")
     return data

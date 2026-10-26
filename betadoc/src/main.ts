@@ -12,7 +12,11 @@ type Live = {
   ideas: number; videos_posted: number; lessons: number; leaves_done: number; leaves_total: number;
   today?: { day: string; lane: string; state: string };
   latest?: { title: string; seconds: number; links: Record<string, string>; gates: Record<string, boolean> };
+  board?: { videos: number; one_render: number; first_render_passed: number; animatic_within_1: number;
+    latest?: { title: string; renders: number; fix_rounds: number; minutes: number; animatic: number | null; final: number; max: number;
+      desks: { label: string; gate: boolean | null }[] } | null };
 };
+const escH = (x: unknown) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const STATE: Record<string, string> = { "topic-sent": "topic card out", picked: "story picked", making: "being made",
   "video-sent": "waiting for approval", "awaiting-notes": "waiting for notes", queued: "approved, posts at 11:30",
   posting: "posting now", posted: "posted", skipped: "skipped", rejected: "rejected", failed: "stopped, being fixed" };
@@ -39,6 +43,19 @@ fetch("/live.json", { cache: "no-store" }).then((r) => r.json()).then((d: Live) 
     document.getElementById("gates")!.innerHTML = Object.entries(d.latest.gates).map(([k, ok]) =>
       `<li class="${ok ? "ok" : "no"}"><span aria-hidden="true">${ok ? "✓" : "✗"}</span>${GATE[k] ?? k}<span class="sr">${ok ? " passed" : " failed"}</span></li>`).join("");
     setupGates();
+  }
+  const b = d.board;
+  if (b && b.videos) {
+    const L = b.latest;
+    document.getElementById("board-live")!.innerHTML = `
+      <dl class="board-figs">
+        <div><dt>videos made on the board</dt><dd>${b.videos}</dd></div>
+        <div><dt>with one delivery render</dt><dd>${b.one_render}/${b.videos}</dd></div>
+        <div><dt>passed on that render</dt><dd>${b.first_render_passed}/${b.videos}</dd></div>
+        <div><dt>animatic within 1 point of the final</dt><dd>${b.animatic_within_1}/${b.videos}</dd></div>
+      </dl>${L ? `<p class="note">Latest: ${escH(L.title)}: ${L.renders} render, ${L.fix_rounds} fix round${L.fix_rounds === 1 ? "" : "s"} before it,
+        screened ${escH(L.animatic ?? "–")}/${escH(L.max)} on the animatic and ${escH(L.final)}/${escH(L.max)} after.</p>
+      <ul class="board-desks">${L.desks.map((x) => `<li class="${x.gate === false ? "no" : x.gate ? "ok" : ""}">${escH(x.label)}${x.gate === false ? " ✗" : x.gate ? " ✓" : ""}</li>`).join("")}</ul>` : ""}`;
   }
 }).catch(() => { document.getElementById("wire-text")!.textContent = "Live wire · offline"; });
 
