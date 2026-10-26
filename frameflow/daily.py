@@ -204,6 +204,9 @@ def make(day):
         with progress.step("research brief", story=story.get("title") or story["url"]) as info:
             path = brief.build(story["url"], story.get("title", ""), run["lane"], story.get("summary", ""))
             info["brief"] = path.name
+        with progress.step("fact-check the brief", desk="factcheck") as info:
+            fc = brief.factcheck(path)
+            info.update({"pass": fc["pass"], "summary": fc["summary"]})
         update(day, brief=str(path), note=f"brief {path.name}; make2 started")
     with progress.step("make video") as info:
         r = videos.make2(str(path), run["lane"])
@@ -220,6 +223,12 @@ def make(day):
         update(day, note="card post made")
     except Exception as e:
         update(day, note=f"card post failed: {str(e)[:200]}")
+    try:   # one render folder per video: scratch, earlier rounds and the animatic's draft go now, not after 48 h
+        from frameflow import cleanup
+        with progress.step("storage cleanup (rounds level)", desk="analyst") as info:
+            info.update(cleanup.clean(r["video"]))
+    except (Exception, SystemExit) as e:
+        update(day, note=f"cleanup skipped: {str(e)[:120]}")
 
 
 def preview(final, out):

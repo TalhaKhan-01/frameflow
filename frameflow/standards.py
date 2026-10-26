@@ -30,6 +30,14 @@ def spoken(text):
         if toks[i] not in UNITS and toks[i] not in TENS:
             i += 1
             continue
+        if toks[i] == "twenty" and i + 1 < len(toks) and (toks[i + 1] in TENS or 10 <= UNITS.get(toks[i + 1], 0) <= 19):   # a year: "twenty twenty-six"
+            yy = UNITS.get(toks[i + 1], TENS.get(toks[i + 1], 0))
+            i += 2
+            if yy >= 20 and i < len(toks) and toks[i] in UNITS and UNITS[toks[i]] < 10:
+                yy += UNITS[toks[i]]
+                i += 1
+            found.add(str(2000 + yy))
+            continue
         total, cur = 0, 0
         while i < len(toks) and (toks[i] in UNITS or toks[i] in TENS or toks[i] in SCALE or (toks[i] == "and" and cur >= 100)):
             t = toks[i]

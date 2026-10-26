@@ -1,0 +1,6 @@
+{
+  "_about": "Frameflow config for the shorts-factcheck skill (~/Talha_Khan/Claude/skills/shorts-factcheck).",
+  "model": "sonnet",
+  "page_chars": 6000,
+  "usage_log": "data/llm-usage.jsonl"
+}

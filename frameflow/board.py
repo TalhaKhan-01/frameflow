@@ -34,6 +34,16 @@ def _revise(brief_path, plan_path, fixes, lane, label, desk):
 LOCAL = " Change only that scene; keep every other scene exactly as it is."
 
 
+def script_claims(rout, brief_path):
+    """The fact-checker's script check (pure code in the skill): every number said is in the verified facts."""
+    from frameflow import brief as brief_mod
+    script = rout / "script.json"
+    with progress.step("fact-check the script's numbers", desk="factcheck") as info:
+        r = json.loads(direct.skill([brief_mod.FACTCHECK, "--project", brief_mod.ROOT, "script", script, brief_path], timeout=120, strict=True))
+        info.update({"pass": r["pass"], "detail": r["detail"]})
+    return r
+
+
 def gap_fix(rout, anim):
     """A local, concrete fix for the draft's longest dead stretch: the scene, the time and the words spoken in it, so the
     director can hang a beat on one of them (a whole-storyboard rewrite didn't converge in the 26 Oct board test)."""
@@ -73,6 +83,12 @@ def run(brief_path, plan_path, lane, quality="looks"):
         with progress.step("narrator checks (timing on the real voice)", desk="narrator") as info:
             pre = precheck.run(rout)
             info.update({"pass": pre["pass"], "failed": [f"{k}: {c['detail']}" for k, c in pre["checks"].items() if not c["pass"] and not c.get("advisory")]})
+        claims = script_claims(rout, brief_path)
+        if not claims["pass"]:
+            pre["pass"] = False
+            pre["checks"]["claims"] = {"pass": False, "detail": claims["detail"], "row": "sources",
+                                       "fix": f"the script says numbers the verified facts don't carry ({', '.join(claims['unverified_numbers'])}): "
+                                              "use the fact sheet's numbers exactly, or drop the claim"}
         if not table_done:   # the table read once per plan text: a re-voice alone doesn't change the words
             with progress.step("table read (script editor)", desk="editor") as info:
                 tr = review.table_read(rout, json.loads((rout / "plan.json").read_text()), brief_path)

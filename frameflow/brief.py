@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BRIEFS = ROOT / "briefs"
 UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Frameflow/0.1 (+personal research)"}
 MIN_FACTS = 8
+FACTCHECK_MIN = 5   # facts the fact-checker must leave standing (it drops unsupported ones)
 
 SYSTEM = """You are the researcher for a daily 60-110 second explainer channel (narrator: Habit; audience: Indians aged
 18-30 who are curious about tech, AI and money, most don't code). Research the story with web search and fetch,
@@ -55,6 +56,29 @@ def loads(url, timeout=20):
             return 200 <= r.status < 400
     except Exception as e:   # 403 from bot walls still means the page exists
         return getattr(e, "code", None) in (401, 403, 429)
+
+
+FACTCHECK = Path.home() / "Talha_Khan" / "Claude" / "skills" / "shorts-factcheck" / "scripts" / "factcheck.py"
+
+
+def factcheck(path):
+    """The fact-checker desk (skill shorts-factcheck): re-read every source, keep what it supports, correct what it only
+    partly supports, drop the rest. The researcher's own sheet stays beside it as <brief>.raw.json."""
+    from frameflow import direct
+    path = Path(path)
+    raw = path.with_suffix(".raw.json")
+    if not raw.exists():
+        raw.write_text(path.read_text())
+    out = path.with_suffix(".factcheck.json")
+    direct.skill([FACTCHECK, "--project", ROOT, "brief", raw, "--out", out], timeout=900, strict=True)
+    r = json.loads(out.read_text())
+    if len(r["facts"]) < FACTCHECK_MIN:
+        raise SystemExit(f"fact-check left {len(r['facts'])} facts standing (need {FACTCHECK_MIN}): {r['summary']}")
+    b = json.loads(raw.read_text())
+    b["facts"] = r["facts"]
+    b["notes"] = b.get("notes", "") + f"\n(Fact-check: {r['summary']}.)"
+    path.write_text(json.dumps(b, ensure_ascii=False, indent=1))
+    return r
 
 
 def build(url, title="", lane="", summary="", out=None, model=None):

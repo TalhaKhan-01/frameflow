@@ -5,8 +5,8 @@
     python -m frameflow.cleanup --report                    what each video folder holds and what cleanup would free
 
 Two levels:
-  rounds   as soon as a video exists: earlier render rounds (render-r1, render-r2...), test renders, cover projects and
-           renderer scratch folders. The current round is untouched.
+  rounds   as soon as a video exists (run after every make): earlier render rounds (render-r1, render-r2...), test renders,
+           cover projects, renderer scratch folders and the animatic's draft video. The current round is untouched.
   posted   once the video is posted AND its 48 h stats are in (or it was rejected and is 3+ days old): the raw render,
            audio stems, scene project and voice takes. Kept for good: final.mp4, cover.png, the Telegram preview, every
            JSON (plan, script, storyboard, review, QA, report, publish pack), the brief, and the vault page.
@@ -55,6 +55,7 @@ def targets(row):
     render = Path(row["out_dir"])
     rounds = [p for p in base.glob("render-r*") if p.is_dir()] + [p for p in (base / "blank-test", base / "cover-project") if p.exists()]
     rounds += [p for p in render.glob("work-*") if p.is_dir()]
+    rounds += [p for p in (render / "animatic.mp4", render / "animatic") if p.exists()]   # the animatic's draft (its sheet and numbers stay)
     posted = []
     if ready_for_posted(row):
         posted = [render / n for n in BULKY if (render / n).exists()] + ([render / "project"] if (render / "project").exists() else [])
