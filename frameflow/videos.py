@@ -58,20 +58,20 @@ def make(idea_id):
     try:   # what this video teaches the next ones (frameflow.lessons)
         from frameflow import lessons
         lessons.distill(rout)
-    except Exception as e:
+    except (Exception, SystemExit) as e:
         print(f"lessons: {e}")
-    try:   # the asset library: record what was reused, then take this video's reusable assets (only if it passed)
-        from frameflow import library
-        library.mark_used(plan["id"])
-    except Exception as e:
-        print(f"library: {e}")
-    con = db()
+    con = db()   # the row first: library.mark_used looks the video up
     con.execute("INSERT OR REPLACE INTO videos (id, idea_id, plan, out_dir, lane, title, qa_pass, review_total, review_pass, status, note, created_at, updated_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (plan["id"], idea_id, str(plan_path), str(out), plan["lane"], plan["title"], int(q["pass"]), r["total"], int(r["pass"]),
                  status, f"{rewrites} rewrite(s)", now(), now()))
     con.execute("UPDATE ideas SET status='made' WHERE id=?", (idea_id,))
     con.commit()
+    try:   # the asset library: record what was reused
+        from frameflow import library
+        library.mark_used(plan["id"])
+    except (Exception, SystemExit) as e:
+        print(f"library: {e}")
     return {"video": plan["id"], "status": status, "qa": q["pass"], "review": f"{r['total']}/12", "rewrites": rewrites,
             "seconds": report["seconds"], "final": report["final"]}
 
@@ -108,23 +108,19 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
     try:   # what this video teaches the next ones (frameflow.lessons)
         from frameflow import lessons
         lessons.distill(rout)
-    except Exception as e:
+    except (Exception, SystemExit) as e:
         print(f"lessons: {e}")
-    try:   # the asset library: record what was reused, then take this video's reusable assets (only if it passed)
-        from frameflow import library
-        library.mark_used(plan["id"])
-    except Exception as e:
-        print(f"library: {e}")
-    con = db()
+    con = db()   # the row first: the library looks the video up (before it, mark_used's SystemExit killed every fresh make)
     con.execute("INSERT OR REPLACE INTO videos (id, idea_id, plan, out_dir, lane, title, qa_pass, review_total, review_pass, status, note, created_at, updated_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (plan["id"], None, str(plan_path), str(rout), plan["lane"], plan["title"], int(q["pass"]), r["total"], int(r["pass"]),
                  status, f"v2 from {brief_path}; {rounds} review round(s)", now(), now()))
     con.commit()
-    try:
+    try:   # the asset library: record what was reused, then take this video's reusable assets (only if it passed)
         from frameflow import library
+        library.mark_used(plan["id"])
         library.extract(plan["id"])
-    except Exception as e:
+    except (Exception, SystemExit) as e:   # optional steps never cost the video
         print(f"library: {e}")
     from frameflow import vaultnote
     vaultnote.safe_write(plan["id"])   # the video's page in the vault (facts, sources, review)

@@ -527,7 +527,9 @@ def main():
             tick()
         else:
             print(status_text())
-    except Exception as e:
+    except (Exception, SystemExit) as e:   # SystemExit("no video ...") from a helper once ended a make silently, stuck at 'making'
+        if isinstance(e, SystemExit) and e.code in (None, 0):
+            raise
         reset = limit_reset(str(e))
         if day and reset and get(day):   # Claude usage limit: not a failure, a wait; tick re-runs the step at the reset time
             update(day, state="waiting-limit", job_pid=None, post_at=get(day).get("post_at"), note=f"{a.step} paused by the usage limit; retry at {reset} (step {a.step})")
