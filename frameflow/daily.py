@@ -264,19 +264,30 @@ def revise(day):
     run = get(day)
     row = videos.db().execute("SELECT * FROM videos WHERE id=?", (run["video_id"],)).fetchone()
     notes = (run["notes"] or "").strip()
-    rev_file = Path(row["out_dir"]) / "review.json"
-    if re.search(r"review", notes, re.I) and len(notes) < 80 and rev_file.exists():   # "use the reviewer's notes"
-        fixes = json.loads(rev_file.read_text()).get("fixes", [])
-        notes = "\n".join(f"{x['row']}: {x['fix']}" for x in fixes) or notes
-        update(day, note="using the reviewer's notes as the revision notes")
+    out = Path(row["out_dir"])
+    asked = notes
+    fixes = [{"row": "story", "fix": f"Talha (the channel owner) asks: {notes}"},
+             {"row": "visual_storytelling", "fix": f"Talha (the channel owner) asks: {notes}"}]
+    # a short, general note ("use the review", "make it up to the quality bar") carries nothing to fix: send the review's
+    # own fixes (each to its row: writer or director) and the failed automatic checks, Talha's words on top (26 Oct)
+    if len(notes) < 80 and re.search(r"review|quality|\bbar\b|better|improve|fix (it|this)|as you (think|see)", notes, re.I):
+        rev = json.loads((out / "review.json").read_text()) if (out / "review.json").exists() else {}
+        qa = json.loads((out / "qa.json").read_text()) if (out / "qa.json").exists() else {}
+        found = [{"row": x["row"], "fix": x["fix"]} for x in rev.get("fixes", []) if x.get("row") and x.get("fix")]
+        found += [{"row": "pacing" if k != "rehooks" else "story", "fix": f"automatic check '{k}' failed: {g.get('detail', '')}"}
+                  for k, g in (qa.get("gates") or {}).items() if not g.get("pass") and k in ("events", "blank-frames", "rehooks", "length")]
+        found += [{"row": "story", "fix": f"automatic check '{k}' failed: {g.get('detail', '')}; keep spoken words simple and clearly pronounced"}
+                  for k, g in (qa.get("gates") or {}).items() if not g.get("pass") and k == "captions"]
+        if found:
+            fixes = [{"row": "story", "fix": f"Talha (the channel owner) asks: {notes}. Do it through the fixes below."}] + found
+            notes = "\n".join(f"{x['row']}: {x['fix']}" for x in found)
+            update(day, note=f"general note: sending the review's fixes and failed checks instead ({len(found)} items)")
     update(day, state="making", note=f"revising with Talha's notes: {notes[:200]}")
     try:
         from frameflow import lessons
-        lessons.distill(Path(row["out_dir"]), notes=notes, source=f"{run['video_id']} (Talha's revise notes)")
+        lessons.distill(out, notes=asked, source=f"{run['video_id']} (Talha's revise notes)")
     except Exception as e:
         print(f"lessons: {e}")
-    fixes = [{"row": "story", "fix": f"Talha (the channel owner) asks: {notes}"},
-             {"row": "visual_storytelling", "fix": f"Talha (the channel owner) asks: {notes}"}]
     with progress.step("revise script and storyboard", notes=notes[:200]):
         d = direct.revise(run["brief"], Path(row["plan"]).parent, {"fixes": fixes}, run["lane"])
     if d["errors"]:

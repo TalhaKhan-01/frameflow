@@ -250,12 +250,16 @@ def _quote(d):
 
 def _chat(d):
     errs = _beats(d, ("ask", "think", "reply", "stamp")) + _cues(d)
+    n = lambda k: f" (now {len(d[k])})" if isinstance(d.get(k), str) else ""
     if not _str(d.get("prompt"), 80):
-        errs.append("data.prompt must be at most 80 characters")
+        errs.append("data.prompt must be at most 80 characters" + n("prompt"))
     if not _str(d.get("reply"), 120):
-        errs.append("data.reply must be at most 120 characters")
-    if d.get("reply") and not _str(d.get("note"), 30):
+        errs.append("data.reply must be at most 120 characters" + n("reply"))
+    # two messages: 'required' for a note 1 character too long (31) sent the director looking for a missing label (26 Oct)
+    if d.get("reply") and not _str(d.get("note")):
         errs.append("data.note is required (e.g. \"re-enactment\"): an invented reply must be labelled on screen")
+    elif d.get("reply") and not _str(d.get("note"), 30):
+        errs.append(f"data.note must be at most 30 characters (now {len(d['note'])}: \"{d['note']}\"); shorten it, e.g. \"re-enactment\"")
     return errs
 
 
