@@ -10,7 +10,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-from frameflow import ideas, pipeline, qa, review, script
+from frameflow import ideas, pipeline, progress, qa, review, script
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -33,8 +33,15 @@ def now():
 
 
 def check(out):
-    q = qa.run(out)
-    r = review.run(out)
+    with progress.step("automatic checks (QA gates)") as info:
+        q = qa.run(out)
+        g = q.get("gates", {})
+        info.update({"pass": q.get("pass"), "passed": sum(1 for x in g.values() if x.get("pass")), "of": len(g),
+                     "failed": [f"{k}: {x.get('detail', '')}"[:160] for k, x in g.items() if not x.get("pass")]})
+    with progress.step("review (Opus watches the video)") as info:
+        r = review.run(out)
+        info.update({"total": r.get("total"), "max": r.get("max"), "pass": r.get("pass"),
+                     "fixes": [f"{x.get('row')}: {x.get('fix', '')}"[:160] for x in r.get("fixes", [])[:4]]})
     return q, r
 
 
@@ -79,15 +86,17 @@ def make(idea_id):
 def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_director=False, quality="looks"):
     """Quality v2: brief -> writer + director skills -> plan -> render -> qa -> review v2 -> awaiting approval."""
     from frameflow import direct
-    d = direct.direct(brief_path, out, lane, skip_writer, skip_director)
+    with progress.step("script and storyboard (writer + director)"):
+        d = direct.direct(brief_path, out, lane, skip_writer, skip_director)
     if d["errors"]:
         return {"status": "plan-invalid", **d}
     plan_path = Path(d["plan"])
     rounds = 0
     while True:
-        report = pipeline.render(plan_path, plan_path.parent / "render", quality)
-        rout = Path(report["final"]).parent
-        q, r = check(rout)
+        with progress.step(f"round {rounds + 1}: render and check"):
+            report = pipeline.render(plan_path, plan_path.parent / "render", quality)
+            rout = Path(report["final"]).parent
+            q, r = check(rout)
         weak_flow = r.get("scores", {}).get("flow", 2) < 2
         from frameflow import profiles   # automatic revisions allowed by the active profile (diet: 1; revisions can flatten the voice, L4)
         if (q["pass"] and r["pass"] and not weak_flow) or rounds >= profiles.pipeline()["max_auto_revisions"]:
@@ -100,14 +109,17 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
             if not g["pass"] and name in ("events", "blank-frames", "rehooks", "length"):
                 r.setdefault("fixes", []).append({"row": "pacing" if name != "rehooks" else "story", "fix": f"automatic check '{name}' failed: {g['detail']}"})
         (rout / f"review-round{rounds}.json").write_text(json.dumps(r, ensure_ascii=False, indent=1))
-        d = direct.revise(brief_path, plan_path.parent, r, lane)
+        with progress.step(f"automatic revision {rounds}: rewrite from the review", fixes=len(r.get("fixes", []))):
+            d = direct.revise(brief_path, plan_path.parent, r, lane)
         if d["errors"]:
             break
     plan = json.loads(plan_path.read_text())
     status = "awaiting-approval" if q["pass"] and r["pass"] else "needs-work"
+    progress.note(f"result: {status}", qa=q["pass"], review=f"{r['total']}/{r.get('max', 12)}", rounds=rounds + 1)
     try:   # what this video teaches the next ones (frameflow.lessons)
         from frameflow import lessons
-        lessons.distill(rout)
+        with progress.step("lessons for the next videos"):
+            lessons.distill(rout)
     except (Exception, SystemExit) as e:
         print(f"lessons: {e}")
     con = db()   # the row first: the library looks the video up (before it, mark_used's SystemExit killed every fresh make)
@@ -118,12 +130,14 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
     con.commit()
     try:   # the asset library: record what was reused, then take this video's reusable assets (only if it passed)
         from frameflow import library
-        library.mark_used(plan["id"])
-        library.extract(plan["id"])
+        with progress.step("asset library"):
+            library.mark_used(plan["id"])
+            library.extract(plan["id"])
     except (Exception, SystemExit) as e:   # optional steps never cost the video
         print(f"library: {e}")
     from frameflow import vaultnote
-    vaultnote.safe_write(plan["id"])   # the video's page in the vault (facts, sources, review)
+    with progress.step("vault note"):
+        vaultnote.safe_write(plan["id"])   # the video's page in the vault (facts, sources, review)
     return {"video": plan["id"], "status": status, "qa": {k: g["pass"] for k, g in q["gates"].items()},
             "review": f"{r['total']}/{r.get('max', 12)}", "seconds": report["seconds"], "final": report["final"]}
 

@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-from frameflow import build, captions, media, music, scene_plan, sound, voice
+from frameflow import build, captions, media, music, progress, scene_plan, sound, voice
 
 ROOT = Path(__file__).resolve().parent.parent
 LANE_MOOD = {"global-tech": "upbeat", "ai-news": "news", "india-tech": "warm", "how-tech-works": "curious",
@@ -177,16 +177,24 @@ def render(plan_path, out_dir=None, quality="looks", mood=None, theme=None):
     script = build.voice_script(plan)
     (out / "script.json").write_text(json.dumps(script, ensure_ascii=False, indent=1))
     vdir = out / "voice"
-    info = voice.tts(out / "script.json", vdir)
+    with progress.step("voice (text to speech)", lines=len(script["lines"])) as pi:
+        info = voice.tts(out / "script.json", vdir)
+        pi.update({"engine": info.get("engine"), "wpm": info.get("wpm")})
     shutil.copy(out / "script.json", vdir / "script.json")
-    words = captions.align(vdir)
-    word_error = captions.wer(voice.LAUGH.sub(" ", " ".join(l["say"] for l in script["lines"])), " ".join(w["w"] for w in words))
-    proj, total = build.project(plan, out / "project", vdir, theme=theme)
-    raw = build.render(proj, out / "raw.mp4", quality)
+    with progress.step("caption timing (speech to words)") as pi:
+        words = captions.align(vdir)
+        word_error = captions.wer(voice.LAUGH.sub(" ", " ".join(l["say"] for l in script["lines"])), " ".join(w["w"] for w in words))
+        pi.update({"words": len(words), "word_error": f"{word_error:.1%}"})
+    with progress.step("build scenes (HyperFrames project)", scenes=len(plan["scenes"])) as pi:
+        proj, total = build.project(plan, out / "project", vdir, theme=theme)
+        pi["video_seconds"] = round(total, 1)
+    with progress.step("render frames", quality=quality):
+        raw = build.render(proj, out / "raw.mp4", quality)
     slots = build.timings(plan, vdir)
     if plan.get("version", 1) >= 2:
         sheet = json.loads((proj / "sfx.json").read_text())
-        final, tracks = mix_v2(raw, out / "final.mp4", vdir, plan, slots, total, sheet)
+        with progress.step("sound mix (voice, music, effects)"):
+            final, tracks = mix_v2(raw, out / "final.mp4", vdir, plan, slots, total, sheet)
         rows = ledger_rows_v2(plan, tracks, sheet, info, proj)
         mood = "+".join(tracks) or "none"
     else:
@@ -200,6 +208,7 @@ def render(plan_path, out_dir=None, quality="looks", mood=None, theme=None):
         if s["type"] == "endcard":
             cover_at = round(st + s["data"].get("coverAt", 0.7), 3)
             media.ffmpeg("-ss", f"{cover_at:.3f}", "-i", str(final), "-frames:v", "1", out / "cover.png")
+    progress.note("rendered", seconds=round(media.duration(final), 1), cover_at=cover_at)
     report = {"id": plan["id"], "final": str(final), "cover": str(out / "cover.png") if cover_at else None, "cover_at": cover_at, "seconds": round(media.duration(final), 2), "lufs": media.loudness(final),
               "voice_lufs": info["lufs"], "voice_engine": info.get("engine"), "wpm": info.get("wpm"),
               "music_lufs_premix": media.loudness(out / "music-stem.wav"), "words": len(words), "wer": round(word_error, 4), "mood": mood, "quality": quality}

@@ -12,7 +12,7 @@ import re
 import urllib.request
 from pathlib import Path
 
-from frameflow import ideas, llm, videos
+from frameflow import ideas, llm, progress, videos
 
 ROOT = Path(__file__).resolve().parent.parent
 LIMITS = {"yt_title": 100, "yt_description": 5000, "yt_tags_total": 500, "ig_caption": 2200, "ig_hashtags": 5}
@@ -124,6 +124,8 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
     # Facebook first: its Reel gives Instagram a public video URL, so Instagram posts by API with the caption as data
     platforms = sorted(platforms, key=lambda x: {"facebook": 0, "youtube": 1, "instagram": 2}.get(x, 3))
     for platform in platforms:
+        step = progress.step(f"post to {platform}")
+        step.__enter__()   # a step per platform; closed below, failed or not (one platform's failure doesn't stop the rest)
         try:
             if platform == "youtube" and mode == "studio":
                 results["youtube"] = run(pilot + ["youtube", video_id])
@@ -159,6 +161,10 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
                     results["facebook"] = run(pilot + ["facebook", video_id])
         except Exception as e:
             results[platform] = {"error": str(e)[-600:]}
+        res = results.get(platform) or {}
+        progress.note(f"{platform}: " + (res.get("url") or "failed: " + str(res.get("error", ""))[-160:]), mode=res.get("mode"))
+        err = None if res.get("url") else RuntimeError(str(res.get("error", "no link"))[-300:])
+        step.__exit__(type(err) if err else None, err, None)   # records 'fail' for a platform that didn't post, raises nothing
     yt = results.get("youtube") or {}
     if yt.get("url") and p.get("pinned_comment"):   # the pack's comment goes up under the Short (pinning stays a Studio click)
         try:

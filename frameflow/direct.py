@@ -13,7 +13,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from frameflow import cover, scene_plan
+from frameflow import cover, progress, scene_plan
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILLS = Path.home() / "Talha_Khan" / "Claude" / "skills"
@@ -71,10 +71,12 @@ def revise(brief_path, out, review, lane="how-tech-works"):
     n = len(list(out.glob("review*-writer-notes.txt"))) + 1
     if w_notes:
         (out / f"review{n}-writer-notes.txt").write_text("\n".join(w_notes))
-        skill([WRITER, "--project", ROOT, "doctor", brief_path, "--out", wdir, "--notes", out / f"review{n}-writer-notes.txt"])
+        with progress.step("writer fixes the script", notes=len(w_notes)):
+            skill([WRITER, "--project", ROOT, "doctor", brief_path, "--out", wdir, "--notes", out / f"review{n}-writer-notes.txt"])
     (out / f"review{n}-director-notes.txt").write_text("\n".join(d_notes + ["The script may have changed: map every beat once, in order."]))
-    skill([DIRECTOR, "--project", ROOT, "doctor", ddir / "storyboard.json", "--script", wdir / "script.json", "--catalog", CATALOG,
-           "--out", ddir, "--problems", out / f"review{n}-director-notes.txt"])
+    with progress.step("director fixes the storyboard", notes=len(d_notes)):
+        skill([DIRECTOR, "--project", ROOT, "doctor", ddir / "storyboard.json", "--script", wdir / "script.json", "--catalog", CATALOG,
+               "--out", ddir, "--problems", out / f"review{n}-director-notes.txt"])
     return direct(brief_path, out, lane, skip_writer=True, skip_director=True)
 
 
@@ -100,18 +102,24 @@ def direct(brief_path, out=None, lane="how-tech-works", skip_writer=False, skip_
     except Exception as e:
         print(f"lessons: {e}")
     if not skip_writer:
-        skill([WRITER, "--project", ROOT, "run", brief_path, "--out", wdir])
+        with progress.step("writer: hooks, story and script (shorts-writer)") as pi:
+            skill([WRITER, "--project", ROOT, "run", brief_path, "--out", wdir])
+            pi["title"] = json.loads((wdir / "script.json").read_text()).get("title")
     script = json.loads((wdir / "script.json").read_text())
     if not skip_director:
-        skill([DIRECTOR, "--project", ROOT, "run", wdir / "script.json", "--catalog", CATALOG, "--out", ddir])
+        with progress.step("director: storyboard and sound plan (shorts-director)"):
+            skill([DIRECTOR, "--project", ROOT, "run", wdir / "script.json", "--catalog", CATALOG, "--out", ddir])
     plan_id = f"{dt.date.today().isoformat()}-{slug}"
-    cover_data = cover.make(out)
+    with progress.step("cover text"):
+        cover_data = cover.make(out)
     plan = compile_plan(brief, script, json.loads((ddir / "storyboard.json").read_text()), lane, plan_id, cover_data)
     errs = scene_plan.validate(plan)
     if errs:   # one round back to the director with the validator's exact errors
         (ddir / "validator-problems.txt").write_text("\n".join(errs))
-        skill([DIRECTOR, "--project", ROOT, "doctor", ddir / "storyboard.json", "--script", wdir / "script.json",
-               "--catalog", CATALOG, "--out", ddir, "--problems", ddir / "validator-problems.txt"])
+        progress.note("render plan invalid: back to the director", errors=len(errs))
+        with progress.step("director fixes the plan's errors", errors=len(errs)):
+            skill([DIRECTOR, "--project", ROOT, "doctor", ddir / "storyboard.json", "--script", wdir / "script.json",
+                   "--catalog", CATALOG, "--out", ddir, "--problems", ddir / "validator-problems.txt"])
         plan = compile_plan(brief, script, json.loads((ddir / "storyboard.json").read_text()), lane, plan_id, cover_data)
         errs = scene_plan.validate(plan)
     (out / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=1))

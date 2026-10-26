@@ -22,7 +22,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from frameflow import telegram
+from frameflow import progress, telegram
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "frameflow.db"
@@ -198,16 +198,22 @@ def make(day):
         update(day, state="making", note=f"reusing brief {path.name}; make2 started")
     else:
         update(day, state="making", note="making: research brief")
-        path = brief.build(story["url"], story.get("title", ""), run["lane"], story.get("summary", ""))
+        with progress.step("research brief", story=story.get("title") or story["url"]) as info:
+            path = brief.build(story["url"], story.get("title", ""), run["lane"], story.get("summary", ""))
+            info["brief"] = path.name
         update(day, brief=str(path), note=f"brief {path.name}; make2 started")
-    r = videos.make2(str(path), run["lane"])
+    with progress.step("make video") as info:
+        r = videos.make2(str(path), run["lane"])
+        info.update({k: r.get(k) for k in ("video", "status", "review", "seconds")})
     if r.get("status") == "plan-invalid":
         raise RuntimeError(f"plan invalid after the director's fix: {r.get('errors')}")
     update(day, video_id=r["video"], note=f"made {r['video']}: {r['status']}, review {r['review']}")
-    video_card(day)
+    with progress.step("send video card to Telegram"):
+        video_card(day)
     try:   # the day's card post, from the same brief (no second topic choice, little extra cost)
         from frameflow import cards
-        cards.make_for_day(day, path)
+        with progress.step("make card post (carousel)"):
+            cards.make_for_day(day, path)
         update(day, note="card post made")
     except Exception as e:
         update(day, note=f"card post failed: {str(e)[:200]}")
@@ -271,7 +277,8 @@ def revise(day):
         print(f"lessons: {e}")
     fixes = [{"row": "story", "fix": f"Talha (the channel owner) asks: {notes}"},
              {"row": "visual_storytelling", "fix": f"Talha (the channel owner) asks: {notes}"}]
-    d = direct.revise(run["brief"], Path(row["plan"]).parent, {"fixes": fixes}, run["lane"])
+    with progress.step("revise script and storyboard", notes=notes[:200]):
+        d = direct.revise(run["brief"], Path(row["plan"]).parent, {"fixes": fixes}, run["lane"])
     if d["errors"]:
         raise RuntimeError(f"revised plan invalid: {d['errors']}")
     report = pipeline.render(Path(d["plan"]), Path(d["plan"]).parent / "render", "looks")
@@ -281,7 +288,8 @@ def revise(day):
                 (int(q["pass"]), r["total"], int(r["pass"]), "awaiting-approval" if q["pass"] and r["pass"] else "needs-work",
                  f"v2 revised from Talha's notes (round {run['revisions']})", videos.now(), run["video_id"]))
     con.commit()
-    video_card(day)
+    with progress.step("send video card to Telegram"):
+        video_card(day)
 
 
 def reflow(day):
@@ -503,6 +511,25 @@ def status_text():
     return "\n".join(out)
 
 
+def run_step(a, day):
+    if a.step == "scout":
+        # the bot's placeholder row ('scouting') stays until scout() replaces it: deleting it first let the 30 s tick
+        # see no run and start a second scout, and two topic cards went out (2026-10-26)
+        print(json.dumps(scout(day), indent=1, default=str)[:2000])
+    elif a.step == "make":
+        make(day)
+    elif a.step == "revise":
+        revise(day)
+    elif a.step == "reflow":
+        reflow(day)
+    elif a.step == "post":
+        post(day)
+    elif a.step == "tick":
+        tick()
+    else:
+        print(status_text())
+
+
 def main():
     ap = argparse.ArgumentParser(description="Frameflow daily automation")
     ap.add_argument("step", choices=["scout", "make", "revise", "reflow", "post", "tick", "status"])
@@ -510,23 +537,11 @@ def main():
     ap.add_argument("--day", dest="day_opt")
     a = ap.parse_args()
     day = a.day or a.day_opt
+    if day and a.step in ("make", "revise", "reflow", "post"):   # step-by-step progress for the control panel's Making view
+        os.environ["FF_PROGRESS"] = str(ROOT / "logs" / f"progress-{day}.jsonl")
     try:
-        if a.step == "scout":
-            # the bot's placeholder row ('scouting') stays until scout() replaces it: deleting it first let the 30 s tick
-            # see no run and start a second scout, and two topic cards went out (2026-10-26)
-            print(json.dumps(scout(day), indent=1, default=str)[:2000])
-        elif a.step == "make":
-            make(day)
-        elif a.step == "revise":
-            revise(day)
-        elif a.step == "reflow":
-            reflow(day)
-        elif a.step == "post":
-            post(day)
-        elif a.step == "tick":
-            tick()
-        else:
-            print(status_text())
+        with progress.step(a.step, day=day):
+            run_step(a, day)
     except (Exception, SystemExit) as e:   # SystemExit("no video ...") from a helper once ended a make silently, stuck at 'making'
         if isinstance(e, SystemExit) and e.code in (None, 0):
             raise
