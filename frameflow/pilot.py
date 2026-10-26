@@ -1,12 +1,16 @@
 """The Pilot (agent-browser) in Frameflow's dedicated Chrome (PM2 frameflow-chrome, DevTools 127.0.0.1:7307):
-YouTube Studio uploads until the API audit passes, and Instagram Reels the API won't take (over ~40 s).
+YouTube Studio uploads until the API audit passes, and Facebook/Instagram whenever the Meta API fails (dead token).
 
     python -m frameflow.pilot youtube <video_id>        upload + publish; prints {"url": ...}
     python -m frameflow.pilot instagram <video_id>      post the Reel; prints {"url": ...}
+    python -m frameflow.pilot facebook <video_id>       post the Reel as the Page; prints {"url": ...}
+    python -m frameflow.pilot photos <img>... [--fb-caption F] [--ig-caption F]   card slides via Business Suite
     python -m frameflow.pilot check                     is the Chrome up and signed in to both?
 
-Only for videos Talha approved (publish.upload enforces it). The steps mirror what worked by hand on 2026-10-25:
+Only for videos Talha approved (publish.upload enforces it). The steps mirror what worked by hand on 2026-10-25/26:
 Studio's text boxes take execCommand('insertText'); Instagram's caption editor only takes real key input.
+Every final click is a real click and counts only when the site confirms it, and a link is reported only when the
+live post shows our caption (2026-10-26: unchecked clicks left a draft and reported yesterday's Reel as posted).
 """
 import argparse
 import json
@@ -22,6 +26,7 @@ SESSION = "frameflow-pilot"
 NODE_BIN = Path.home() / ".nvm/versions/node/v24.21.0/bin"
 CHANNEL = "UCrcF7Q5J4kEENdJuA8BPQxQ"
 IG_HANDLE = "madebythirdspace"
+DRY = bool(__import__("os").environ.get("FRAMEFLOW_PILOT_DRY"))   # stop before the final Post/Share/Publish (testing)
 
 
 class PilotError(RuntimeError):
@@ -128,8 +133,24 @@ def youtube(video_id):
     js("(() => { const r=[...document.querySelectorAll('tp-yt-paper-radio-button')].find(x=>x.getAttribute('name')==='PUBLIC'); r&&r.click(); return !!r; })()")
     link = js("(() => { const a=[...document.querySelectorAll('a')].find(x=>/youtube\\.com\\/shorts\\/|youtu\\.be\\//.test(x.href)); return a ? a.href : ''; })()")
     wait_for("!document.querySelector('#done-button')?.hasAttribute('disabled')", 600, 5, "Studio's Publish button")
-    js("document.querySelector('#done-button').click(); 1")
-    wait_for("/Video published|published/i.test(document.body.innerText)", 120, what="the published dialog")
+    # 2026-10-26 a JS click on Publish didn't land and the Short stayed a draft: click for real, and again until the
+    # 'Video published' dialog shows; nothing else counts as published
+    published = "/Video published/.test(document.querySelector('ytcp-video-share-dialog')?.innerText||'')"
+    for _ in range(4):
+        if js(published):
+            break
+        try:
+            ab("click", "#done-button")
+        except PilotError:
+            js("document.querySelector('#done-button')?.click(); 1")
+        try:
+            wait_for(published, 45, what="the published dialog")
+            break
+        except PilotError:
+            pass
+    else:
+        raise PilotError("Studio never showed 'Video published': the Short is probably still a draft")
+    link = js("(() => { const a=[...document.querySelectorAll('ytcp-video-share-dialog a, a')].find(x=>/youtube\\.com\\/shorts\\/|youtu\\.be\\//.test(x.href)); return a ? a.href : ''; })()") or link
     js("document.querySelector('ytcp-video-share-dialog #close-button')?.click(); 1")
     if not link:
         raise PilotError("published, but no video link was found in the dialog")
@@ -150,8 +171,7 @@ def instagram(video_id):
         time.sleep(2)
     except PilotError:
         pass
-    ab("upload", "input[type=file]", out / "final.mp4", timeout=600)
-    time.sleep(6)
+    ig_drop([out / "final.mp4"])
     js("(() => { const b=[...document.querySelectorAll('button')].find(x=>x.textContent.trim()==='OK'); b&&b.click(); return 1; })()")
     time.sleep(1.5)
     js("(() => { const s=[...document.querySelectorAll('svg[aria-label]')].find(x=>/select crop/i.test(x.getAttribute('aria-label'))); if(!s) return 0; (s.closest('button,[role=button]')||s).dispatchEvent(new MouseEvent('click',{bubbles:true})); return 1; })()")
@@ -160,12 +180,7 @@ def instagram(video_id):
     nxt = "(() => { const n=[...document.querySelectorAll('div[role=button],button')].find(e=>e.textContent.trim()==='Next'); n&&n.click(); return !!n; })()"
     js(nxt)
     time.sleep(3)
-    if (out / "cover.png").exists():
-        try:
-            ab("upload", "input[type=file][accept=\"image/jpeg,image/png\"]", out / "cover.png", timeout=120)
-            time.sleep(3)
-        except PilotError as e:
-            print(f"cover: {e}", file=sys.stderr)
+    # no custom cover: its input takes files only by DOM.setFileInputFiles, which kills the tab (see ig_drop)
     js(nxt)
     wait_for("!!document.querySelector('div[role=dialog] div[contenteditable=true]')", 60, what="the caption box")
     ab("focus", "div[role=dialog] div[contenteditable=true]")
@@ -183,84 +198,61 @@ def instagram(video_id):
     js("(() => { const lab=[...document.querySelectorAll('div[role=dialog] span')].find(s=>s.textContent.trim()==='Add AI label'); let row=lab; "
        "for(let i=0;i<6&&row;i++){ row=row.parentElement; const s=row&&row.querySelector('input[type=checkbox],[role=switch]'); "
        "if(s){ if(!(s.checked||s.getAttribute('aria-checked')==='true')) s.click(); return 1; } } return 0; })()")
-    js("(() => { const n=[...document.querySelectorAll('div[role=dialog] div[role=button], div[role=dialog] button')].find(e=>e.textContent.trim()==='Share'); n&&n.click(); return !!n; })()")
-    wait_for("!/Sharing/.test(document.querySelector('div[role=dialog]')?.innerText||'')", 600, 10, "Instagram to finish sharing")
-    time.sleep(3)
-    link = js("location.href")
-    if "/p/" not in str(link) and "/reel/" not in str(link):
-        ab("open", f"https://www.instagram.com/{IG_HANDLE}/reels/", timeout=60)
-        time.sleep(5)
-        link = js("(() => { const a=[...document.querySelectorAll('a')].map(x=>x.href).find(h=>/\\/(reel|p)\\//.test(h)); return a||''; })()")
-    m = re.search(r"/(?:p|reel)/([A-Za-z0-9_-]+)", str(link))
-    if not m:
-        raise PilotError("shared, but the Reel's link wasn't found")
-    url = f"https://www.instagram.com/reel/{m.group(1)}/"
-    ab("open", url, timeout=60)   # the caption must be on the posted Reel (it once got lost)
-    time.sleep(5)
-    if first[:30] not in str(js("document.body.innerText")):
-        print("warning: caption not visible on the posted Reel", file=sys.stderr)
-        return {"url": url, "mode": "pilot", "caption_missing": True}
-    return {"url": url, "mode": "pilot"}
+    if DRY:
+        return {"dry": True, "at": "Share button"}
+    ig_share()
+    return {"url": ig_find(first, "reel"), "mode": "pilot"}
 
 
-def carousel(caption_file, images):
-    """A photo carousel (Habit cards, 1080x1350): upload all slides at once, keep 4:5, caption, share, return the link."""
-    caption = Path(caption_file).read_text()
-    connect()
-    ab("open", "https://www.instagram.com/", timeout=90)
-    time.sleep(5)
-    click(r'link "New post')
-    time.sleep(2)
-    try:
-        click(r'link "Post Post"')
-        time.sleep(2)
-    except PilotError:
-        pass
-    ab("upload", "input[type=file]", *images, timeout=600)
-    time.sleep(6)
-    js("(() => { const b=[...document.querySelectorAll('button')].find(x=>x.textContent.trim()==='OK'); b&&b.click(); return 1; })()")
-    js("(() => { const s=[...document.querySelectorAll('svg[aria-label]')].find(x=>/select crop/i.test(x.getAttribute('aria-label'))); if(!s) return 0; (s.closest('button,[role=button]')||s).dispatchEvent(new MouseEvent('click',{bubbles:true})); return 1; })()")
-    time.sleep(1)
-    js("(() => { const e=[...document.querySelectorAll('span,div')].find(e=>e.children.length===0 && e.textContent.trim()==='4:5'); e&&(e.closest('button,[role=button]')||e).click(); return !!e; })()")
-    nxt = "(() => { const n=[...document.querySelectorAll('div[role=button],button')].find(e=>e.textContent.trim()==='Next'); n&&n.click(); return !!n; })()"
-    js(nxt)
-    time.sleep(3)
-    js(nxt)   # past the filters step
-    wait_for("!!document.querySelector('div[role=dialog] div[contenteditable=true]')", 60, what="the caption box")
-    ab("focus", "div[role=dialog] div[contenteditable=true]")
-    ab("press", "Control+a")
-    ab("press", "Backspace")
-    for i, line in enumerate(caption.split("\n")):
-        if i:
-            ab("press", "Enter")
-        if line:
-            ab("keyboard", "inserttext", line)
-    first = caption.split("\n")[0].strip()
-    if first[:40] not in str(js("document.querySelector('div[role=dialog] div[contenteditable=true]').innerText")):
-        raise PilotError("the caption didn't take in Instagram's editor")
-    js("(() => { const n=[...document.querySelectorAll('div[role=dialog] div[role=button], div[role=dialog] button')].find(e=>e.textContent.trim()==='Share'); n&&n.click(); return !!n; })()")
-    wait_for("!/Sharing/.test(document.querySelector('div[role=dialog]')?.innerText||'')", 600, 10, "Instagram to finish sharing")
-    time.sleep(3)
+def ig_drop(files):
+    """Drop files on the New post dialog. ab upload (DOM.setFileInputFiles) got the tab killed by Chrome 154
+    ('bad IPC message') on 2026-10-26, and Instagram ignores a change event on its input; a drop works."""
+    wait_for("[...document.querySelectorAll('div[role=dialog] *')].some(x=>x.children.length===0 && /Drag photos and videos here/.test(x.textContent))",
+             30, what="the New post dialog")
+    js("(() => { const e=[...document.querySelectorAll('div[role=dialog] *')].find(x=>x.children.length===0 && /Drag photos and videos here/.test(x.textContent)); "
+       "let z=e; for(let k=0;k<4;k++) z=z.parentElement; z.setAttribute('data-ffdrop','1'); return 1; })()")
+    inject("instagram.com", "drop:[data-ffdrop]", files)
+    wait_for("/Crop|Something went wrong/.test(document.querySelector('div[role=dialog]')?.innerText||'')", 120, what="Instagram to take the file")
+    if js("/Something went wrong/.test(document.body.innerText)"):
+        raise PilotError("Instagram: 'Something went wrong' after the upload")
+
+
+def inject(url_part, selector, files):
+    env = {"PATH": f"{NODE_BIN}:/usr/bin:/bin", "HOME": str(Path.home())}
+    r = subprocess.run(["node", str(ROOT / "scripts" / "inject-file.mjs"), str(PORT), url_part, selector, *map(str, files)],
+                       capture_output=True, text=True, timeout=600, env=env)
+    if r.returncode:
+        raise PilotError(f"inject: {(r.stderr or r.stdout)[-300:]}")
+
+
+def ig_share():
+    """A real click on Share, then Instagram's own 'has been shared' line; 'Sharing' merely vanishing proved nothing."""
+    ab("click", ref(r'button "Share"'))
+    wait_for("/has been shared|went wrong|couldn.t be shared/i.test(document.querySelector('div[role=dialog]')?.innerText||'')",
+             900, 10, "Instagram to confirm the share")
+    if not js("/has been shared/i.test(document.querySelector('div[role=dialog]')?.innerText||'')"):
+        raise PilotError("Instagram didn't share the post: " + str(js("(document.querySelector('div[role=dialog]')?.innerText||'').slice(0,120)")))
+
+
+def ig_find(first, kind):
+    """Link of the newest post whose live caption starts like ours: never the newest post blindly
+    (on 2026-10-26 that reported yesterday's Reel as today's)."""
     ab("open", f"https://www.instagram.com/{IG_HANDLE}/", timeout=60)
-    time.sleep(5)
-    link = js("(() => { const a=[...document.querySelectorAll('a')].map(x=>x.href).find(h=>/\\/p\\//.test(h)); return a||''; })()")
-    m = re.search(r"/p/([A-Za-z0-9_-]+)", str(link))
-    if not m:
-        raise PilotError("shared, but the post's link wasn't found")
-    url = f"https://www.instagram.com/p/{m.group(1)}/"
-    ab("open", url, timeout=60)
-    time.sleep(5)
-    if first[:30] not in str(js("document.body.innerText")):
-        print("warning: caption not visible on the posted carousel", file=sys.stderr)
-        return {"url": url, "mode": "pilot", "caption_missing": True}
-    return {"url": url, "mode": "pilot"}
+    time.sleep(6)
+    links = js("[...new Set([...document.querySelectorAll('a')].map(x=>x.href).filter(h=>/\\/(reel|p)\\//.test(h)))].slice(0,4)")
+    for link in links if isinstance(links, list) else []:
+        ab("open", link, timeout=60)
+        time.sleep(5)
+        if first[:30] in str(js("document.body.innerText")):
+            code = re.search(r"/(?:p|reel)/([A-Za-z0-9_-]+)", link).group(1)
+            return f"https://www.instagram.com/{'reel' if kind == 'reel' else 'p'}/{code}/"
+    raise PilotError("Instagram said shared, but no recent post carries today's caption")
 
 
 # ---------- Facebook (web, as the Thirdspace Page) ----------
 # Used when the Graph API token is dead. The caption goes in as one paste event: Facebook's editor drops Enter key
-# presses but keeps the line breaks of a paste. FRAMEFLOW_PILOT_DRY=1 stops before Post (for testing).
+# presses but keeps the line breaks of a paste. 
 
-DRY = bool(__import__("os").environ.get("FRAMEFLOW_PILOT_DRY"))
 FB_BOX = "div[contenteditable=true][role=textbox]"
 
 
@@ -282,17 +274,6 @@ def fb_click(label):
               "b&&b.click(); return !!b; })()")
 
 
-def fb_latest(kind):
-    """Link of the Page's newest reel or post, read from its profile."""
-    ab("open", "https://www.facebook.com/profile.php?id=" + FB_PAGE + ("&sk=reels_tab" if kind == "reel" else ""), timeout=60)
-    time.sleep(6)
-    pat = "\\/reel\\/\\d+" if kind == "reel" else "\\/(posts|photo|permalink)"
-    return str(js(f"(() => {{ const a=[...document.querySelectorAll('a')].map(x=>x.href).find(h=>/{pat}/.test(h)); return a||''; }})()"))
-
-
-FB_PAGE = "122094160959534001"
-
-
 def facebook(video_id):
     out, p = pack_of(video_id)
     caption = p.get("fb_caption", p["ig_caption"])
@@ -312,39 +293,113 @@ def facebook(video_id):
         return {"dry": True, "at": "Post button"}
     wait_for("(() => { const b=[...document.querySelectorAll('div[role=button]')].find(e=>e.textContent.trim()==='Post'); return b && b.getAttribute('aria-disabled')!=='true'; })()",
              600, 5, "Facebook to finish uploading")
-    fb_click("Post")
-    time.sleep(20)
-    link = fb_latest("reel")
-    m = re.search(r"/reel/(\d+)", link)
-    if not m:
-        raise PilotError("posted, but the Reel's link wasn't found")
-    return {"url": f"https://www.facebook.com/reel/{m.group(1)}", "mode": "pilot"}
+    ab("click", ref(r'button "Post"'))   # a real click: a JS .click() on this div didn't always post
+    wait_for("!location.pathname.startsWith('/reels/create')", 120, 3, "Facebook to accept the Reel")
+    url = fb_published(caption)
+    return {"url": url, "mode": "pilot"}
 
 
-def facebook_photos(caption_file, images):
-    """A photo post (Habit card slides). Images go in one at a time: a multi-file upload crashed the tab."""
-    caption = Path(caption_file).read_text()
+def fb_published(caption, minutes=10):
+    """The new Reel's link, from the 'Your reel has been published' notification (its content_id holds the post id).
+    Only returned once the live Reel shows this caption, so an older Reel can never be reported as today's."""
+    import base64
+    first = caption.split("\n")[0].strip()[:40]
+    end = time.time() + minutes * 60
+    while time.time() < end:
+        ab("open", "https://www.facebook.com/notifications", timeout=60)
+        time.sleep(6)
+        ids = js("[...document.querySelectorAll('a')].filter(a=>/Your reel has been published/.test(a.innerText)).map(a=>new URL(a.href).searchParams.get('content_id')).filter(Boolean)")
+        for cid in ids if isinstance(ids, list) else []:
+            post = base64.b64decode(cid + "==").decode(errors="ignore").split(":")[-1]
+            ab("open", f"https://www.facebook.com/{FB_PAGE}/posts/{post}", timeout=60)
+            time.sleep(8)
+            href, text = js("location.href"), str(js("document.body.innerText"))
+            if first in text and "/reel/" in str(href):
+                return str(href).split("?")[0]
+        time.sleep(30)
+    raise PilotError("Facebook took the Reel, but no published Reel with today's caption showed up")
+
+
+FB_PAGE = "122094160959534001"
+BS_ASSET = "1475788295611893"   # the Thirdspace Page in Meta Business Suite
+
+
+# ---------- Habit card photos: Meta Business Suite, one composer for both ----------
+# Instagram's web editor answers any photo post with 'Something went wrong' and facebook.com rejects photos set by
+# The Pilot; Business Suite's composer takes them (posted fine on 2026-10-26). It has no AI label, so Reels don't use it.
+
+def photos(images, captions):
+    """captions: {"facebook": text, "instagram": text}, only the platforms to post to. Returns {platform: url}."""
     connect()
-    ab("open", "https://www.facebook.com/", timeout=90)
-    time.sleep(5)
-    # the home page's photo input opens the composer with the first image; later images go to the composer's own input
-    wait_for("document.querySelectorAll('input[type=file][multiple]').length > 0", 30, what="the photo input")
-    for img in images:
-        js("(() => { document.querySelectorAll('[data-ffup]').forEach(x=>x.removeAttribute('data-ffup')); "
-           "const i=[...document.querySelectorAll('input[type=file][multiple]')].pop(); i.setAttribute('data-ffup','1'); return 1; })()")
-        ab("upload", "[data-ffup]", img, timeout=180)
-        time.sleep(4)
-    fb_caption(caption, "div[role=dialog] " + FB_BOX)
+    ab("open", f"https://business.facebook.com/latest/composer/?asset_id={BS_ASSET}", timeout=90)
+    wait_for("[...document.querySelectorAll('[role=button],button')].some(e=>e.textContent.trim()==='Add photo/video')", 60, what="the composer")
+    names = {"facebook": "Thirdspace", "instagram": IG_HANDLE}
+    combo = ref(r'combobox "Post to')
+    ab("click", combo)
+    time.sleep(1.5)
+    for platform, name in names.items():   # options are toggles: make each match what we want
+        line = next((l for l in ab("snapshot", "-i").splitlines() if re.search(rf'option "{name}"', l)), "")
+        if line and ("[selected" in line) != (platform in captions):
+            ab("click", "@" + re.search(r"ref=(e\d+)", line).group(1))
+            time.sleep(1)
+    ab("press", "Escape")
+    want = " and ".join(names[p] for p in names if p in captions)
+    if want not in ab("snapshot", "-i"):
+        raise PilotError(f"couldn't set 'Post to' to {want}")
+    # the page makes its file input on click and opens the system picker: keep the input in the page instead
+    js("(() => { const orig=HTMLInputElement.prototype.click; HTMLInputElement.prototype.click=function(){ if(this.type==='file'){ "
+       "this.setAttribute('data-ffup','1'); if(!this.isConnected){ this.style.display='none'; document.body.appendChild(this);} return; } return orig.call(this); }; return 1; })()")
+    js("(() => { const b=[...document.querySelectorAll('[role=button],button')].find(e=>e.textContent.trim()==='Add photo/video'); b&&b.click(); return !!b; })()")
+    wait_for("!!document.querySelector('[data-ffup]')", 20, what="the photo input")
+    inject("business.facebook.com", "[data-ffup]", images)
+    wait_for(f"(document.body.innerText.match(/\\d+ x \\d+/g)||[]).length >= {len(images)}", 120, what="all slides to load")
+    if len(captions) > 1:
+        ab("click", ref(r'switch "Customise post for Facebook and Instagram"'))
+        time.sleep(2)
+    for platform, text in captions.items():
+        if len(captions) > 1:
+            ab("click", ref(rf'tab "{platform.capitalize()}"'))
+            time.sleep(1.5)
+        bs_caption(text)
     if DRY:
-        return {"dry": True, "at": "Post button"}
-    wait_for("(() => { const b=[...document.querySelectorAll('div[role=dialog] div[role=button]')].find(e=>(e.getAttribute('aria-label')||e.textContent.trim())==='Post'); return b && b.getAttribute('aria-disabled')!=='true'; })()",
-             300, 5, "the Post button")
-    fb_click("Post")
-    time.sleep(20)
-    link = fb_latest("post")
-    if not link:
-        raise PilotError("posted, but the post's link wasn't found")
-    return {"url": link.split("?")[0] if "/posts/" in link else link, "mode": "pilot"}
+        return {"dry": True, "at": "Publish button"}
+    ab("click", ref(r'button "Publish"'))
+    wait_for("/Your post is published|went wrong|couldn.t/i.test(document.body.innerText)", 600, 5, "Business Suite to publish")
+    if not js("/Your post is published/.test(document.body.innerText)"):
+        raise PilotError("Business Suite didn't publish the post")
+    links = {}
+    if "instagram" in captions:
+        links["instagram"] = ig_find(captions["instagram"].split("\n")[0].strip(), "post")
+    if "facebook" in captions:
+        links["facebook"] = bs_fb_link(captions["facebook"].split("\n")[0].strip()[:40])
+    return links
+
+
+def bs_caption(text):
+    """Paste into the visible caption box (one per platform once customised) and check it took whole."""
+    vis = "[...document.querySelectorAll('[contenteditable=true]')].find(e=>e.offsetParent!==null)"
+    js(f"(() => {{ const e={vis}; e.focus(); const dt=new DataTransfer(); dt.setData('text/plain', {json.dumps(text.strip())}); "
+       "e.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true})); return 1; })()")
+    time.sleep(1.5)
+    norm = lambda s: "\n".join(l.strip() for l in str(s).strip().splitlines() if l.strip())
+    if norm(js(f"{vis}.innerText")) != norm(text):
+        raise PilotError("the caption didn't take whole in Business Suite's editor")
+
+
+def bs_fb_link(first):
+    """The Facebook post's link, from its row in Business Suite's published posts (matched on the caption)."""
+    ab("open", f"https://business.facebook.com/latest/posts/published_posts?asset_id={BS_ASSET}", timeout=90)
+    for _ in range(10):
+        time.sleep(8)
+        found = js(f"(()=>{{ const row=[...document.querySelectorAll('[role=row], tr')].find(r=>r.innerText.includes({json.dumps(first)})); if(!row) return 0; "
+                   f"const c=[...row.querySelectorAll('span,div')].find(e=>e.children.length===0&&e.textContent.includes({json.dumps(first[:20])})); c&&c.click(); return 1; }})()")
+        if found:
+            time.sleep(6)
+            m = re.search(r"set=pcb\.(\d+)", str(js("[...document.querySelectorAll('a')].map(a=>a.href).join(' ')")))
+            if m:
+                return f"https://www.facebook.com/{FB_PAGE}/posts/{m.group(1)}"
+        ab("open", f"https://business.facebook.com/latest/posts/published_posts?asset_id={BS_ASSET}", timeout=90)
+    raise PilotError("published, but the Facebook post's link wasn't found in Business Suite")
 
 
 def check():
@@ -360,17 +415,20 @@ def check():
 
 def main():
     ap = argparse.ArgumentParser(description="The Pilot in Frameflow's dedicated Chrome")
-    ap.add_argument("what", choices=["youtube", "instagram", "facebook", "carousel", "fb-photos", "check"])
+    ap.add_argument("what", choices=["youtube", "instagram", "facebook", "photos", "check"])
     ap.add_argument("video_id", nargs="?")
     ap.add_argument("images", nargs="*")
+    ap.add_argument("--fb-caption", help="photos: Facebook caption file (posts to Facebook)")
+    ap.add_argument("--ig-caption", help="photos: Instagram caption file (posts to Instagram)")
     a = ap.parse_args()
     import fcntl   # one Pilot run at a time: the Short and the card post go out at the same minute and share one tab
     (ROOT / "logs").mkdir(exist_ok=True)
     lock = open(ROOT / "logs" / "pilot.lock", "w")
     fcntl.flock(lock, fcntl.LOCK_EX)
     try:
-        if a.what in ("carousel", "fb-photos"):   # video_id holds the caption file here
-            r = (carousel if a.what == "carousel" else facebook_photos)(a.video_id, a.images)
+        if a.what == "photos":   # every positional argument is an image here
+            caps = {k: Path(f).read_text() for k, f in (("facebook", a.fb_caption), ("instagram", a.ig_caption)) if f}
+            r = photos([a.video_id, *a.images], caps)
         else:
             r = check() if a.what == "check" else {"youtube": youtube, "instagram": instagram, "facebook": facebook}[a.what](a.video_id)
     finally:

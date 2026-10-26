@@ -3,7 +3,7 @@
     python -m frameflow.cards topics                 send today's card topic options (recent stories + a fresh one)
     python -m frameflow.cards make <run>             brief -> slides -> PNGs -> caption -> preview album with Approve/Revise/Reject
     python -m frameflow.cards revise <run>           Talha's notes -> new slides -> new preview
-    python -m frameflow.cards post <run>             Facebook (API) and Instagram (The Pilot) carousels -> links
+    python -m frameflow.cards post <run>             Facebook and Instagram carousels (API; The Pilot via Business Suite if it fails) -> links
 
 A run id is cards-<date>-<n>. Facts come only from a sourced brief (a past video's, which costs no research, or a new one);
 every fact slide carries its source; slide 1 is a bold but true claim; the last slide is the follow slide.
@@ -356,14 +356,20 @@ def post(run):
             raise RuntimeError((p.stderr or p.stdout)[-400:])
         links["instagram"] = json.loads(p.stdout[p.stdout.rindex("{"):])["url"]
     except Exception as e:
-        try:   # dead Meta token: The Pilot posts the carousel on the web (it checks the caption took)
-            p = subprocess.run(["uv", "run", "python", "-m", "frameflow.pilot", "carousel", str(out / "ig.txt"), *paths],
-                               capture_output=True, text=True, timeout=1800, cwd=ROOT)
+        errors["instagram"] = str(e)[-300:]
+    if errors:   # dead Meta token: The Pilot posts what's missing through Business Suite (captions checked, links matched)
+        caps = [a for k, f in (("facebook", "fb.txt"), ("instagram", "ig.txt")) if k in errors for a in (f"--{k[:2]}-caption", str(out / f))]
+        try:
+            p = subprocess.run(["uv", "run", "python", "-m", "frameflow.pilot", "photos", *paths, *caps],
+                               capture_output=True, text=True, timeout=2400, cwd=ROOT)
             if p.returncode:
                 raise RuntimeError((p.stderr or p.stdout)[-400:])
-            links["instagram"] = json.loads(p.stdout[p.stdout.rindex("{"):])["url"]
+            got = json.loads(p.stdout[p.stdout.rindex("{"):])
+            for k, v in got.items():
+                links[k] = v
+                errors.pop(k, None)
         except Exception as e2:
-            errors["instagram"] = f"API: {str(e)[-150:]}; Pilot: {str(e2)[-150:]}"
+            errors = {k: f"API: {v[-150:]}; Pilot: {str(e2)[-150:]}" for k, v in errors.items()}
     update(run, state="posted" if not errors else "failed", links=json.dumps(links), note=f"posted {links} errors {list(errors)}")
     telegram.send("Card post live:\n" + "\n".join(f"{k.capitalize()}: {v}" for k, v in links.items())
                   + ("\nNot posted: " + "; ".join(f"{k}: {v[:150]}" for k, v in errors.items()) if errors else ""))
