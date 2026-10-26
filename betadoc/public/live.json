@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-26T11:31:07",
+ "generated": "2026-10-26T11:37:46",
  "ideas": 764,
  "videos_made": 3,
  "videos_posted": 1,
@@ -12,7 +12,7 @@
  "today": {
   "day": "2026-10-26",
   "lane": "AI",
-  "state": "posting"
+  "state": "failed"
  },
  "latest": {
   "title": "Black October: Why Sites Went Offline to Patch PHP",
