@@ -6,7 +6,7 @@
 One file, so no desk aims at a different target (before 26 Oct the numbers sat in qa.py, review.py and the profiles,
 and the director planned scene timing at 3.3 words a second while the voice speaks about 2.9: too few drawn beats,
 caught only after the render). The writer and director skills keep their own configs (they are generic tools), so
-sync() copies the numbers they use into research/shorts-writer.json and research/shorts-director.json.
+sync() copies the numbers they use into research/shorts-writer.json, shorts-director.json and shorts-screening.json.
 """
 import json
 import statistics
@@ -18,6 +18,7 @@ FILE = ROOT / "research" / "quality-bar.json"
 SKILL_KEYS = {   # skill config file -> {its key: (bar section, bar key)}
     "shorts-writer.json": {"words_per_second": ("speech", "words_per_second"), "max_rehook_gap": ("pacing", "max_rehook_gap")},
     "shorts-director.json": {"words_per_second": ("speech", "words_per_second"), "max_event_gap": ("pacing", "max_event_gap")},
+    "shorts-screening.json": {"rows": ("screening", "rows"), "pass_total": ("screening", "pass_total")},
 }
 
 

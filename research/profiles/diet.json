@@ -1,7 +1,6 @@
 {
   "_about": "token diet (from 2026-10-25): Opus only for the script draft, storyboard and review; Sonnet for hooks and fixes; Haiku for small jobs; 1 round each; calm pace and 60-110 s scripts (Talha's feedback 2026-10-25)",
   "pipeline": {
-    "review_model": "opus",
     "keyframe_every": 3.0,
     "keyframe_width": 200,
     "max_auto_revisions": 1,
@@ -42,5 +41,9 @@
       "ending": 160,
       "outro": 182
     }
+  },
+  "shorts-screening": {
+    "model": "opus",
+    "check_model": "sonnet"
   }
 }

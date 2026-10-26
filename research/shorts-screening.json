@@ -1,0 +1,25 @@
+{
+  "_about": "Frameflow config for the shorts-screening skill (~/Talha_Khan/Claude/skills/shorts-screening). rows and pass_total are copied from research/quality-bar.json by frameflow.bar.sync().",
+  "model": "opus",
+  "check_model": "sonnet",
+  "rows": [
+    "hook",
+    "story",
+    "flow",
+    "persona_humour",
+    "visual_storytelling",
+    "pacing",
+    "sound_plan",
+    "captions",
+    "sources",
+    "honesty",
+    "ending"
+  ],
+  "pass_total": 16,
+  "narrator": "Habit: a sharp, friendly, slightly goofy friend; mostly informative, 3-5 light comic beats that each carry a fact, one line played straight",
+  "house_notes": [
+    "The last scene is the channel's fixed house end card (cover title, a spoken follow line, Follow button), added after the story on purpose: judge the ending and the story on the last scene before it, and don't mark the end card down as a goodbye.",
+    "Visual identity is Paper Press (warm paper, ink lines); captions occupy the bottom third."
+  ],
+  "usage_log": "data/llm-usage.jsonl"
+}

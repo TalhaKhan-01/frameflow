@@ -12,6 +12,8 @@ from pathlib import Path
 
 from frameflow import bar, build, llm, media
 
+ROOT = Path(__file__).resolve().parent.parent
+
 ROWS = ["hook", "captions", "originality", "india_angle", "sources", "ending"]
 PASS_TOTAL = 9
 
@@ -60,35 +62,7 @@ def keyframes(out):
 
 ROWS_V2 = bar.get("screening", "rows")        # research/quality-bar.json: the one bar every desk reads
 PASS_V2 = bar.get("screening", "pass_total")  # of 2 x rows, and no row at 0
-
-SYSTEM_V2 = """You review Frameflow Shorts (Quality Bar v2) before a human approves them. Be strict, specific and fair.
-Score each row 0 (fails), 1 (weak) or 2 (strong):
-- hook: the first line stops a scrolling thumb within 2 s with a concrete, honest stake or image, and the video pays it off.
-- story: And-But-Therefore shape; an open loop early; a re-hook (twist, question, reveal) at least every ~10 s; the payoff answers the loop.
-- flow: a first-time viewer can follow without effort. Each part leads into the next (because, but, so, a callback, a bridge);
-  when the video moves to a new part of the story, the viewer knows what is being answered now and why it matters, however that
-  is done (a spoken question, a bridge, a visual that sets it up). What is on screen at a moment (headings, labels) agrees with what
-  is being said then. No jumps, no orphan facts, no heading that the voice never addresses. Judge it by playing the script in your
-  head as someone who knows nothing about the topic. For a score below 2, name the exact seam (between which lines or scenes) and
-  what the viewer is missing there; describe the problem, don't prescribe one fixed technique.
-- persona_humour: sounds like the named narrator (a sharp, friendly, slightly goofy friend), mostly informative with 3-5 light comic beats
-  that each carry a fact; no AI-sounding phrasing; one line played straight.
-- visual_storytelling: drawn worlds and metaphors that SHOW the idea (not slides of numbers); the metaphor maps onto the real mechanism;
-  something visibly happens every couple of seconds (see the event stats).
-- pacing: no dead stretches, no rush that loses the viewer; scene lengths vary with the beat.
-- sound_plan: judge the cue sheet and energy plan you are given (you can't hear it): risers into reveals, hits on reveals, silence before
-  the twist, music that rises with the stakes; restraint (the voice stays on top).
-- captions: the burned-in captions in the frames are large, high-contrast and readable on a phone; text stays out of the caption band.
-- sources: factual scenes carry a source credit; every number on screen matches the script's facts.
-- honesty: no implied harm the facts don't support; re-enactments labelled; contested points stated as such.
-- ending: a named ending strategy (loop, twist, practical payoff, cliffhanger, callback), not a goodbye.
-For every row below 2, give one concrete fix. Read the key-frame sheet before scoring visual rows."""
-
-SCHEMA_V2 = {"type": "object", "required": ["scores", "fixes", "summary"], "properties": {
-    "scores": {"type": "object", "required": ROWS_V2, "properties": {r: {"type": "integer", "minimum": 0, "maximum": 2} for r in ROWS_V2}},
-    "fixes": {"type": "array", "items": {"type": "object", "required": ["row", "fix"], "properties": {"row": {"type": "string"}, "fix": {"type": "string"}}}},
-    "summary": {"type": "string"}}}
-
+# The v2 rubric, prompt and scoring live in the shorts-screening skill; this module builds its input (P15 Studio board).
 
 def keyframes_v2(out, every=3.0, cols=6, width=200, video=None, name="keyframes.jpg"):   # spacing and size from the active profile
     """One frame every `every` seconds, in a grid (6 per row), each labelled with its time. `video`: another file than
@@ -119,14 +93,11 @@ def keyframes_v2(out, every=3.0, cols=6, width=200, video=None, name="keyframes.
     return sheet
 
 
-def run_v2(out, plan, model=None):
-    from frameflow import qa, profiles
-    pc = profiles.pipeline()   # the active profile's review settings
-    model = model or pc["review_model"]
-    sheet = keyframes_v2(out, pc["keyframe_every"], width=pc["keyframe_width"])
-    every_s = pc["keyframe_every"]
-    ev, total = qa.visual_events(out / "final.mp4")
-    gaps = [b - a for a, b in zip([0.0] + ev, ev + [total])]
+SCREENING = Path.home() / "Talha_Khan" / "Claude" / "skills" / "shorts-screening" / "scripts" / "screening.py"
+
+
+def screening_input(out, plan, sheet, measured, every, purpose):
+    """What the screening desk reads: script + storyboard per scene, sound plan, measured pacing, the contact sheet."""
     sfx = json.loads((out / "project" / "sfx.json").read_text()) if (out / "project" / "sfx.json").exists() else []
     lines = []
     for i, s in enumerate(plan["scenes"]):
@@ -135,22 +106,53 @@ def run_v2(out, plan, model=None):
         for l in s.get("lines", [{"say": s.get("say", ""), "beat": "", "devices": []}]):
             lines.append(f"    ({l.get('beat', '')}; {', '.join(l.get('devices', []))}) {l['say']}")
         lines.append(f"    on screen: {json.dumps({k: v for k, v in s['data'].items() if not k.startswith('_')}, ensure_ascii=False)[:300]}")
-    music = json.dumps(plan.get("music", {}))
-    cue_sheet = ", ".join(f"{c['t']:.1f}s {c['name']}" for c in sfx)
-    prompt = (f"Title: {plan['title']}\nHook family: {plan.get('hook_family')}; ending strategy: {plan.get('ending_strategy')}; open loop: "
-              f"{plan.get('open_loop')}\nScript and storyboard:\n" + "\n".join(lines) +
-              ("\nThe last scene is the channel's fixed house end card (cover title, a spoken follow line, Follow button), added "
-                 "after the story on purpose: judge the ending and the story on the last scene before it, and don't mark the "
-                 "end card down as a goodbye." if plan["scenes"][-1]["type"] == "endcard" else "") +
-              f"\n\nMusic plan: {music}\nSound cue sheet: {cue_sheet}\nMeasured: {len(ev) / total * 10:.1f} visual events per 10 s, "
-              f"longest gap {max(gaps):.1f} s, length {total:.1f} s.\n\nKey frames, one every {every_s:g} s with the time in the corner, left to right "
-              f"then top to bottom: {sheet}\nScore every row.")
-    r = llm.call(prompt, SYSTEM_V2, SCHEMA_V2, model=model, tools="Read", add_dirs=[out], purpose=f"review2:{plan['id']}", effort="high")
-    total_score = sum(r["scores"].values())
-    r["total"], r["max"] = total_score, 2 * len(ROWS_V2)
-    r["pass"] = total_score >= PASS_V2 and min(r["scores"].values()) > 0
-    (out / "review.json").write_text(json.dumps(r, ensure_ascii=False, indent=1))
+    return {"title": plan["title"], "meta": {"hook family": plan.get("hook_family"), "ending strategy": plan.get("ending_strategy"),
+                                             "open loop": plan.get("open_loop")},
+            "script": "\n".join(lines), "music": json.dumps(plan.get("music", {})),
+            "cue_sheet": ", ".join(f"{c['t']:.1f}s {c['name']}" for c in sfx), "measured": measured,
+            "sheet": str(Path(sheet).resolve()), "every": every, "purpose": purpose}
+
+
+def _screening(cmd, files, out_file):
+    from frameflow import direct
+    direct.skill([SCREENING, "--project", ROOT, cmd, *files, "--out", out_file], timeout=2400)
+    return json.loads(Path(out_file).read_text())
+
+
+def screen_animatic(out, plan, anim):
+    """The full screening on the animatic (frameflow.animatic: a 12 fps draft), before the delivery render."""
+    out = Path(out)
+    inp = screening_input(out, plan, anim["sheet"], f"{anim['detail']}; length {anim['seconds']:.1f} s (measured on the animatic draft)",
+                          anim["every"], f"animatic:{plan['id']}")
+    (out / "animatic-input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1))
+    return _screening("screen", [out / "animatic-input.json"], out / "animatic-review.json")
+
+
+def _final_input(out, plan, purpose):
+    from frameflow import qa, profiles
+    pc = profiles.pipeline()
+    sheet = keyframes_v2(out, pc["keyframe_every"], width=pc["keyframe_width"])
+    ev, total = qa.visual_events(out / "final.mp4")
+    gaps = [b - a for a, b in zip([0.0] + ev, ev + [total])]
+    inp = screening_input(out, plan, sheet, f"{len(ev) / total * 10:.1f} visual events per 10 s, longest gap {max(gaps):.1f} s, length {total:.1f} s",
+                          pc["keyframe_every"], purpose)
+    (out / "final-input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1))
+    return out / "final-input.json"
+
+
+def check_final(out, plan):
+    """The delivery render against the screened animatic: one small call re-scores only what the render changed."""
+    out = Path(out)
+    if not (out / "animatic-review.json").exists():
+        return run_v2(out, plan)
+    r = _screening("compare", [out / "animatic-review.json", _final_input(out, plan, f"final:{plan['id']}")], out / "review.json")
     return r
+
+
+def run_v2(out, plan, model=None):
+    """A full screening of a finished video (reflow, or a video made before the animatic existed)."""
+    out = Path(out)
+    return _screening("screen", [_final_input(out, plan, f"review2:{plan['id']}")], out / "review.json")
 
 
 def run(out_dir, model="sonnet"):

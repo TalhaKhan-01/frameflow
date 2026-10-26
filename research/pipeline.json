@@ -1,5 +1,4 @@
 {
-  "review_model": "opus",
   "keyframe_every": 3.0,
   "keyframe_width": 200,
   "max_auto_revisions": 1,

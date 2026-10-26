@@ -6,11 +6,12 @@
     frameflow profile save <name>        keep the current settings as a new profile (try something, then save it)
 
 A profile (research/profiles/<name>.json) holds overrides per config file:
-  "pipeline"        -> research/pipeline.json        review model and keyframes, automatic revisions, small-job models
+  "pipeline"        -> research/pipeline.json        keyframes, fix rounds, small-job models
   "shorts-writer"   -> research/shorts-writer.json   writer_model, hooks_model, judge_model, doctor_model, doctor_rounds
   "shorts-director" -> research/shorts-director.json model, doctor_model, doctor_rounds
   "social-caption"  -> research/social-caption.json  model
   "voice-pace"      -> research/voice-pace.json      default_wpm, beats (target words per minute by beat)
+  "shorts-screening"-> research/shorts-screening.json model (the animatic screening), check_model (render vs animatic)
 Only the keys a profile names are changed; everything else in those files stays. Every video stores the settings it
 was made with (out/<slug>/profile.json), so results and token use can be compared per profile. Switching is just
 writing JSON, and git keeps the history, so any change can be undone.
@@ -23,8 +24,8 @@ ROOT = Path(__file__).resolve().parent.parent
 RESEARCH = ROOT / "research"
 PROFILES = RESEARCH / "profiles"
 FILES = {"pipeline": "pipeline.json", "shorts-writer": "shorts-writer.json", "shorts-director": "shorts-director.json",
-         "social-caption": "social-caption.json", "voice-pace": "voice-pace.json"}
-PIPELINE_DEFAULTS = {"profile": "diet", "review_model": "opus", "keyframe_every": 3.0, "keyframe_width": 200,
+         "social-caption": "social-caption.json", "voice-pace": "voice-pace.json", "shorts-screening": "shorts-screening.json"}
+PIPELINE_DEFAULTS = {"profile": "diet", "keyframe_every": 3.0, "keyframe_width": 200,
                      "max_auto_revisions": 1, "brief_model": "sonnet", "cover_model": "haiku", "lessons_model": "haiku",
                      "assets": True}   # length and every threshold live in research/quality-bar.json (frameflow.bar)
 
