@@ -6,7 +6,7 @@
     110
   ],
   "_length": "60-110 s since 2026-10-25 (Talha: longer is fine if the pace stays calm); the pipeline adds the ~3-4 s end card; set by the profile",
-  "words_per_second": 3.3,
+  "words_per_second": 2.89,
   "humour": true,
   "writer_model": "opus",
   "judge_model": "sonnet",
@@ -24,5 +24,6 @@
   "doctor_model": "sonnet",
   "doctor_rounds": 1,
   "_models": "2026-10-25: Opus only for the script draft / storyboard; Sonnet for hooks, judge and fix rounds; 1 fix round (vault Docs/Tokens Per Video.md)",
-  "material_file": "research/material-writer.txt"
+  "material_file": "research/material-writer.txt",
+  "max_rehook_gap": 10.5
 }

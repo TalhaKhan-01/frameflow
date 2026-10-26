@@ -7,10 +7,5 @@
   "cover_model": "haiku",
   "lessons_model": "haiku",
   "profile": "diet",
-  "assets": true,
-  "max_seconds": 120.0,
-  "target_seconds": [
-    60.0,
-    115.0
-  ]
+  "assets": true
 }

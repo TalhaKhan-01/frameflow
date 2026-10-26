@@ -2,7 +2,7 @@
 
     frameflow qa <out-dir>     (a render folder: final.mp4, voice/words.json, script.json, assets.json)
 
-Exit 0 when every gate passes. Writes <out-dir>/qa.json. Gates:
+Exit 0 when every gate passes. Writes <out-dir>/qa.json. Every limit comes from research/quality-bar.json (frameflow.bar). Gates:
   length      final.mp4 is at most 60 s (30-50 s is the target; outside it is a warning)
   size        1080x1920
   loudness    integrated -15 to -13 LUFS, true peak at most -1.0 dBTP
@@ -11,9 +11,9 @@ Exit 0 when every gate passes. Writes <out-dir>/qa.json. Gates:
   voice-start first word within 0.3 s
   licences    every asset ledger row has source, licence, url and author; music and voice rows present
 Version-2 plans (Quality Bar v2) add:
-  length      the active profile's target and hard limit (since 2026-10-25: 60-115 s, 120 s)
-  events      visual events (frame changes) at least 4 per 10 s, and no stretch over 2.5 s without one
-  rehooks     no stretch over 10.5 s between re-hook beats (but/twist/loop or a 'rehook' device) on the real voice timing
+  length      the bar's target and hard limit
+  events      visual events (frame changes) at least pacing.events_per_10s, no stretch over pacing.max_event_gap without one
+  rehooks     no stretch over pacing.max_rehook_gap between re-hook beats (but/twist/loop or a 'rehook' device) on the real voice timing
 """
 import json
 import re
@@ -23,10 +23,21 @@ from pathlib import Path
 
 import numpy as np
 
-from frameflow import captions, media
+from frameflow import bar, captions, media
 
-LIMITS = {"max_seconds": 60.0, "target_seconds": (30.0, 50.0), "lufs": (-15.0, -13.0), "true_peak": -1.0,
-          "black_seconds": 0.5, "wer": 0.10, "voice_start": 0.3}
+V1_LENGTH = {"max_seconds": 60.0, "target_seconds": (30.0, 50.0)}   # version-1 plans only
+
+
+def limits():
+    """(LIMITS, V2) from the shared Quality Bar (research/quality-bar.json), read fresh so an edit applies at once."""
+    b = bar.load()
+    lim = {**V1_LENGTH, "lufs": tuple(b["sound"]["lufs"]), "true_peak": b["sound"]["true_peak"],
+           "black_seconds": b["picture"]["black_seconds"], "wer": b["captions"]["max_word_error"], "voice_start": b["voice"]["first_word_by"]}
+    v2 = {"max_seconds": float(b["length"]["max_seconds"]), "target_seconds": tuple(b["length"]["target_seconds"]), **b["pacing"]}
+    return lim, v2
+
+
+LIMITS, V2 = limits()
 
 
 def loudness_and_peak(path):
@@ -43,7 +54,6 @@ def black_stretches(path, min_len):
     return [(float(a), float(b)) for a, b in re.findall(r"black_start:([\d.]+) black_end:([\d.]+)", r.stderr)]
 
 
-V2 = {"max_seconds": 95.0, "target_seconds": (50.0, 90.0), "events_per_10s": 4.0, "max_event_gap": 2.5, "max_rehook_gap": 10.5}
 
 
 def visual_events(path, fps=12, changed=0.7, min_sep=0.5):
@@ -109,6 +119,7 @@ def rehook_gaps(out):
 
 
 def run(out_dir):
+    LIMITS, V2 = limits()
     out = Path(out_dir)
     final = out / "final.mp4"
     gates, warnings = {}, []
@@ -118,11 +129,7 @@ def run(out_dir):
 
     plan = json.loads((out / "plan.json").read_text()) if (out / "plan.json").exists() else {}
     v2 = plan.get("version", 1) >= 2
-    L = {**LIMITS, **(V2 if v2 else {})}
-    if v2:   # length limits follow the active profile (frameflow.profiles: max_seconds, target_seconds)
-        from frameflow import profiles
-        pc = profiles.pipeline()
-        L["max_seconds"], L["target_seconds"] = float(pc["max_seconds"]), tuple(pc["target_seconds"])
+    L = {**LIMITS, **(V2 if v2 else {})}   # v2 length and pacing come from the shared bar
     secs = media.duration(final)
     gate("length", secs <= L["max_seconds"], f"{secs:.2f} s (max {L['max_seconds']:.0f})")
     lo, hi = L["target_seconds"]
@@ -135,9 +142,10 @@ def run(out_dir):
         gate("events", rate >= V2["events_per_10s"] and max(gaps) <= V2["max_event_gap"],
              f"{rate:.1f} visual events per 10 s (min {V2['events_per_10s']}), longest gap {max(gaps):.1f} s (max {V2['max_event_gap']}) "
              f"at {ev[gaps.index(max(gaps)) - 1] if gaps.index(max(gaps)) else 0:.1f} s")
-        blanks = blank_spans(final)
-        gate("blank-frames", not [s for s in blanks if s[1] - s[0] >= 1.0],
-             f"blank picture (under 2.5% drawn, 0.75 s or more): {blanks or 'none'}; fails at 1 s or more")
+        pic = bar.load()["picture"]
+        blanks = blank_spans(final, ink=pic["blank_ink"])
+        gate("blank-frames", not [s for s in blanks if s[1] - s[0] >= pic["blank_fail_seconds"]],
+             f"blank picture (under {pic['blank_ink']:.1%} drawn, 0.75 s or more): {blanks or 'none'}; fails at {pic['blank_fail_seconds']:g} s or more")
         rg = rehook_gaps(out)
         gate("rehooks", rg <= V2["max_rehook_gap"], f"longest stretch without a re-hook {rg:.1f} s (max {V2['max_rehook_gap']})")
     v = [s for s in media.probe(final)["streams"] if s["codec_type"] == "video"][0]

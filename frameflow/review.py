@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-from frameflow import build, llm, media
+from frameflow import bar, build, llm, media
 
 ROWS = ["hook", "captions", "originality", "india_angle", "sources", "ending"]
 PASS_TOTAL = 9
@@ -58,8 +58,8 @@ def keyframes(out):
     return sheet, plan
 
 
-ROWS_V2 = ["hook", "story", "flow", "persona_humour", "visual_storytelling", "pacing", "sound_plan", "captions", "sources", "honesty", "ending"]
-PASS_V2 = 16   # of 22, and no row at 0 (was 15 of 20 before the flow row, 2026-10-25)
+ROWS_V2 = bar.get("screening", "rows")        # research/quality-bar.json: the one bar every desk reads
+PASS_V2 = bar.get("screening", "pass_total")  # of 2 x rows, and no row at 0
 
 SYSTEM_V2 = """You review Frameflow Shorts (Quality Bar v2) before a human approves them. Be strict, specific and fair.
 Score each row 0 (fails), 1 (weak) or 2 (strong):

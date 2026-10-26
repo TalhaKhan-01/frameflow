@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 LANES = {"global-tech", "india-tech", "ai-news", "dev-tools", "ai-money", "how-tech-works"}
-MAX_SECONDS = 95.0       # v1 plans only; v2 plans use the active profile's max_seconds (frameflow.profiles)
+MAX_SECONDS = 95.0       # v1 plans only; v2 plans use the shared bar's length.max_seconds (frameflow.bar)
 WORDS_PER_SECOND = 3.3   # about 198 words a minute: measured on the Black October render (Chatterbox house voice, tempo 1.0)
 PAD = 0.25               # silence between scenes, as in the voice step
 URL = re.compile(r"^https?://[^\s/$.?#].[^\s]*$", re.I)
@@ -348,9 +348,9 @@ def validate(plan):
             if not (isinstance(srcs, list) and srcs and all(isinstance(u, str) and URL.match(u) for u in srcs)):
                 errs.append(f"{where} makes a factual claim but has no source URL (sources: [\"https://...\"])")
     limit = MAX_SECONDS
-    if plan.get("version", 1) >= 2:   # v2 plans follow the active profile's hard limit
-        from frameflow import profiles
-        limit = float(profiles.pipeline()["max_seconds"])
+    if plan.get("version", 1) >= 2:   # v2 plans follow the shared bar's hard limit
+        from frameflow import bar
+        limit = float(bar.get("length", "max_seconds"))
     if not errs and total_seconds(plan) > limit:
         errs.append(f"planned length {total_seconds(plan):.1f} s is over {limit:.0f} s")
     return errs

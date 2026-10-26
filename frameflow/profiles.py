@@ -26,7 +26,7 @@ FILES = {"pipeline": "pipeline.json", "shorts-writer": "shorts-writer.json", "sh
          "social-caption": "social-caption.json", "voice-pace": "voice-pace.json"}
 PIPELINE_DEFAULTS = {"profile": "diet", "review_model": "opus", "keyframe_every": 3.0, "keyframe_width": 200,
                      "max_auto_revisions": 1, "brief_model": "sonnet", "cover_model": "haiku", "lessons_model": "haiku",
-                     "assets": True, "max_seconds": 120.0, "target_seconds": [60.0, 115.0]}
+                     "assets": True}   # length and every threshold live in research/quality-bar.json (frameflow.bar)
 
 
 def _read(name):
