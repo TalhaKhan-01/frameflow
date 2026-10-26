@@ -271,7 +271,9 @@ def learn(week=None):
     for r in rows:
         plan = json.loads(Path(con.execute("SELECT plan FROM videos WHERE id=?", (r["id"],)).fetchone()[0]).read_text())
         data.append({**dict(r), "hook": plan["scenes"][0].get("say"), "scenes": [s["type"] for s in plan["scenes"]]})
-    out = llm.call("Results:\n" + json.dumps(data, ensure_ascii=False), LEARN_SYSTEM, LEARN_SCHEMA, model="sonnet",
+    from frameflow import analyst   # results grouped by each desk decision (hook family, length, ending, lane)
+    out = llm.call("Results:\n" + json.dumps(data, ensure_ascii=False) + "\n\nBy decision:\n" + json.dumps(analyst.summary()["by"], ensure_ascii=False),
+                   LEARN_SYSTEM, LEARN_SCHEMA, model="sonnet",
                    purpose="learn", effort="medium")
     week = week or dt.date.today().isocalendar().week
     md = ["---", "type: doc", "status: draft", f"created: {dt.date.today().isoformat()}", "tags: [doc, learning]", "---",

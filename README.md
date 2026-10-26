@@ -12,7 +12,7 @@ An automated daily newsroom for one narrator, **Habit**: every day it picks a st
 ## Layout
 | Path | Holds |
 |---|---|
-| `frameflow/` | Pipeline (Python): `daily.py` + `bot.py` (schedule, Telegram), `brief.py` → `direct.py` → `pipeline.py` → `qa.py` + `review.py`, `cards.py`, `publish.py`, `lessons.py`, `library.py`, `stats48.py`, `cleanup.py`, `webexport.py` |
+| `frameflow/` | Pipeline (Python): `daily.py` + `bot.py` (schedule, Telegram), `brief.py` → `board.py` (the studio board: `direct.py`, `precheck.py`, `standards.py`, `animatic.py`, `artdirect.py`, `review.py`, `pipeline.py`, `qa.py`), `producer.py` (Revise change orders), `analyst.py`, `bar.py` (the one quality bar), `progress.py`, `cards.py`, `publish.py`, `lessons.py`, `library.py`, `stats48.py`, `cleanup.py`, `webexport.py` |
 | `scenes/` | HyperFrames scene templates and the shared theme (fonts bundled, OFL) |
 | `research/` | Niche config, lessons ledger, asset library, house rules |
 | `briefs/`, `plans/` | Sourced briefs and scene plans |
@@ -27,11 +27,21 @@ An automated daily newsroom for one narrator, **Habit**: every day it picks a st
 ```
 uv sync                                    # Python env (one per project)
 uv run frameflow --help                    # every command
-uv run frameflow make2 briefs/<brief>.json # one video end to end
+uv run frameflow make2 briefs/<brief>.json # one video end to end, through the studio board
 uv run pytest -q                           # tests
 PM2_HOME=~/.pm2-personal pm2 start ecosystem.config.js && pm2 save
 ```
 The daily run needs no command: `frameflow-bot` ticks every 30 s and follows the schedule in `research/automation.json`.
+
+## How a video is made (studio board, since 26 Oct 2026)
+Desk by desk, each with a gate, then one delivery render: showrunner (run sheet) → researcher → fact-checker → packaging
+(title, cover, hook promise) → writer → director → narrator (voice, timing checks) → script editor (table read) → standards →
+animatic (12 fps draft) → art director → screening on the animatic → **one delivery render** → QC → final check → Talha →
+publisher → analyst (48 h results). Fix loops run only before the delivery render, bounded by the profile. Thresholds:
+`research/quality-bar.json`. Revise on Telegram: known issues as toggles or your own words → a change order with Go / Change
+it / Cancel → only the stages it needs. Craft desks are skills in `~/Talha_Khan/Claude/skills` (`shorts-producer`,
+`shorts-factcheck`, `shorts-editor`, `shorts-screening`, `shorts-writer`, `shorts-director`, `social-caption`). Details:
+vault `Docs/Frameflow Studio Board.md`; live progress in the control panel (`Code/frameflow-control`, Making panel).
 
 ## Studio and betadoc
 ```

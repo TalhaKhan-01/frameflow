@@ -85,6 +85,10 @@ def make(brief_path, lane, out=None, skip_writer=False, skip_director=False, qua
     if not skip_writer:
         import re
         slug = re.sub(r"[^a-z0-9]+", "-", Path(brief_path).stem.lower()).strip("-")
+        from frameflow import analyst
+        with progress.step("showrunner: run sheet (evidence so far)", desk="showrunner") as info:
+            sheet = analyst.run_sheet(brief_path, Path(out) if out else direct.ROOT / "out" / slug)
+            info.update({"videos_with_results": sheet["videos_with_results"], "evidence": sheet["evidence"][1:4]})
         package(brief_path, Path(out) if out else direct.ROOT / "out" / slug)
     with progress.step("script and storyboard (writer + director)", desk="writer"):
         d = direct.direct(brief_path, out, lane, skip_writer, skip_director)

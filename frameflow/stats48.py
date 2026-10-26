@@ -96,6 +96,11 @@ def collect(video_id, send=True):
                         (video_id, platform, t, s.get("views"), s.get("likes"), s.get("comments"), s.get("shares"), s.get("saves"),
                          s.get("avg_viewed_pct"), None, s.get("subs_gained"), json.dumps(s)))
     con.commit()
+    try:   # the analyst ties these results to the decisions the desks made (read back at the next make)
+        from frameflow import analyst
+        analyst.record(video_id)
+    except Exception as e:
+        print(f"analyst: {e}")
     verdict = score_lessons(video_id, out, yt.get("views"))
     lines = [f"48 h stats: {row['title']}"]
     for name, s in (("YouTube", yt), ("Instagram", ins), ("Facebook", fb)):
