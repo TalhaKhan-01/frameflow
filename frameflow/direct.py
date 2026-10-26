@@ -63,6 +63,23 @@ WRITER_ROWS = {"hook", "story", "flow", "persona_humour", "honesty", "ending", "
 DIRECTOR_ROWS = {"visual_storytelling", "flow", "pacing", "sound_plan", "captions", "sources", "honesty"}
 
 
+def scenes_named(notes):
+    """Scene numbers the director's notes name ('scene 16', 'scene(s) 3, 4', 'Scene 12 -> 13', 'Scenes 2-7'), or None when a
+    note names none: then it may concern the whole storyboard and the full doctor runs. Keep-lines don't count."""
+    found = set()
+    for note in notes:
+        if "KEEP unchanged" in note:
+            continue
+        refs = re.findall(r"\bscenes?(?:\(s\))?\s*((?:\d+\s*(?:[-–→>]+|,|and|to)?\s*)+)", note, re.I)
+        if not refs:
+            return None
+        for ref in refs:
+            for a, b in re.findall(r"(\d+)\s*[-–]\s*(\d+)", ref):
+                found |= set(range(int(a), int(b) + 1))
+            found |= {int(x) for x in re.findall(r"\d+", ref)}
+    return sorted(found) or None
+
+
 def revise(brief_path, out, review, lane="how-tech-works"):
     """Send a review's fixes back: words to the writer's doctor, picture/pacing/sound to the director's doctor
     (which also re-maps the storyboard to the revised beats), then recompile the plan."""
@@ -71,14 +88,19 @@ def revise(brief_path, out, review, lane="how-tech-works"):
     w_notes = [f"{f['row']}: {f['fix']}" for f in review["fixes"] if f["row"] in WRITER_ROWS]
     d_notes = [f"{f['row']}: {f['fix']}" for f in review["fixes"] if f["row"] in DIRECTOR_ROWS]
     n = len(list(out.glob("review*-writer-notes.txt"))) + 1
+    beats_before = len(json.loads((wdir / "script.json").read_text())["beats"]) if (wdir / "script.json").exists() else None
     if w_notes:
         (out / f"review{n}-writer-notes.txt").write_text("\n".join(w_notes))
-        with progress.step("writer fixes the script", notes=len(w_notes)):
+        with progress.step("writer fixes the script", desk="writer", notes=len(w_notes)):
             skill([WRITER, "--project", ROOT, "doctor", brief_path, "--out", wdir, "--notes", out / f"review{n}-writer-notes.txt"])
-    (out / f"review{n}-director-notes.txt").write_text("\n".join(d_notes + ["The script may have changed: map every beat once, in order."]))
-    with progress.step("director fixes the storyboard", notes=len(d_notes)):
+    beats_after = len(json.loads((wdir / "script.json").read_text())["beats"])
+    scenes = scenes_named(d_notes)
+    local = scenes is not None and beats_before == beats_after   # scene-only: every note names its scenes, the beats didn't move
+    (out / f"review{n}-director-notes.txt").write_text("\n".join(d_notes + ([] if local else ["The script may have changed: map every beat once, in order."])))
+    with progress.step("director fixes " + (f"scenes {', '.join(map(str, scenes))} only" if local else "the storyboard"), desk="director",
+                       notes=len(d_notes)):
         skill([DIRECTOR, "--project", ROOT, "doctor", ddir / "storyboard.json", "--script", wdir / "script.json", "--catalog", CATALOG,
-               "--out", ddir, "--problems", out / f"review{n}-director-notes.txt"])
+               "--out", ddir, "--problems", out / f"review{n}-director-notes.txt"] + (["--scenes", ",".join(map(str, scenes))] if local else []))
     return direct(brief_path, out, lane, skip_writer=True, skip_director=True)
 
 
