@@ -356,7 +356,14 @@ def post(run):
             raise RuntimeError((p.stderr or p.stdout)[-400:])
         links["instagram"] = json.loads(p.stdout[p.stdout.rindex("{"):])["url"]
     except Exception as e:
-        errors["instagram"] = str(e)[-300:]
+        try:   # dead Meta token: The Pilot posts the carousel on the web (it checks the caption took)
+            p = subprocess.run(["uv", "run", "python", "-m", "frameflow.pilot", "carousel", str(out / "ig.txt"), *paths],
+                               capture_output=True, text=True, timeout=1800, cwd=ROOT)
+            if p.returncode:
+                raise RuntimeError((p.stderr or p.stdout)[-400:])
+            links["instagram"] = json.loads(p.stdout[p.stdout.rindex("{"):])["url"]
+        except Exception as e2:
+            errors["instagram"] = f"API: {str(e)[-150:]}; Pilot: {str(e2)[-150:]}"
     update(run, state="posted" if not errors else "failed", links=json.dumps(links), note=f"posted {links} errors {list(errors)}")
     telegram.send("Card post live:\n" + "\n".join(f"{k.capitalize()}: {v}" for k, v in links.items())
                   + ("\nNot posted: " + "; ".join(f"{k}: {v[:150]}" for k, v in errors.items()) if errors else ""))

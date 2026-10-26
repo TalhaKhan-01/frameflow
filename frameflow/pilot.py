@@ -256,6 +256,97 @@ def carousel(caption_file, images):
     return {"url": url, "mode": "pilot"}
 
 
+# ---------- Facebook (web, as the Thirdspace Page) ----------
+# Used when the Graph API token is dead. The caption goes in as one paste event: Facebook's editor drops Enter key
+# presses but keeps the line breaks of a paste. FRAMEFLOW_PILOT_DRY=1 stops before Post (for testing).
+
+DRY = bool(__import__("os").environ.get("FRAMEFLOW_PILOT_DRY"))
+FB_BOX = "div[contenteditable=true][role=textbox]"
+
+
+def fb_caption(text, box=FB_BOX):
+    wait_for(f"!!document.querySelector({json.dumps(box)})", 60, what="Facebook's caption box")
+    js(f"(() => {{ const e=document.querySelector({json.dumps(box)}); e.focus(); const dt=new DataTransfer(); "
+       f"dt.setData('text/plain', {json.dumps(text)}); "
+       "e.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true})); return 1; })()")
+    time.sleep(1)
+    typed = str(js(f"document.querySelector({json.dumps(box)}).innerText"))
+    first = text.split("\n")[0].strip()
+    if first[:40] not in typed:
+        raise PilotError("the caption didn't take in Facebook's editor")
+
+
+def fb_click(label):
+    return js("(() => { const b=[...document.querySelectorAll('div[role=dialog] div[role=button], div[role=button], button')]"
+              f".find(e=>(e.getAttribute('aria-label')||e.textContent.trim())==={json.dumps(label)} && e.getAttribute('aria-disabled')!=='true'); "
+              "b&&b.click(); return !!b; })()")
+
+
+def fb_latest(kind):
+    """Link of the Page's newest reel or post, read from its profile."""
+    ab("open", "https://www.facebook.com/profile.php?id=" + FB_PAGE + ("&sk=reels_tab" if kind == "reel" else ""), timeout=60)
+    time.sleep(6)
+    pat = "\\/reel\\/\\d+" if kind == "reel" else "\\/(posts|photo|permalink)"
+    return str(js(f"(() => {{ const a=[...document.querySelectorAll('a')].map(x=>x.href).find(h=>/{pat}/.test(h)); return a||''; }})()"))
+
+
+FB_PAGE = "122094160959534001"
+
+
+def facebook(video_id):
+    out, p = pack_of(video_id)
+    caption = p.get("fb_caption", p["ig_caption"])
+    connect()
+    ab("open", "https://www.facebook.com/reels/create", timeout=90)
+    wait_for("document.querySelectorAll('input[type=file]').length > 0", 60, what="the Reel composer")
+    ab("upload", "input[type=file]", out / "final.mp4", timeout=600)
+    wait_for("/Describe your reel/.test(document.body.innerHTML)", 180, what="the video to load")
+    fb_caption(caption)
+    if not fb_click("Next"):
+        raise PilotError("no Next button in the Reel composer")
+    wait_for("[...document.querySelectorAll('div[role=button]')].some(e=>e.textContent.trim()==='Post')", 60, what="the settings step")
+    js("(() => { const s=[...document.querySelectorAll('[role=switch]')].find(x=>/AI label/.test(x.closest('[role=button]')?.textContent||'')); "
+       "if(s && s.getAttribute('aria-checked')!=='true') s.click(); return !!s; })()")
+    time.sleep(1)
+    if DRY:
+        return {"dry": True, "at": "Post button"}
+    wait_for("(() => { const b=[...document.querySelectorAll('div[role=button]')].find(e=>e.textContent.trim()==='Post'); return b && b.getAttribute('aria-disabled')!=='true'; })()",
+             600, 5, "Facebook to finish uploading")
+    fb_click("Post")
+    time.sleep(20)
+    link = fb_latest("reel")
+    m = re.search(r"/reel/(\d+)", link)
+    if not m:
+        raise PilotError("posted, but the Reel's link wasn't found")
+    return {"url": f"https://www.facebook.com/reel/{m.group(1)}", "mode": "pilot"}
+
+
+def facebook_photos(caption_file, images):
+    """A photo post (Habit card slides). Images go in one at a time: a multi-file upload crashed the tab."""
+    caption = Path(caption_file).read_text()
+    connect()
+    ab("open", "https://www.facebook.com/", timeout=90)
+    time.sleep(5)
+    # the home page's photo input opens the composer with the first image; later images go to the composer's own input
+    wait_for("document.querySelectorAll('input[type=file][multiple]').length > 0", 30, what="the photo input")
+    for img in images:
+        js("(() => { document.querySelectorAll('[data-ffup]').forEach(x=>x.removeAttribute('data-ffup')); "
+           "const i=[...document.querySelectorAll('input[type=file][multiple]')].pop(); i.setAttribute('data-ffup','1'); return 1; })()")
+        ab("upload", "[data-ffup]", img, timeout=180)
+        time.sleep(4)
+    fb_caption(caption, "div[role=dialog] " + FB_BOX)
+    if DRY:
+        return {"dry": True, "at": "Post button"}
+    wait_for("(() => { const b=[...document.querySelectorAll('div[role=dialog] div[role=button]')].find(e=>(e.getAttribute('aria-label')||e.textContent.trim())==='Post'); return b && b.getAttribute('aria-disabled')!=='true'; })()",
+             300, 5, "the Post button")
+    fb_click("Post")
+    time.sleep(20)
+    link = fb_latest("post")
+    if not link:
+        raise PilotError("posted, but the post's link wasn't found")
+    return {"url": link.split("?")[0] if "/posts/" in link else link, "mode": "pilot"}
+
+
 def check():
     connect()
     ab("open", "https://studio.youtube.com", timeout=90)
@@ -269,15 +360,19 @@ def check():
 
 def main():
     ap = argparse.ArgumentParser(description="The Pilot in Frameflow's dedicated Chrome")
-    ap.add_argument("what", choices=["youtube", "instagram", "carousel", "check"])
+    ap.add_argument("what", choices=["youtube", "instagram", "facebook", "carousel", "fb-photos", "check"])
     ap.add_argument("video_id", nargs="?")
     ap.add_argument("images", nargs="*")
     a = ap.parse_args()
+    import fcntl   # one Pilot run at a time: the Short and the card post go out at the same minute and share one tab
+    (ROOT / "logs").mkdir(exist_ok=True)
+    lock = open(ROOT / "logs" / "pilot.lock", "w")
+    fcntl.flock(lock, fcntl.LOCK_EX)
     try:
-        if a.what == "carousel":   # video_id holds the caption file here
-            r = carousel(a.video_id, a.images)
+        if a.what in ("carousel", "fb-photos"):   # video_id holds the caption file here
+            r = (carousel if a.what == "carousel" else facebook_photos)(a.video_id, a.images)
         else:
-            r = check() if a.what == "check" else (youtube if a.what == "youtube" else instagram)(a.video_id)
+            r = check() if a.what == "check" else {"youtube": youtube, "instagram": instagram, "facebook": facebook}[a.what](a.video_id)
     finally:
         ab("close", check=False)   # detaches; the dedicated Chrome keeps running under PM2
     print(json.dumps(r))

@@ -151,8 +151,12 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
                 else:   # 3) last resort: the web (its caption can get lost, so the result says so)
                     results["instagram"] = run(pilot + ["instagram", video_id])
             elif platform == "facebook":
-                results["facebook"] = run(["python3", "-I", str(UPLOADER / "facebook.py"), "--project", str(ROOT), "publish",
-                                           str(out / "final.mp4"), str(out / "facebook-caption.txt")])
+                try:
+                    results["facebook"] = run(["python3", "-I", str(UPLOADER / "facebook.py"), "--project", str(ROOT), "publish",
+                                               str(out / "final.mp4"), str(out / "facebook-caption.txt")])
+                except RuntimeError as e:   # dead Meta token: post the Reel on the web as the Page
+                    results["facebook_api_error"] = str(e)[-300:]
+                    results["facebook"] = run(pilot + ["facebook", video_id])
         except Exception as e:
             results[platform] = {"error": str(e)[-600:]}
     yt = results.get("youtube") or {}
