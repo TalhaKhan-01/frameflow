@@ -15,7 +15,7 @@ if (!base) {
   for (let i = 0; i < 50; i++) { try { await fetch(base); break; } catch { await new Promise((r) => setTimeout(r, 200)); } }
 }
 mkdirSync("walk", { recursive: true });
-const views = ["today", "videos", "video/2026-10-25-black-october", "cards", "lessons", "library", "build"];
+const views = ["today", "videos", "board", "video/2026-10-25-black-october", "cards", "lessons", "library", "build"];
 const browser = await chromium.launch({ channel: "chrome", headless: true });
 let failures = 0;
 const fail = (m) => { failures++; console.log("FAIL", m); };

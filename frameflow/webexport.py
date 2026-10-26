@@ -27,7 +27,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-from . import secrets
+from . import boardview, secrets
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "frameflow.db"
@@ -127,7 +127,9 @@ def videos(con):
              "rounds": len(list(render.glob("review-round*.json"))) + (1 if review else 0),
              "seconds": report.get("seconds"), "lufs": report.get("lufs"), "wpm": report.get("wpm"),
              "words": report.get("words"), "voice": report.get("voice_engine"),
-             "links": {k: u for k, u in (("youtube", r["youtube_url"]), ("instagram", r["instagram_url"])) if u}}
+             "links": {k: u for k, u in (("youtube", r["youtube_url"]), ("instagram", r["instagram_url"])) if u},
+             "review_max": review.get("max"), "board": boardview.for_video(con, r["id"]),
+             "animatic_total": _read(render / "animatic-review.json", {}).get("total")}
         if posted:
             v["yt_title"] = pub.get("yt_title")
             v["script"] = [line.get("say") for line in script.get("lines", []) if line.get("say")]
@@ -227,6 +229,12 @@ def snapshot():
     data = {"generated": datetime.now().isoformat(timespec="seconds"), "channels": CHANNELS,
             "ideas": ideas, "runs": runs(con), "videos": videos(con), "cards": cards(con),
             "lessons": lessons(), "library": library(), "usage": usage(), "phasedoc": phasedoc()}
+    made = [v for v in data["videos"] if v.get("board")]   # videos made by the studio board (P15)
+    data["board"] = {"desks": [{"desk": k, "label": l} for k, l in boardview.DESKS], "videos": len(made),
+                     "one_render": sum(1 for v in made if v["board"]["renders"] == 1),
+                     "first_render_passed": sum(1 for v in made if v["board"]["renders"] == 1 and v["review_pass"] and v["qa_pass"]),
+                     "animatic_within_1": sum(1 for v in made if v.get("animatic_total") is not None and v["review_total"] is not None
+                                              and abs(v["animatic_total"] - v["review_total"]) <= 1)}
     return _scrub(data)
 
 

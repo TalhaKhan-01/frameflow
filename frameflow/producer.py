@@ -70,7 +70,7 @@ def order(day):
     (out / f"change-order-{n}.context.json").write_text(json.dumps(ctx, ensure_ascii=False, indent=1))
     path = out / f"change-order-{n}.json"
     with progress.step("showrunner: change order", desk="showrunner") as info:
-        direct.skill([PRODUCER, "--project", ROOT, "order", out / f"change-order-{n}.context.json", "--out", path], timeout=900)
+        direct.skill([PRODUCER, "--project", ROOT, "order", out / f"change-order-{n}.context.json", "--out", path], timeout=900, strict=True)
         o = json.loads(path.read_text())
         info.update({"gist": o["gist"][:200], "targets": o["targets"], "stages": o["stages"], "minutes": o["minutes"]})
     daily.update(day, order_file=str(path), note=f"change order {n}: {', '.join(o['targets'])} ({o['minutes']} min)")

@@ -83,8 +83,24 @@ function lock(message = "") {
 }
 
 // ---------- shell ----------
-const TABS: [string, string][] = [["today", "Today"], ["videos", "Videos"], ["cards", "Card posts"],
+const TABS: [string, string][] = [["today", "Today"], ["videos", "Videos"], ["board", "Board"], ["cards", "Card posts"],
   ["lessons", "Lessons"], ["library", "Library"], ["build", "Build"]];
+const DESK_ABOUT: Record<string, string> = {
+  showrunner: "owns the run; turns a revise request into a change order", researcher: "facts and sources for the story",
+  factcheck: "re-reads every source; checks the script's numbers", packaging: "title, cover line and hook promise, before writing",
+  writer: "the script in Habit's voice", editor: "an independent table read of the script", director: "storyboard, beats on words, sound plan",
+  narrator: "voice and timing checks on the real voice", standards: "labels, licences, on-screen numbers",
+  artdirector: "empty, black and off-brand pictures", animatic: "a 12 fps draft render before the real one",
+  screening: "the full screening, on the animatic", animator: "the delivery render, once", qc: "loudness, black, motion, captions",
+  you: "Talha approves, revises or rejects", publisher: "uploads and checks every post", analyst: "48 h results tied to each decision" };
+
+function deskStrip(b: Any) {
+  if (!b) return `<p class="meta">Made before the studio board (26 Oct 2026): no desk-by-desk record.</p>`;
+  return `<ul class="desks">${b.desks.map((d: Any) => `<li class="desk ${d.gate === false ? "no" : d.gate === true ? "yes" : ""}">
+      <b>${esc(d.label)} ${d.gate === true ? "✓" : d.gate === false ? "✗" : ""}</b>
+      <span>${d.score ? esc(d.score) + " · " : ""}${d.seconds >= 60 ? Math.round(d.seconds / 60) + " min" : Math.round(d.seconds) + " s"}${d.steps > 1 ? " · ×" + d.steps : ""}</span></li>`).join("")}</ul>
+    <p class="meta">${b.renders} delivery render${b.renders === 1 ? "" : "s"} · ${b.fix_rounds} fix round${b.fix_rounds === 1 ? "" : "s"} before it · ${esc(b.minutes ?? "–")} min in all</p>`;
+}
 
 function shell(active: string, body: string) {
   const gen = data.generated;
@@ -209,8 +225,10 @@ function video(id: string) {
           <div><b>${v.seconds ? Math.round(v.seconds) + " s" : "–"}</b><span>length</span></div>
           <div><b>${esc(v.lufs ?? "–")}</b><span>LUFS</span></div>
           <div><b>${esc(v.wpm ?? "–")}</b><span>words/min</span></div>
-          <div><b>${esc(v.review_total ?? "–")}<small>/20</small></b><span>review</span></div>
+          <div><b>${esc(v.review_total ?? "–")}<small>/${esc(v.review_max ?? 22)}</small></b><span>review</span></div>
         </div>
+        <h2>How it was made</h2>
+        ${deskStrip(v.board)}${v.animatic_total != null ? `<p class="meta">Screened on the animatic before the render: ${esc(v.animatic_total)}; after: ${esc(v.review_total)}.</p>` : ""}
         <h2>Automatic checks</h2>
         <table class="gates"><tbody>${gates.map(([k, g]) =>
           `<tr><td>${g.pass ? '<span class="tick" aria-label="pass">✓</span>' : '<span class="cross" aria-label="fail">✗</span>'}</td><th>${esc(k)}</th><td>${esc(g.detail)}</td></tr>`).join("")}</tbody></table>
@@ -278,6 +296,20 @@ function library() {
     ${tabs.map(([k, l, f]) => `<section><h2>${l}</h2><ol class="options plain">${(lib[k] as Any[]).slice(0, 40).map(f).join("")}</ol></section>`).join("")}`);
 }
 
+function board() {
+  const b: Any = data.board ?? { desks: [], videos: 0 };
+  shell("board", `
+    <section class="lead"><p class="kicker">How a Short is made</p><h1>The studio board</h1>
+      <p class="lede">Since 26 October 2026 every video goes desk by desk, each with its own check, and the expensive render happens once, after a 12 fps draft (the animatic) has been screened. Nothing reaches Talha until the checks have run; nothing is posted until he approves.</p>
+      <div class="figures small">
+        <div><b>${esc(b.videos)}</b><span>videos made on the board</span></div>
+        <div><b>${esc(b.one_render ?? 0)}<small>/${esc(b.videos)}</small></b><span>with one delivery render</span></div>
+        <div><b>${esc(b.first_render_passed ?? 0)}<small>/${esc(b.videos)}</small></b><span>passed on that render</span></div>
+        <div><b>${esc(b.animatic_within_1 ?? 0)}<small>/${esc(b.videos)}</small></b><span>animatic within 1 point of the final</span></div>
+      </div></section>
+    <ol class="desklist">${b.desks.map((d: Any) => `<li><b>${esc(d.label)}</b><span>${esc(DESK_ABOUT[d.desk] ?? "")}</span></li>`).join("")}</ol>`);
+}
+
 function build() {
   const pd: Any[] = data.phasedoc;
   const u: Any[] = data.usage;
@@ -297,7 +329,7 @@ function build() {
 function route() {
   if (!data) return lock();
   const [, view, arg] = location.hash.split("/");
-  const views: Record<string, () => void> = { videos, cards, lessons, library, build };
+  const views: Record<string, () => void> = { videos, board, cards, lessons, library, build };
   if (views[view]) views[view]();
   else if (view === "video") video(decodeURIComponent(arg ?? ""));
   else today();
