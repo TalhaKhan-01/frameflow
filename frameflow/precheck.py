@@ -78,7 +78,8 @@ def run(render_dir):
     check("rehooks", rg <= b["pacing"]["max_rehook_gap"], f"longest stretch without a re-hook {rg:.1f} s (max {b['pacing']['max_rehook_gap']})",
           "story", f"on the real voice there are {rg:.1f} s without a re-hook, from {frm[0]:.1f} s ({frm[1]}) to {to[0]:.1f} s ({to[1]}), "
                    f"covering {', '.join(inside) or 'one line'}. Put a re-hook (a 'but', a twist, a question or a reveal, marked as a beat or "
-                   f"the rehook device) in the middle of that stretch, around {(frm[0] + to[0]) / 2:.0f} s; cutting words elsewhere doesn't help")
+                   f"the rehook device) in the middle of that stretch, around {(frm[0] + to[0]) / 2:.0f} s; cutting words elsewhere doesn't help. "
+                   f"Change only the lines in that stretch; keep every other line exactly as it is.")
     err = captions.wer(re.sub(r"\[(chuckle|laugh)\]", " ", " ".join(l["say"] for l in script["lines"])), " ".join(w["w"] for w in words))
     check("captions", err < b["captions"]["max_word_error"], f"word error rate {err:.1%} (max {b['captions']['max_word_error']:.0%})",
           "story", f"the voice is misheard on {err:.1%} of words: spell out numbers and names as they are said, avoid tongue-twisters and rare acronyms")

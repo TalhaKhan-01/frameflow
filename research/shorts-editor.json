@@ -1,0 +1,20 @@
+{
+  "_about": "Frameflow config for the shorts-editor skill (~/Talha_Khan/Claude/skills/shorts-editor): the table read before the animatic.",
+  "model": "sonnet",
+  "rows": [
+    "hook",
+    "story",
+    "flow",
+    "persona_humour",
+    "sound_plan",
+    "sources",
+    "honesty",
+    "ending"
+  ],
+  "pass_ratio": 0.73,
+  "narrator": "Habit: a sharp, friendly, slightly goofy friend; mostly informative, 3-5 light comic beats that each carry a fact, one line played straight",
+  "house_notes": [
+    "The last scene is the channel's fixed house end card: judge the ending on the scene before it."
+  ],
+  "usage_log": "data/llm-usage.jsonl"
+}

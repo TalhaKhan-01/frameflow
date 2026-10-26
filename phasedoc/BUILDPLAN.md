@@ -444,8 +444,9 @@
       _Acceptance:_ shorts-writer flags a script whose estimated re-hook gap exceeds the bar; shorts-director flags a scene with a beat gap over 2.5 s; both feed their doctor round (skill tests)
       _Note 2026-10-26:_ root cause found: director assumed 3.3 words/s, the voice speaks 2.89 (median of 3 videos) -> scenes looked 14% short. bar.calibrate() measures and syncs; lints aim at 0.9 x the bar; tests/test_timing.py in both skills pass, each with a control showing the old estimate missed it
   - **P15.3 Independent checks: script editor, fact-checker, standards** (1/3)
-    - [ ] **P15.3.1** Script editor desk (skill shorts-editor): independent table read of the text rows  
+    - [~] **P15.3.1** Script editor desk (skill shorts-editor): independent table read of the text rows  
       _Acceptance:_ shorts-editor scores hook/story/flow/humour/honesty/ending/sound plan from script + storyboard with one fix per weak row; skill tests pass; a make records its gate
+      _Note 2026-10-26:_ skill shorts-editor (table-read doctrine, read command, tests PASS); review.table_read builds the input (real line times, storyboard, fact sheet); wired into the board after the narrator checks, its fixes join the same text round. Real read on Kimi: 13/16 in 51 s with seam-specific notes
     - [ ] **P15.3.2** Fact-checker desk (skill shorts-factcheck): verifies the brief, then the script's claims  
       _Acceptance:_ a brief fact without a source or a number the source doesn't carry is rejected; a script number missing from the verified sheet is flagged (skill tests)
     - [x] **P15.3.3** Standards desk (standards.py): disclosure, re-enactment labels, licences, claims  

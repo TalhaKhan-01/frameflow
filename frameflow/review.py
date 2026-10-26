@@ -114,9 +114,53 @@ def screening_input(out, plan, sheet, measured, every, purpose):
 
 
 def _screening(cmd, files, out_file):
-    from frameflow import direct
-    direct.skill([SCREENING, "--project", ROOT, cmd, *files, "--out", out_file], timeout=2400)
-    return json.loads(Path(out_file).read_text())
+    """One retry: a model call that fails now and then (it happened in the 26 Oct board test) mustn't cost the make."""
+    from frameflow import direct, progress
+    for attempt in (1, 2):
+        Path(out_file).unlink(missing_ok=True)   # never read back an earlier result (26 Oct: a failed call returned the last one)
+        try:
+            direct.skill([SCREENING, "--project", ROOT, cmd, *files, "--out", out_file], timeout=2400, strict=True)
+            return json.loads(Path(out_file).read_text())
+        except RuntimeError as e:
+            if attempt == 2:
+                raise
+            progress.note("screening call failed; trying once more", error=str(e)[-300:])
+
+
+EDITOR = Path.home() / "Talha_Khan" / "Claude" / "skills" / "shorts-editor" / "scripts" / "editor.py"
+
+
+def table_read(out, plan, brief_path):
+    """The script editor's table read (skill shorts-editor): script + storyboard + real line times + fact sheet, no pictures."""
+    from frameflow import direct, progress
+    out = Path(out)
+    dur = json.loads((out / "voice" / "durations.json").read_text())
+    starts = {l["id"]: l["start"] for l in dur["lines"]}
+    lines = []
+    for i, s in enumerate(plan["scenes"]):
+        lines.append(f"Scene {i} [{s['type']}; world: {s.get('world', '')}; metaphor: {s.get('metaphor', '')}]")
+        for j, l in enumerate(s.get("lines", [])):
+            t = starts.get(f"s{i}" if len(s["lines"]) == 1 else f"s{i}.{j}")
+            lines.append(f"    ({l.get('beat', '')}; {', '.join(l.get('devices', []))}; {t:.1f}s) {l['say']}" if t is not None else f"    {l['say']}")
+        lines.append(f"    on screen: {json.dumps({k: v for k, v in s['data'].items() if not k.startswith('_') and k not in ('beats', 'cues')}, ensure_ascii=False)[:240]}")
+    brief = json.loads(Path(brief_path).read_text()) if brief_path and Path(brief_path).exists() else {}
+    sfx = json.loads((out / "project" / "sfx.json").read_text()) if (out / "project" / "sfx.json").exists() else []
+    inp = {"title": plan["title"], "meta": {"hook family": plan.get("hook_family"), "ending strategy": plan.get("ending_strategy"),
+                                             "open loop": plan.get("open_loop")},
+           "script": "\n".join(lines), "facts": [f.get("text", "") for f in brief.get("facts", [])],
+           "music": json.dumps(plan.get("music", {})), "cue_sheet": ", ".join(f"{c['t']:.1f}s {c['name']}" for c in sfx),
+           "purpose": plan["id"]}
+    (out / "table-read-input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1))
+    path = out / "table-read.json"
+    for attempt in (1, 2):
+        path.unlink(missing_ok=True)
+        try:
+            direct.skill([EDITOR, "--project", ROOT, "read", out / "table-read-input.json", "--out", path], timeout=900, strict=True)
+            return json.loads(path.read_text())
+        except RuntimeError as e:
+            if attempt == 2:
+                raise
+            progress.note("table read failed; trying once more", error=str(e)[-300:])
 
 
 def screen_animatic(out, plan, anim):

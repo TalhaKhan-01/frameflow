@@ -23,11 +23,13 @@ CATALOG = ROOT / "research" / "scene-catalog.json"
 CONFIG_DIR = os.environ.get("FRAMEFLOW_CLAUDE_CONFIG", str(Path.home() / ".claude-personal"))
 
 
-def skill(args, timeout=3600):
+def skill(args, timeout=3600, strict=False):
+    """Run a skill script. The writer and director exit 1 when their checks still fail (not an error); strict skills
+    (screening, producer, editor) exit 1 only on a real failure, which must not pass silently (26 Oct board test)."""
     r = subprocess.run(["python3", "-I", *map(str, args)], cwd=ROOT, capture_output=True, text=True, timeout=timeout,
                        env=dict(os.environ, CLAUDE_CONFIG_DIR=CONFIG_DIR))
-    if r.returncode not in (0, 1):
-        raise SystemExit(f"{args[0]} failed:\n{(r.stderr or r.stdout)[-1500:]}")
+    if r.returncode not in ((0,) if strict else (0, 1)):
+        raise RuntimeError(f"{Path(str(args[0])).name} failed:\n{(r.stderr or r.stdout)[-1500:]}")
     return r.stdout
 
 

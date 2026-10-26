@@ -1,11 +1,11 @@
 """The Studio board (P15): a make goes desk by desk, every desk's gate before the next, one delivery render.
 
-    writer + director (their own lints)  ->  narrator: voice + timing checks  ->  animator: scenes  ->  standards  ->
+    writer + director (their own lints)  ->  narrator: voice + timing checks  ->  script editor: table read  ->  scenes  ->  standards  ->
     animatic: a 12 fps draft  ->  screening on the animatic  ->  delivery render (once)  ->  QA  ->  final check
 
 Fix loops happen before the delivery render, while a fix is still a text edit, bounded by the profile:
-  timing_fix_rounds    narrator checks failed (re-hooks, caption accuracy, length, voice start) -> writer/director fix,
-                       re-voice (local, free), re-check
+  timing_fix_rounds    narrator checks (re-hooks, caption accuracy, length, voice start) or the table read failed -> one
+                       writer/director fix for both, re-voice (local, free), re-check
   animatic_fix_rounds  screening below the bar, drawn events too sparse on the draft, or a standards breach -> fix -> back
                        through the narrator
 After the delivery render nothing loops: the result goes to Talha with its honest numbers, and his Revise is the fix path.
@@ -31,6 +31,25 @@ def _revise(brief_path, plan_path, fixes, lane, label, desk):
     return not d["errors"]
 
 
+LOCAL = " Change only that scene; keep every other scene exactly as it is."
+
+
+def gap_fix(rout, anim):
+    """A local, concrete fix for the draft's longest dead stretch: the scene, the time and the words spoken in it, so the
+    director can hang a beat on one of them (a whole-storyboard rewrite didn't converge in the 26 Oct board test)."""
+    from frameflow import build
+    plan = json.loads((rout / "plan.json").read_text())
+    words = json.loads((rout / "voice" / "words.json").read_text())
+    a, gap = anim["gap_at"], anim["longest_gap"]
+    said = " ".join(w["w"] for w in words if a <= w["s"] < a + gap)
+    slots = build.timings(plan, rout / "voice")
+    scene = next((i for i, (st, d) in enumerate(slots) if st <= a + gap / 2 < st + d), None)
+    return (f"measured on the draft: nothing new is drawn for {gap:.1f} s from {a:.1f} s, in scene {scene} "
+            f"({plan['scenes'][scene]['type'] if scene is not None else '?'}), while the voice says: \"{said}\". Add one beat in "
+            f"scene {scene} cued on a word from that line (its cues name the phrase), so something moves at least every "
+            f"2.5 s." + LOCAL)
+
+
 def make(brief_path, lane, out=None, skip_writer=False, skip_director=False, quality="looks"):
     pc = profiles.pipeline()
     with progress.step("script and storyboard (writer + director)", desk="writer"):
@@ -48,15 +67,23 @@ def run(brief_path, plan_path, lane, quality="looks"):
     rout = plan_path.parent / "render"
     timing_left, animatic_left = pc["timing_fix_rounds"], pc["animatic_fix_rounds"]
     rounds = {"timing": 0, "animatic": 0}
+    table_done, tr = False, None
     while True:
         pipeline.voice_stage(plan_path, rout)
         with progress.step("narrator checks (timing on the real voice)", desk="narrator") as info:
             pre = precheck.run(rout)
             info.update({"pass": pre["pass"], "failed": [f"{k}: {c['detail']}" for k, c in pre["checks"].items() if not c["pass"] and not c.get("advisory")]})
-        if not pre["pass"] and timing_left:
+        if not table_done:   # the table read once per plan text: a re-voice alone doesn't change the words
+            with progress.step("table read (script editor)", desk="editor") as info:
+                tr = review.table_read(rout, json.loads((rout / "plan.json").read_text()), brief_path)
+                info.update({"total": tr["total"], "max": tr["max"], "pass": tr["pass"], "fixes": [f"{f['row']}: {f['fix']}"[:160] for f in tr["fixes"]][:5]})
+            table_done = True
+        if (not pre["pass"] or not tr["pass"]) and timing_left:   # one text round fixes the timing and the table read together
             timing_left -= 1
             rounds["timing"] += 1
-            _revise(brief_path, plan_path, precheck.fixes(pre), lane, f"timing fix {rounds['timing']}: rewrite from the narrator checks", "writer")
+            fixes = precheck.fixes(pre) + ([{"row": f["row"], "fix": f"table read: {f['fix']}"} for f in tr["fixes"]] if not tr["pass"] else [])
+            _revise(brief_path, plan_path, fixes, lane, f"text fix {rounds['timing']}: narrator checks + table read", "writer")
+            table_done = False
             continue
         pipeline.build_stage(rout)
         with progress.step("standards (labels, licences, numbers)", desk="standards") as info:
@@ -77,9 +104,10 @@ def run(brief_path, plan_path, lane, quality="looks"):
         fixes = [{"row": f["row"], "fix": f["fix"]} for f in scr.get("fixes", [])]
         fixes += [{"row": "pacing", "fix": f"from the swipe read: around {x['t']:.0f} s a viewer would leave: {x['why']}"} for x in scr.get("swipe_risks", [])[:2]]
         if not anim["pass"]:
-            fixes.append({"row": "pacing", "fix": f"measured on the draft: {anim['detail']}: add a drawn beat on a spoken word in that stretch"})
+            fixes.append({"row": "pacing", "fix": gap_fix(rout, anim)})
         fixes += standards.fixes(std)
         _revise(brief_path, plan_path, fixes, lane, f"animatic fix {rounds['animatic']}: rewrite from the screening", "director")
+        table_done = False
     report = pipeline.deliver_stage(rout, quality)
     with progress.step("technical QC (QA gates)", desk="qc") as info:
         q = qa.run(rout)
