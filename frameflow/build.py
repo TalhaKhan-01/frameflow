@@ -386,9 +386,10 @@ def check(project_dir):
     return (1 if errors else 0), "\n".join(["✗ " + l if not l.startswith("ignored") else "  " + l for l in lines]) or "clean"
 
 
-def render(project_dir, out_file=None, quality="looks"):
+def render(project_dir, out_file=None, quality="looks", fps=None):
     out_file = Path(out_file or Path(project_dir) / "video.mp4").resolve()
-    r = subprocess.run(HYPERFRAMES + ["render", "--quality", quality, "--output", str(out_file)], cwd=project_dir,
+    extra = ["--fps", str(fps)] if fps else []   # the animatic renders a 12 fps draft (QA measures events at 12 fps)
+    r = subprocess.run(HYPERFRAMES + ["render", "--quality", quality, "--output", str(out_file), *extra], cwd=project_dir,
                        env=node_env(), capture_output=True, text=True, timeout=3600)
     if r.returncode or not out_file.exists():
         raise SystemExit(f"render failed:\n{(r.stdout + r.stderr)[-2000:]}")

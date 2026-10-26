@@ -48,7 +48,7 @@ def keyframes(out):
         row = out / f"kfrow{r}.jpg"
         media.ffmpeg(*sum((["-i", g] for g in group), []), "-filter_complex", f"hstack=inputs={per_row}", row)
         rows.append(row)
-    sheet = out / "keyframes.jpg"
+    sheet = out / name
     if len(rows) == 1:
         rows[0].replace(sheet)
     else:
@@ -90,9 +90,10 @@ SCHEMA_V2 = {"type": "object", "required": ["scores", "fixes", "summary"], "prop
     "summary": {"type": "string"}}}
 
 
-def keyframes_v2(out, every=3.0, cols=6, width=200):   # spacing and size come from the active profile (frameflow.profiles)
-    """One frame every `every` seconds, in a grid (6 per row), each labelled with its time."""
-    final = out / "final.mp4"
+def keyframes_v2(out, every=3.0, cols=6, width=200, video=None, name="keyframes.jpg"):   # spacing and size from the active profile
+    """One frame every `every` seconds, in a grid (6 per row), each labelled with its time. `video`: another file than
+    final.mp4 (the animatic's draft render), written to `name`."""
+    final = Path(video) if video else out / "final.mp4"
     total = media.duration(final)
     times = [round(t, 2) for t in [i * every + 0.8 for i in range(int(total // every))] if t < total - 0.2]
     rows, frames = [], []
@@ -108,7 +109,7 @@ def keyframes_v2(out, every=3.0, cols=6, width=200):   # spacing and size come f
         row = out / f"kfrow{r}.jpg"
         media.ffmpeg(*sum((["-i", g] for g in group), []), "-filter_complex", f"hstack=inputs={cols}", row)
         rows.append(row)
-    sheet = out / "keyframes.jpg"
+    sheet = out / name
     if len(rows) == 1:
         rows[0].replace(sheet)
     else:
