@@ -15,5 +15,6 @@
  "P13": "The public side: a read-only Studio web app with every run and video, and a betadoc story page with a narrated tour, both deployed by git push.",
  "P14": "One local control panel to watch and steer every step, with the same buttons as Telegram and a live view of what a make is doing.",
  "P15": "Work like a real studio: each role is a desk with its own check, fixes happen on a cheap draft (the animatic), and the real render happens once.",
- "P16": "Make the studio visible: a pixel-art production house where every desk of the board is a person at work. From the street you see every floor; tap one to go inside, watch the last make climb the building, and open any desk's card for what it did."
+ "P16": "Make the studio visible: a pixel-art production house where every desk of the board is a person at work. From the street you see every floor; tap one to go inside, watch the last make climb the building, and open any desk's card for what it did.",
+ "P24": "Turn the daily Short into a show: Habit at a news desk, seen in four framings (the full studio, a close-up in the bottom third blended into the visuals, a square window at the bottom left, and visuals alone). Scripts are told as one story, 75-90 s. Samples come first; Talha picks the set, Habit's look, the intro and the topics before anything changes in the daily make."
 }
