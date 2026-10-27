@@ -1,10 +1,10 @@
 {
   "_about": "The one Quality Bar every desk reads (frameflow.bar): writer and director lints, narrator timing checks, art director, animatic screening, QA and the final screening. Change a number here and every desk moves with it. P15, 2026-10-26.",
   "length": {
-    "max_seconds": 120.0,
+    "max_seconds": 95.0,
     "target_seconds": [
-      60.0,
-      115.0
+      75.0,
+      90.0
     ]
   },
   "speech": {

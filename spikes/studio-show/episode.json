@@ -1,0 +1,161 @@
+{
+ "_about": "Sample episode for the studio-show spike (P24.1.6): the 27 Oct GPS-spoofing story, rewritten as one story (P24.2 story flow) from the same verified facts. shot = the framing for the beat (Show Bible: wide, split, pip, full). vis = the graphic shown.",
+ "id": "gps-story",
+ "title": "The truck that wasn't there",
+ "lane": "TECH",
+ "date": "28 OCT",
+ "story_title": [
+  "AI freight theft",
+  "Trust, not trucks"
+ ],
+ "source": "Overhaul · SPG Cargo",
+ "beats": [
+  {
+   "id": "hook",
+   "beat": "hook",
+   "shot": "full",
+   "vis": "headline",
+   "energy": 0.75,
+   "say": "A hundred million dollars of AI freight, stolen. Mostly with paperwork."
+  },
+  {
+   "id": "loop",
+   "beat": "loop",
+   "shot": "wide",
+   "vis": "rack",
+   "energy": 0.6,
+   "say": "Why chase a truck full of servers? One AI server rack costs about three million dollars. That truck is a vault on wheels."
+  },
+  {
+   "id": "gps",
+   "beat": "and",
+   "shot": "split",
+   "vis": "map",
+   "energy": 0.6,
+   "say": "In one big theft, the thieves spoofed the GPS, feeding the tracker a fake location. The dashboard showed a truck that wasn't there."
+  },
+  {
+   "id": "ninety",
+   "beat": "but",
+   "shot": "full",
+   "vis": "stat",
+   "energy": 0.7,
+   "pause_before": 0.35,
+   "say": "But that was the exception. Overhaul says ninety-two percent of high-value tech thefts used deception, not force."
+  },
+  {
+   "id": "broker",
+   "beat": "and",
+   "shot": "split",
+   "vis": "broker",
+   "energy": 0.6,
+   "say": "So how do you trick your way into a truck? Through freight brokers, a marriage bureau for cargo and truckers."
+  },
+  {
+   "id": "fake",
+   "beat": "therefore",
+   "shot": "pip",
+   "vis": "board",
+   "energy": 0.6,
+   "say": "The thieves break into a broker's account and post shipments that don't exist. Real truckers bid, and take the bait."
+  },
+  {
+   "id": "link",
+   "beat": "therefore",
+   "shot": "pip",
+   "vis": "link",
+   "energy": 0.65,
+   "say": "Then trucking companies get a link. One click, and the thieves own that account too, bidding under a real name."
+  },
+  {
+   "id": "imagine",
+   "beat": "therefore",
+   "shot": "split",
+   "vis": "chat",
+   "energy": 0.6,
+   "say": "Imagine mummy's WhatsApp is hijacked: give dad's suits to my friend. The dhobi isn't dumb. The account looked right."
+  },
+  {
+   "id": "driver",
+   "beat": "therefore",
+   "shot": "split",
+   "vis": "drivers",
+   "energy": 0.6,
+   "say": "So who drives away? Sometimes a real driver, hired without knowing. Sometimes an accomplice with a fake licence."
+  },
+  {
+   "id": "ram",
+   "beat": "twist",
+   "shot": "full",
+   "vis": "ram",
+   "energy": 0.75,
+   "pause_before": 0.3,
+   "say": "Force did show up, twice. Thieves rammed the security escorts, and the drivers just kept going."
+  },
+  {
+   "id": "cornell",
+   "beat": "therefore",
+   "shot": "pip",
+   "vis": "quote",
+   "energy": 0.55,
+   "say": "Even then, Scott Cornell of SPG Cargo traced both to one gap: those drivers weren't properly vetted."
+  },
+  {
+   "id": "payoff",
+   "beat": "payoff",
+   "shot": "wide",
+   "vis": "trust",
+   "energy": 0.4,
+   "pause_before": 0.4,
+   "say": "So the weak spot was never the truck. It was trust."
+  },
+  {
+   "id": "fix",
+   "beat": "payoff",
+   "shot": "split",
+   "vis": "lading",
+   "energy": 0.55,
+   "say": "Cornell wants proper driver checks and digital bills of lading, because paper ones let thieves rewrite what's in the box."
+  },
+  {
+   "id": "ending",
+   "beat": "ending",
+   "shot": "wide",
+   "vis": "ticker",
+   "energy": 0.6,
+   "say": "If a login can be borrowed this easily, what else do we trust just because the account looks right?"
+  },
+  {
+   "id": "outro",
+   "beat": "outro",
+   "shot": "end",
+   "vis": "end",
+   "energy": 0.6,
+   "pause_before": 0.3,
+   "say": "Make learning a Habit."
+  }
+ ],
+ "intros": {
+  "breaking": {
+   "say": "Breaking: a hundred million dollars of AI freight, stolen. Mostly with paperwork.",
+   "energy": 0.8
+  },
+  "teaser": {
+   "say": "Today: the truck that wasn't there. Why it matters: your logins work the same way.",
+   "energy": 0.7
+  },
+  "greeting": {
+   "say": "Good morning, it's the twenty-eighth, and this is The Daily Habit.",
+   "energy": 0.65
+  },
+  "talk": {
+   "say": "So the weak spot was never the truck. It was trust. And trust, it turns out, can be borrowed with one click.",
+   "energy": 0.6
+  }
+ },
+ "ticker": [
+  "TOMORROW 11:30 · A NEW STORY",
+  "SOURCES ON EVERY CLAIM",
+  "MAKE LEARNING A HABIT"
+ ]
+}
