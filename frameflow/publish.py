@@ -165,6 +165,9 @@ def upload(video_id, platforms=("youtube", "instagram", "facebook"), privacy="pu
                     results["facebook"] = run(pilot + ["facebook", video_id])
         except Exception as e:
             results[platform] = {"error": str(e)[-600:]}
+            if "UNCONFIRMED" in str(e):   # the site accepted it; only the link is missing (frameflow.pilot.Unconfirmed)
+                from frameflow import pilot as _p
+                results[platform].update({"unconfirmed": True, "url": _p.where(platform)})
         res = results.get(platform) or {}
         progress.note(f"{platform}: " + (res.get("url") or "failed: " + str(res.get("error", ""))[-160:]), mode=res.get("mode"))
         err = None if res.get("url") else RuntimeError(str(res.get("error", "no link"))[-300:])

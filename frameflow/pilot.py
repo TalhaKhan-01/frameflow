@@ -33,10 +33,34 @@ class PilotError(RuntimeError):
     pass
 
 
+class Unconfirmed(PilotError):
+    """The site accepted the post (it said published/shared), but its link couldn't be confirmed. The post is most likely
+    live: callers record it as posted-unconfirmed and never retry it on their own (a retry would post twice)."""
+    def __init__(self, msg):
+        super().__init__("UNCONFIRMED: " + msg)
+
+
+WHERE = {"youtube": "https://studio.youtube.com/channel/{channel}/videos/short", "instagram": "https://www.instagram.com/{ig}/",
+         "facebook": "https://www.facebook.com/{fb}"}   # where Talha checks an unconfirmed post
+
+
+def where(platform):
+    return WHERE[platform].format(channel=CHANNEL, ig=IG_HANDLE, fb=FB_PAGE)
+
+
+SAFE = {"open", "eval", "snapshot", "get", "connect", "wait"}   # repeatable: no click, no typing, no upload
+
+
 def ab(*args, timeout=180, check=True):
     env = {"PATH": f"{NODE_BIN}:/usr/bin:/bin", "HOME": str(Path.home())}
-    r = subprocess.run(["agent-browser", "--session", SESSION, *map(str, args)], capture_output=True, text=True, timeout=timeout, env=env)
-    out = (r.stdout + r.stderr).strip()
+    for n in range(4):
+        r = subprocess.run(["agent-browser", "--session", SESSION, *map(str, args)], capture_output=True, text=True, timeout=timeout, env=env)
+        out = (r.stdout + r.stderr).strip()
+        # an empty reply from the daemon (it was still shutting down after the previous run's close): repeat only commands
+        # that can't post anything twice (27 Oct: YouTube and both card posts failed on this one reply)
+        if not (str(args[0]) in SAFE and re.search(r"EOF while parsing|no response came back", out)):
+            break
+        time.sleep(3 + 2 * n)
     if check and (r.returncode or out.startswith("✗")):
         raise PilotError(f"agent-browser {args[0]}: {out[-400:]}")
     return out
@@ -44,15 +68,25 @@ def ab(*args, timeout=180, check=True):
 
 def js(code, timeout=60):
     """Evaluate in the page; returns the value (JSON-decoded when possible)."""
-    out = ab("eval", code, timeout=timeout).splitlines()[-1]
-    try:
-        return json.loads(out)
-    except ValueError:
-        return out
+    raw = ab("eval", code, timeout=timeout)
+    for text in (raw, raw.splitlines()[-1] if raw else raw):   # the whole output first: arrays and objects come back
+        try:                                                  # pretty-printed over several lines, and the last line
+            return json.loads(text)                           # alone was ']' (27 Oct: posts that were live read as
+        except ValueError:                                    # missing, on Facebook and Instagram)
+            pass
+    return raw.splitlines()[-1] if raw else raw
 
 
-def connect():
-    ab("connect", str(PORT), timeout=60)
+def connect(tries=5):
+    """connect is safe to repeat. Right after the previous run's `close` the daemon answers with an empty reply for a few
+    seconds; on 27 Oct that one reply failed YouTube and both card posts within 3 s while Instagram, a moment later, worked."""
+    for n in range(tries):
+        try:
+            return ab("connect", str(PORT), timeout=60)
+        except PilotError as e:
+            if n == tries - 1 or not re.search(r"EOF|no response|Invalid response|ECONNREFUSED|not running", str(e)):
+                raise
+            time.sleep(3 + 2 * n)
 
 
 def wait_for(code, seconds=60, every=2.0, what="page state"):
@@ -153,7 +187,7 @@ def youtube(video_id):
     link = js("(() => { const a=[...document.querySelectorAll('ytcp-video-share-dialog a, a')].find(x=>/youtube\\.com\\/shorts\\/|youtu\\.be\\//.test(x.href)); return a ? a.href : ''; })()") or link
     js("document.querySelector('ytcp-video-share-dialog #close-button')?.click(); 1")
     if not link:
-        raise PilotError("published, but no video link was found in the dialog")
+        raise Unconfirmed("published, but no video link was found in the dialog")
     return {"url": link.split("?")[0], "mode": "studio"}
 
 
@@ -246,7 +280,7 @@ def ig_find(first, kind):
         if first[:30] in str(js("document.body.innerText")):
             code = re.search(r"/(?:p|reel)/([A-Za-z0-9_-]+)", link).group(1)
             return f"https://www.instagram.com/{'reel' if kind == 'reel' else 'p'}/{code}/"
-    raise PilotError("Instagram said shared, but no recent post carries today's caption")
+    raise Unconfirmed("Instagram said shared, but no recent post carries today's caption")
 
 
 # ---------- Facebook (web, as the Thirdspace Page) ----------
@@ -317,7 +351,7 @@ def fb_published(caption, minutes=10):
             if first in text and "/reel/" in str(href):
                 return str(href).split("?")[0]
         time.sleep(30)
-    raise PilotError("Facebook took the Reel, but no published Reel with today's caption showed up")
+    raise Unconfirmed("Facebook took the Reel, but no published Reel with today's caption showed up")
 
 
 FB_PAGE = "122094160959534001"
@@ -381,6 +415,12 @@ def bs_caption(text):
     js(f"(() => {{ const e={vis}; e.focus(); const dt=new DataTransfer(); dt.setData('text/plain', {json.dumps(text.strip())}); "
        "e.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true})); return 1; })()")
     time.sleep(1.5)
+    # a caption ending in a hashtag leaves the hashtag-suggestion popup open over the tabs and the Publish button: a real
+    # space after the last tag closes it (Talha found it, 27 Oct, when both card posts were blocked)
+    js(f"(() => {{ const e={vis}; e.focus(); const r=document.createRange(); r.selectNodeContents(e); r.collapse(false); "
+       "const s=getSelection(); s.removeAllRanges(); s.addRange(r); return 1; })()")
+    ab("keyboard", "type", " ")
+    time.sleep(1)
     norm = lambda s: "\n".join(l.strip() for l in str(s).strip().splitlines() if l.strip())
     if norm(js(f"{vis}.innerText")) != norm(text):
         raise PilotError("the caption didn't take whole in Business Suite's editor")
@@ -399,7 +439,7 @@ def bs_fb_link(first):
             if m:
                 return f"https://www.facebook.com/{FB_PAGE}/posts/{m.group(1)}"
         ab("open", f"https://business.facebook.com/latest/posts/published_posts?asset_id={BS_ASSET}", timeout=90)
-    raise PilotError("published, but the Facebook post's link wasn't found in Business Suite")
+    raise Unconfirmed("published, but the Facebook post's link wasn't found in Business Suite")
 
 
 def check():
@@ -433,6 +473,7 @@ def main():
             r = check() if a.what == "check" else {"youtube": youtube, "instagram": instagram, "facebook": facebook}[a.what](a.video_id)
     finally:
         ab("close", check=False)   # detaches; the dedicated Chrome keeps running under PM2
+        time.sleep(6)   # still holding the lock: the daemon finishes shutting down before the next run's first command
     print(json.dumps(r))
 
 

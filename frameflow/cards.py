@@ -370,7 +370,14 @@ def post(run):
                 links[k] = v
                 errors.pop(k, None)
         except Exception as e2:
-            errors = {k: f"API: {v[-150:]}; Pilot: {str(e2)[-150:]}" for k, v in errors.items()}
+            if "UNCONFIRMED" in str(e2):   # Business Suite published it; only the link wasn't found: posted, never retried
+                from frameflow import pilot as _p
+                for k in list(errors):
+                    links[k] = _p.where(k)
+                    errors.pop(k)
+                update(run, note=f"posted, link unconfirmed: {str(e2)[-160:]}")
+            else:
+                errors = {k: f"API: {v[-150:]}; Pilot: {str(e2)[-150:]}" for k, v in errors.items()}
     update(run, state="posted" if not errors else "failed", links=json.dumps(links), note=f"posted {links} errors " + ("; ".join(f"{k}: {v[-200:]}" for k, v in errors.items()) or "none"))   # the text, not just the names (27 Oct: the reason only reached Telegram)
     telegram.send("Card post live:\n" + "\n".join(f"{k.capitalize()}: {v}" for k, v in links.items())
                   + ("\nNot posted: " + "; ".join(f"{k}: {v[:150]}" for k, v in errors.items()) if errors else ""))

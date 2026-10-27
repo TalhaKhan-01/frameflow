@@ -353,7 +353,12 @@ def post(day):
     missing = [p for p in cfg()["platforms"] if p not in links]
     update(day, links=json.dumps(links), state="posted" if not missing else "failed", posted_at=now().isoformat(),
            note=f"posted: {links}" + (f"; missing {missing}" if missing else ""))
-    lines = ["Live:"] + [f"{k.capitalize()}: {v}" for k, v in links.items()]
+    unconfirmed = [k for k, v in results.items() if isinstance(v, dict) and v.get("unconfirmed")]
+    lines = ["Live:"] + [f"{k.capitalize()}: {v}" for k, v in links.items() if k not in unconfirmed]
+    if unconfirmed:   # accepted by the site, link not found: counted as posted (a retry would post twice); Talha checks
+        lines.append("Posted, but I couldn't confirm the link (check it here): "
+                     + "; ".join(f"{k.capitalize()}: {links[k]}" for k in unconfirmed))
+        update(day, note=f"posted, link unconfirmed: {unconfirmed}")
     if missing:
         lines.append(f"Not posted: {', '.join(missing)} (I'll look into it; the details are in the log).")
     telegram.send("\n".join(lines))
