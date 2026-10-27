@@ -6,6 +6,7 @@ import { mountHouse } from "./office/house";
 import { CAST, PERSON } from "./office/cast";
 import { DESK, FLOOR } from "./office/desks";
 import { drawPortrait } from "./office/portrait";
+import { roomHead, mountRoom } from "./office/roomkit";
 
 type Any = any; // the snapshot is plain JSON from webexport.py
 type Box = { v: number; iter: number; salt: string; iv: string; ct: string };
@@ -89,7 +90,7 @@ function lock(message = "") {
 // ---------- shell ----------
 // the HQ's rooms (P17.3): every page is a place in the building; the nav is the lift panel
 const TABS: [string, string, string][] = [["lobby", "G", "Lobby"], ["cast", "G", "The Crew"], ["videos", "3", "Screening Room"],
-  ["board", "5", "Run Sheet"], ["cards", "1", "Print Shop"], ["lessons", "B", "Notice Board"], ["library", "B", "Archive"],
+  ["board", "5", "Run Sheet"], ["cards", "1", "Print Shop"], ["lessons", "R", "Notice Board"], ["library", "B", "Archive"],
   ["build", "4", "Engine Room"]];
 const DESK_ABOUT: Record<string, string> = {
   showrunner: "owns the run; turns a revise request into a change order", researcher: "facts and sources for the story",
@@ -109,9 +110,11 @@ function deskStrip(b: Any) {
 }
 
 let house: { destroy(): void } | null = null;
+let room: { destroy(): void } | null = null;   // the room kit's floor views (P17.3.8)
 
 function shell(active: string, body: string) {
   house?.destroy(); house = null;
+  room?.destroy(); room = null;
   const gen = data.generated;
   app.innerHTML = `
   <header class="mast">
@@ -128,12 +131,13 @@ function shell(active: string, body: string) {
   document.getElementById("lock-btn")?.addEventListener("click", (e) => {
     e.preventDefault(); store.clear(); data = null; location.hash = ""; lock();
   });
+  room = mountRoom(app);
   window.scrollTo(0, 0);
 }
 
 const STEPS = ["topic-sent", "picked", "making", "video-sent", "queued", "posting", "posted"];
 const STEP_LABEL: Record<string, string> = { "topic-sent": "Topic card", picked: "Picked", making: "Making",
-  "video-sent": "Awaiting approval", "awaiting-notes": "Notes asked", queued: "Queued for 11:30", posting: "Posting",
+  "video-sent": "Awaiting approval", "awaiting-notes": "Notes asked", queued: "Queued", posting: "Posting",
   posted: "Posted", skipped: "Skipped", rejected: "Rejected", failed: "Stopped", retired: "Retired" };
 
 function pill(state: string) {
@@ -170,10 +174,10 @@ function today() {
             `<li class="${r.pick === i + 1 ? "picked" : ""}"><span class="score">${esc(o.score)}</span><span>${esc(o.title)}${r.pick === i + 1 ? ' <b class="hand">picked</b>' : ""}</span></li>`).join("")}</ol>
         </section>
         <section>
-          <h3>The Short</h3>
+          <h3>The video</h3>
           ${video ? `<p class="big"><a href="#/video/${encodeURIComponent(video.id)}">${esc(video.title)}</a></p>
           <p class="meta">Review ${esc(video.review_total)}/20 · QA ${video.qa_pass ? "pass" : "needs work"} · ${esc(r.revisions)} revision${r.revisions === 1 ? "" : "s"}</p>` : `<p class="meta">Not made yet.</p>`}
-          <p class="meta">${r.post_at ? `Posts ${esc(time(r.post_at))}` : r.posted_at ? `Posted ${esc(time(r.posted_at))}` : "Posts at 11:30 after approval"}</p>
+          <p class="meta">${r.post_at ? `Posts ${esc(time(r.post_at))}` : r.posted_at ? `Posted ${esc(time(r.posted_at))}` : "Posts after approval"}</p>
           ${links(r.links)}
           ${card ? `<h3>Card post</h3><p class="meta">${esc(card.title ?? card.id)} · ${pill(card.state)}</p>` : ""}
         </section>
@@ -191,11 +195,13 @@ function today() {
     ${reception()}
     <div id="house" class="house-wrap"></div>
     <section class="lead">
-      <p class="kicker">Today's edition</p>
-      <h2 class="h1ish">Picked at 15:00, made by 17:00, posted at <em>11:30</em>.</h2>
+      <p class="kicker">Content automation</p>
+      <h2 class="h1ish">One sourced brief, <em>every format</em>.</h2>
+      <p class="lede">Each story becomes a video and a carousel, checked by code and by models, and approved by the owner before anything is posted.</p>
       <div class="figures">
         <div><b>${data.ideas}</b><span>ideas collected</span></div>
-        <div><b>${data.videos.length}</b><span>Shorts made</span></div>
+        <div><b>${data.videos.length}</b><span>videos made</span></div>
+        <div><b>${data.cards.length}</b><span>carousels made</span></div>
         <div><b>${posted}</b><span>posted</span></div>
         <div><b>${active}</b><span>active lessons</span></div>
       </div>
@@ -205,7 +211,7 @@ function today() {
     .map((v: Any) => ({ id: v.id, title: v.yt_title || v.title, timeline: v.timeline, href: `#/video/${encodeURIComponent(v.id)}` }));
   house = mountHouse(document.getElementById("house")!, {
     makes,
-    stats: [`${data.ideas} ideas collected so far.`, `${data.videos.length} Shorts made, ${posted} posted.`, `${active} lessons the desks read before each make.`],
+    stats: [`${data.ideas} ideas collected so far.`, `${data.videos.length} videos made, ${posted} posted.`, `${active} lessons the desks read before each make.`],
     links: { library: "#/library", lessons: "#/lessons", videos: "#/videos" },
   });
 }
@@ -242,16 +248,16 @@ function street() {   // the landing: the building at the door, "Enter the Daily
     <section class="street-copy">
       <p class="kicker">Thirdspace Productions presents</p>
       <h1>The Daily Habit <em>HQ</em></h1>
-      <p class="lede">A production house where every desk is a person: ${CAST.length} characters, from ${esc(PERSON.researcher.name)} chasing rumours to ${esc(PERSON.factcheck.name)} stamping NOPE, all making one Short a day with ${esc(PERSON.narrator.name)}, ${esc(PERSON.narrator.title)}.</p>
+      <p class="lede">A production house where every desk is a person: ${CAST.length} characters, from ${esc(PERSON.researcher.name)} chasing rumours to ${esc(PERSON.factcheck.name)} stamping NOPE, all making videos and carousels every day with ${esc(PERSON.narrator.name)}, ${esc(PERSON.narrator.title)}.</p>
       <a class="door" href="#/lobby">Enter the Daily Habit HQ <span aria-hidden="true">→</span></a>
-      <p class="meta">${data.videos.length} Shorts made · ${posted} posted · <a href="#/cast">meet the crew</a> · <a href="${REPO}" rel="noopener">source on GitHub</a></p>
+      <p class="meta">${data.videos.length} videos and ${data.cards.length} carousels made · ${posted} videos posted · <a href="#/cast">meet the crew</a> · <a href="${REPO}" rel="noopener">source on GitHub</a></p>
     </section>
     <div id="house" class="house-wrap street-house"></div>
   </main>`;
   const makes = data.videos.filter((v: Any) => v.timeline?.events?.length)
     .map((v: Any) => ({ id: v.id, title: v.yt_title || v.title, timeline: v.timeline, href: `#/video/${encodeURIComponent(v.id)}` }));
   house = mountHouse(document.getElementById("house")!, {
-    makes, stats: [`${data.ideas} ideas collected so far.`, `${data.videos.length} Shorts made, ${posted} posted.`],
+    makes, stats: [`${data.ideas} ideas collected so far.`, `${data.videos.length} videos made, ${posted} posted.`],
     links: { library: "#/library", lessons: "#/lessons", videos: "#/videos" },
   });
   window.scrollTo(0, 0);
@@ -287,24 +293,38 @@ function cast() {   // staff ID cards
   document.querySelectorAll<HTMLCanvasElement>("canvas[data-portrait]").forEach((c) => drawPortrait(c, c.dataset.portrait!));
 }
 
+const SCREENING_SPEC: [string, string][] = [
+  ["Modules", "`frameflow/animatic.py` (12 fps draft), `frameflow/review.py` (screening), `frameflow/qa.py` (automatic checks)"],
+  ["Screening", "Opus reads a contact sheet of stills plus the script and scores 11 rows from 0 to 2; pass is 16 or more with no row at 0"],
+  ["Pacing", "at least 4 visual events per 10 s, no gap over 2.5 s, a re-hook at least every 10.5 s (measured on the real voice timing)"],
+  ["Audio", "integrated loudness −15 to −13 LUFS, true peak at most −1 dBTP; first word within 0.3 s"],
+  ["Captions", "word error rate of the spoken words against the script under 10%"],
+  ["Licences", "every asset has a source, licence, URL and author in the ledger, or the video fails"],
+];
+
 function videos() {
   shell("videos", `
-    <section class="lead"><p class="kicker">The Screening Room · every Short so far</p><h1>Videos</h1></section>
-    <div class="grid">${data.videos.map((v: Any) => `
+    ${roomHead({ sign: "SCREENING ROOM", floor: "3", resident: "screening", title: "Every video, *screened twice*.",
+      intro: "Each video is screened on the 12 fps animatic, while a fix is still a text edit, and again after the single delivery render. Code measures what can be measured; a model judges what can't.",
+      spec: SCREENING_SPEC })}
+    <div class="rk-cinema"><div class="grid">${data.videos.map((v: Any) => `
       <a class="vcard" href="#/video/${encodeURIComponent(v.id)}">
         ${v.media?.cover ? `<img src="/${esc(v.media.cover)}" alt="" loading="lazy" width="360" height="640" />`
           : `<div class="ph"><span class="hand">${v.status === "posted" ? "" : "not public yet"}</span></div>`}
         <div class="vbody">
           <p class="meta">${esc(v.lane)} · ${esc(day(v.created))}</p>
           <h3>${esc(v.title)}</h3>
-          <p>${pill(v.status)} <span class="meta">review ${esc(v.review_total ?? "–")}/20</span></p>
+          <p>${pill(v.status)} <span class="meta">review ${esc(v.review_total ?? "–")}/${esc(v.review_max ?? 22)}</span></p>
         </div>
-      </a>`).join("")}</div>`);
+      </a>`).join("")}</div></div>`);
 }
 
 const ROWS: Record<string, string> = { hook: "Hook", story: "Story", persona_humour: "Habit's humour",
   visual_storytelling: "Visual storytelling", pacing: "Pacing", sound_plan: "Sound plan", captions: "Captions",
   sources: "Sources", honesty: "Honesty", ending: "Ending", flow: "Flow" };
+
+const stamp = (pass: boolean | null | undefined, ok = "OK", no = "FIX") =>
+  pass == null ? "" : `<span class="rk-stamp ${pass ? "ok" : "fix"}">${pass ? ok : no}</span>`;
 
 function video(id: string) {
   const v = data.videos.find((x: Any) => x.id === id);
@@ -312,51 +332,61 @@ function video(id: string) {
   const gates = Object.entries(v.gates ?? {}) as [string, Any][];
   const scores = Object.entries(v.scores ?? {}) as [string, number][];
   shell("videos", `
-    <p class="back"><a href="#/videos">← All videos</a></p>
-    <article class="vpage">
-      <div class="vmedia">
+    <p class="back"><a href="#/videos">← Screening Room</a></p>
+    <article class="rk-screening">
+      <div class="rk-screen">
         ${v.media?.video ? `<video controls playsinline preload="metadata" poster="/${esc(v.media.cover)}" src="/${esc(v.media.video)}"></video>`
           : `<div class="ph tall"><span class="hand">Shown here once it's posted</span></div>`}
-        ${links(v.links)}
       </div>
-      <div class="vinfo">
+      <div class="rk-qc">
         <p class="kicker">${esc(v.lane)} · ${esc(day(v.created))}</p>
         <h1>${esc(v.yt_title ?? v.title)}</h1>
-        <p>${pill(v.status)}</p>
-        <div class="figures small">
+        <p>${pill(v.status)}</p>${links(v.links)}
+        <div class="rk-seats">
           <div><b>${v.seconds ? Math.round(v.seconds) + " s" : "–"}</b><span>length</span></div>
           <div><b>${esc(v.lufs ?? "–")}</b><span>LUFS</span></div>
           <div><b>${esc(v.wpm ?? "–")}</b><span>words/min</span></div>
           <div><b>${esc(v.review_total ?? "–")}<small>/${esc(v.review_max ?? 22)}</small></b><span>review</span></div>
         </div>
-        <h2>How it was made</h2>
-        ${deskStrip(v.board)}${v.animatic_total != null ? `<p class="meta">Screened on the animatic before the render: ${esc(v.animatic_total)}; after: ${esc(v.review_total)}.</p>` : ""}
         <h2>Automatic checks</h2>
-        <table class="gates"><tbody>${gates.map(([k, g]) =>
-          `<tr><td>${g.pass ? '<span class="tick" aria-label="pass">✓</span>' : '<span class="cross" aria-label="fail">✗</span>'}</td><th>${esc(k)}</th><td>${esc(g.detail)}</td></tr>`).join("")}</tbody></table>
+        <ul class="rk-checks">${gates.map(([k, g]) => `<li>${stamp(!!g.pass)}<b>${esc(k)}</b><span>${esc(g.detail)}</span></li>`).join("")}</ul>
         ${v.warnings?.length ? `<p class="meta">Warnings: ${v.warnings.map(esc).join("; ")}</p>` : ""}
-        <h2>Model review</h2>
-        <ul class="scores">${scores.map(([k, s]) =>
-          `<li><span>${esc(ROWS[k] ?? k)}</span><i class="bar"><i style="width:${(s / 2) * 100}%"></i></i><b>${s}/2</b></li>`).join("")}</ul>
-        ${v.fixes?.length ? `<details><summary>${v.fixes.length} fix${v.fixes.length === 1 ? "" : "es"} the reviewer asked for</summary>${v.fixes.map((f: Any) =>
-          `<p><b>${esc(ROWS[f.row] ?? f.row)}:</b> ${esc(f.fix)}</p>`).join("")}</details>` : ""}
       </div>
     </article>
-    ${v.media?.keyframes ? `<section><h2>Keyframes</h2><img class="strip" src="/${esc(v.media.keyframes)}" alt="Keyframes from the Short" loading="lazy" /></section>` : ""}
+    <div class="rk-two">
+      <section class="rk-plate"><h2>Model review</h2>
+        <ul class="scores">${scores.map(([k, sc]) =>
+          `<li><span>${esc(ROWS[k] ?? k)}</span><i class="bar"><i style="width:${(sc / 2) * 100}%"></i></i><b>${sc}/2</b></li>`).join("")}</ul>
+        ${v.fixes?.length ? `<details><summary>${v.fixes.length} fix${v.fixes.length === 1 ? "" : "es"} the reviewer asked for</summary>${v.fixes.map((f: Any) =>
+          `<p><b>${esc(ROWS[f.row] ?? f.row)}:</b> ${esc(f.fix)}</p>`).join("")}</details>` : ""}
+      </section>
+      <section class="rk-plate"><h2>How it was made</h2>
+        ${deskStrip(v.board)}${v.animatic_total != null ? `<p class="meta">Screened on the animatic before the render: ${esc(v.animatic_total)}; after: ${esc(v.review_total)}.</p>` : ""}
+      </section>
+    </div>
+    ${v.media?.keyframes ? `<section><h2>Keyframes</h2><img class="strip" src="/${esc(v.media.keyframes)}" alt="Keyframes from the video" loading="lazy" /></section>` : ""}
     ${v.script?.length ? `<section class="script"><h2>What Habit says</h2>${v.script.map((l: string) => `<p>${esc(l)}</p>`).join("")}</section>` : ""}`);
 }
 
 function cards() {
   shell("cards", `
-    <section class="lead"><p class="kicker">The Print Shop · carousel posts from the same brief</p><h1>Card posts</h1></section>
+    ${roomHead({ sign: "PRINT SHOP", floor: "1", resident: "packaging", title: "Carousels from the *same brief*.",
+      intro: "The research brief behind a video is also set as a carousel: slide 1 states the claim, every fact slide names its source, the last slide asks for the follow. It is approved on Telegram like a video.",
+      spec: [
+        ["Module", "`frameflow/cards.py` (topics → make → revise → post)"],
+        ["Input", "a sourced brief, reused from a video, so a carousel needs no new research"],
+        ["Output", "1080 × 1350 PNG slides rendered from HTML, a caption and hashtags"],
+        ["Models", "Sonnet writes the slide text; code checks lengths and that every fact has a source"],
+        ["Posting", "Instagram and Facebook carousels through the Graph API, with a browser fallback (The Pilot)"],
+      ] })}
     ${data.cards.map((c: Any) => `
-    <article class="cardpost">
-      <div class="run-head"><h2>${esc(c.title ?? c.id)}</h2>${pill(c.state)}</div>
+    <article class="rk-press">
+      <div class="run-head"><h2>${esc(c.title ?? c.id)}</h2>${c.state === "posted" ? '<span class="rk-stamp posted">POSTED</span>' : pill(c.state)}</div>
       <p class="meta">${c.day ? esc(day(c.day)) : esc(day(c.created))}${c.post_at ? " · posts " + esc(time(c.post_at)) : ""}</p>
-      ${c.slides?.length ? `<div class="slides" tabindex="0" aria-label="Slides">${c.slides.map((s: string, i: number) =>
-        `<img src="/${esc(s)}" alt="Slide ${i + 1}" loading="lazy" width="360" height="450" />`).join("")}</div>`
-        : `<ol class="slide-text">${c.slides_text.map((s: Any) =>
-          `<li><b>${esc(s.stat ?? "")}</b> ${esc(s.heading)}</li>`).join("")}</ol>`}
+      ${c.slides?.length ? `<div class="rk-line" tabindex="0" aria-label="Slides">${c.slides.map((sl: string, i: number) =>
+        `<img src="/${esc(sl)}" alt="Slide ${i + 1}" loading="lazy" width="360" height="450" />`).join("")}</div>`
+        : `<ol class="rk-line text">${c.slides_text.map((sl: Any) =>
+          `<li><b>${esc(sl.stat ?? "")}</b> ${esc(sl.heading)}</li>`).join("")}</ol>`}
       ${c.caption ? `<details><summary>Caption</summary><p class="pre">${esc(c.caption)}</p></details>` : ""}
       ${links(c.links)}
     </article>`).join("")}`);
@@ -366,19 +396,27 @@ function lessons() {
   const all: Any[] = data.lessons;
   const areas = [...new Set(all.map((l) => l.area))];
   const render = (area: string) => all.filter((l) => !area || l.area === area).map((l) => `
-    <li class="${esc(l.status)}">
-      <p><span class="tag">${esc(l.area)}</span> <span class="tag ${l.status === "active" ? "on" : ""}">${esc(l.status)}</span>
-      <span class="meta">from ${esc(l.source)} · seen ${esc(l.seen)} · helped ${esc(l.helped)} · hurt ${esc(l.hurt)}</span></p>
+    <li class="rk-pin ${esc(l.status)}">
+      <p class="rk-tags">${esc(l.area)} · ${esc(l.status)} · from ${esc(l.source)}</p>
       <p>${esc(l.text)}</p>
+      <p class="meta">seen ${esc(l.seen)} · helped ${esc(l.helped)} · hurt ${esc(l.hurt)}</p>
+      ${l.status === "retired" ? '<span class="rk-stamp fix">RETIRED</span>' : ""}
     </li>`).join("");
   shell("lessons", `
-    <section class="lead"><p class="kicker">The Notice Board, in the Archive · what each video taught the next one</p><h1>Lessons</h1>
-      <p class="lede">Reviews, failed checks and Talha's notes become lessons. The best 8 per area go into the writer's and director's prompts.</p></section>
-    <div class="filters" role="group" aria-label="Filter by area"><button data-a="" aria-pressed="true">All</button>${areas.map((a) =>
+    ${roomHead({ sign: "NOTICE BOARD", floor: "R", resident: "analyst", title: "What each video *taught* the next.",
+      intro: "After every video, its review, its failed checks and the owner's notes are distilled into general lessons. The 48-hour results then score each lesson by the videos it shaped.",
+      spec: [
+        ["Module", "`frameflow/lessons.py` (distil, rank, write the prompt files)"],
+        ["Ledger", "`research/lessons.jsonl`: area, text, evidence, source, status, seen / helped / hurt"],
+        ["Output", "the top 8 active lessons per area in `research/lessons-writer.txt` and `lessons-director.txt`, read by the writer and director as house rules"],
+        ["Scoring", "`frameflow/stats48.py` ties 48 h views and engagement back to the lessons a video used"],
+        ["Lifecycle", "active → promoted into a skill's rules, or retired when it stops helping"],
+      ] })}
+    <div class="rk-tabs" role="group" aria-label="Filter by area"><button data-a="" aria-pressed="true">All ${all.length}</button>${areas.map((a) =>
       `<button data-a="${esc(a)}" aria-pressed="false">${esc(a)}</button>`).join("")}</div>
-    <ul class="lessons" id="lessons">${render("")}</ul>`);
-  document.querySelectorAll<HTMLButtonElement>(".filters button").forEach((b) => b.addEventListener("click", () => {
-    document.querySelectorAll(".filters button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    <ul class="rk-cork" id="lessons">${render("")}</ul>`);
+  document.querySelectorAll<HTMLButtonElement>(".rk-tabs button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".rk-tabs button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     document.getElementById("lessons")!.innerHTML = render(b.dataset.a!);
   }));
 }
@@ -386,30 +424,68 @@ function lessons() {
 function library() {
   const lib = data.library;
   const tabs: [string, string, (x: Any) => string][] = [
-    ["hooks", "Unused hooks", (h) => `<li><span class="score">${esc(h.score)}</span><span>${esc(h.text)} <span class="tag">${esc(h.family)}</span></span></li>`],
-    ["knowledge", "Knowledge cards", (k) => `<li><span>${esc(k.text)} <a class="meta" href="${esc(k.source)}" rel="noopener" target="_blank">source ↗</a></span></li>`],
+    ["hooks", "Unused hooks", (h) => `<li><span>${esc(h.text)}</span><span class="rk-k">${esc(h.family)} · ${esc(h.score)}</span></li>`],
+    ["knowledge", "Knowledge cards", (k) => `<li><span>${esc(k.text)}</span><a class="rk-k" href="${esc(k.source)}" rel="noopener" target="_blank">source ↗</a></li>`],
     ["analogies", "Analogies", (a) => `<li><span>${esc(a.text)}</span></li>`],
-    ["scenes", "Scene recipes", (s) => `<li><span><span class="tag">${esc(s.template)}</span> ${esc(s.text)}</span></li>`],
+    ["scenes", "Scene recipes", (sc) => `<li><span>${esc(sc.text)}</span><span class="rk-k">${esc(sc.template)}</span></li>`],
   ];
+  const drawer = (k: string) => {
+    const [, l, f] = tabs.find((t) => t[0] === k)!;
+    return `<h2>${esc(l)}</h2><ol class="rk-icards">${(lib[k] as Any[]).slice(0, 40).map(f).join("")}</ol>`;
+  };
   shell("library", `
-    <section class="lead"><p class="kicker">The Archive shelves · reused, never imposed</p><h1>Asset library</h1>
-      <p class="lede">Passing videos leave behind facts, spare hooks, analogies and scene ideas. New videos are offered matching ones, with freshness and variety rules.</p>
-      <div class="figures">${tabs.map(([k, l]) => `<div><b>${lib.counts[k]}</b><span>${l.toLowerCase()}</span></div>`).join("")}</div></section>
-    ${tabs.map(([k, l, f]) => `<section><h2>${l}</h2><ol class="options plain">${(lib[k] as Any[]).slice(0, 40).map(f).join("")}</ol></section>`).join("")}`);
+    ${roomHead({ sign: "ARCHIVE", floor: "B", resident: "researcher", title: "Reused, *never imposed*.",
+      intro: "Videos that pass review leave their reusable parts here: sourced facts, unused hooks, analogies and storyboard recipes. A new brief is offered matching items as optional material, never as rules.",
+      spec: [
+        ["Module", "`frameflow/library.py` (extract, suggest, stats)"],
+        ["Store", "`research/assets/*.jsonl`, small JSON lines kept in git, each with its source video and scores"],
+        ["Intake", "only videos that passed review or were posted"],
+        ["Matching", "keyword overlap: serving a suggestion costs no model tokens"],
+        ["Freshness", "hooks rest 30 days after use, analogies 21, scene recipes 10; facts are re-checked by the fact-checker every time"],
+      ] })}
+    <div class="rk-cabinet" role="group" aria-label="Drawers">${tabs.map(([k, l], i) =>
+      `<button class="rk-drawer" data-k="${k}" aria-pressed="${i === 0}"><span class="rk-label">${esc(l)}</span><b>${lib.counts[k]}</b><i aria-hidden="true"></i></button>`).join("")}</div>
+    <section id="drawer">${drawer("hooks")}</section>`);
+  document.querySelectorAll<HTMLButtonElement>(".rk-drawer").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".rk-drawer").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    document.getElementById("drawer")!.innerHTML = drawer(b.dataset.k!);
+  }));
 }
 
 function board() {
   const b: Any = data.board ?? { desks: [], videos: 0 };
+  const last = data.videos.find((x: Any) => x.board?.desks?.length);
+  const res = (desk: string) => last?.board.desks.find((d: Any) => d.desk === desk);
+  const dur = (s: number) => (s >= 60 ? Math.round(s / 60) + " min" : Math.round(s) + " s");
   shell("board", `
-    <section class="lead"><p class="kicker">How a Short is made</p><h1>The studio board</h1>
-      <p class="lede">Since 26 October 2026 every video goes desk by desk, each with its own check, and the expensive render happens once, after a 12 fps draft (the animatic) has been screened. Nothing reaches Talha until the checks have run; nothing is posted until he approves.</p>
-      <div class="figures small">
-        <div><b>${esc(b.videos)}</b><span>videos made on the board</span></div>
-        <div><b>${esc(b.one_render ?? 0)}<small>/${esc(b.videos)}</small></b><span>with one delivery render</span></div>
-        <div><b>${esc(b.first_render_passed ?? 0)}<small>/${esc(b.videos)}</small></b><span>passed on that render</span></div>
-        <div><b>${esc(b.animatic_within_1 ?? 0)}<small>/${esc(b.videos)}</small></b><span>animatic within 1 point of the final</span></div>
-      </div></section>
-    <ol class="desklist">${b.desks.map((d: Any) => `<li><b>${esc(d.label)}</b><span>${esc(DESK_ABOUT[d.desk] ?? "")}</span></li>`).join("")}</ol>`);
+    ${roomHead({ sign: "RUN SHEET", floor: "5", resident: "showrunner", title: "How a piece *is made*.",
+      intro: "Each make runs as a pipeline of 17 stages. Every stage logs its result and its gate; a failed gate goes back for a bounded fix round before the delivery render, never after it. Nothing reaches the owner until the checks have run.",
+      spec: [
+        ["Modules", "`frameflow/board.py` runs the stages; `frameflow/progress.py` logs each step; `frameflow/daily.py` schedules the day"],
+        ["Input", "a research brief: verified facts with sources, the angle and the lane"],
+        ["Output", "`final.mp4` (1080 × 1920), `qa.json`, `review.json`, and an approval card on Telegram"],
+        ["Fix rounds", "1 timing round (voice, captions, re-hooks) and 1 animatic round (screening, art direction, standards), from the active profile"],
+        ["Renders", "one 12 fps animatic to screen, then exactly one delivery render"],
+        ["Approval", "the owner approves, revises in plain words, or rejects; nothing is posted without approval"],
+      ] })}
+    <div class="figures small">
+      <div><b>${esc(b.videos)}</b><span>videos made on the board</span></div>
+      <div><b>${esc(b.one_render ?? 0)}<small>/${esc(b.videos)}</small></b><span>with one delivery render</span></div>
+      <div><b>${esc(b.first_render_passed ?? 0)}<small>/${esc(b.videos)}</small></b><span>passed on that render</span></div>
+      <div><b>${esc(b.animatic_within_1 ?? 0)}<small>/${esc(b.videos)}</small></b><span>animatic within 1 point of the final</span></div>
+    </div>
+    <div class="rk-clip">
+      <h2>${last ? `Run sheet · ${esc(day(last.created))}` : "Run sheet"}</h2>
+      ${last ? `<p class="meta"><a href="#/video/${encodeURIComponent(last.id)}">${esc(last.yt_title || last.title)}</a> · ${last.board.renders} render · ${last.board.fix_rounds} fix rounds · ${esc(last.board.minutes ?? "–")} min in all</p>` : ""}
+      <ol class="rk-rows">${b.desks.map((d: Any, i: number) => {
+        const r = res(d.desk);
+        return `<li><span class="n">${String(i + 1).padStart(2, "0")}</span>
+          <canvas data-portrait="${esc(d.desk)}" width="80" height="96" aria-hidden="true"></canvas>
+          <span class="who"><b>${esc(who(d.desk))}</b><span>${esc(d.label)} · ${esc(DESK_ABOUT[d.desk] ?? "")}</span></span>
+          <span class="st">${r?.gate != null ? stamp(r.gate, "✓ OK", "✗ FIX") : r?.steps ? '<span class="meta">done</span>' : '<span class="meta">–</span>'}</span>
+          <span class="t">${r?.steps ? dur(r.seconds) + (r.steps > 1 ? " · ×" + r.steps : "") : ""}</span></li>`;
+      }).join("")}</ol>
+    </div>`);
 }
 
 function build() {
@@ -417,13 +493,22 @@ function build() {
   const u: Any[] = data.usage;
   const max = Math.max(1, ...u.map((x) => x.tokens));
   shell("build", `
-    <section class="lead"><p class="kicker">How far the build has come</p><h1>Build progress</h1>
-      <p class="lede">Every task has an acceptance test and is ticked only after it ran.</p></section>
+    ${roomHead({ sign: "ENGINE ROOM", floor: "4", resident: "animator", title: "The engine and *the build*.",
+      intro: "Everything runs on one laptop: Python services kept alive by PM2, a Telegram bot for approvals, local voice and rendering. Every model call's tokens are logged, so the cost of each piece is measured, not guessed.",
+      spec: [
+        ["Pipeline", "Python 3 managed with uv; this site is TypeScript + Vite, deployed to Vercel from git"],
+        ["Models", "Claude Code CLI (`claude -p`) inside a Pro plan: Opus where quality is decided, Sonnet for fixes, Haiku for small jobs (`research/profiles/lean.json`)"],
+        ["Voice", "Chatterbox on the GPU, Kokoro as the fallback; both local and free"],
+        ["Video", "HyperFrames compositions (HTML + GSAP, seek-safe) rendered at 1080 × 1920; FFmpeg mixes and measures loudness"],
+        ["Services", "PM2: the Telegram bot, the control panel, the browser for posting, this build's cockpit"],
+        ["Tracking", "phasedoc: every task has an acceptance test and is ticked only after it ran"],
+      ] })}
+    <section class="rk-plate"><h2>Build progress</h2>
     <ul class="phases">${pd.map((p) => `
       <li><span class="pid">${esc(p.id)}</span><span class="ptitle">${esc(p.title)}</span>
         <i class="bar wide"><i style="width:${p.total ? (p.done / p.total) * 100 : 0}%"></i><i class="part" style="width:${p.total ? (p.partial / p.total) * 100 : 0}%"></i></i>
-        <b>${p.done}/${p.total}</b></li>`).join("")}</ul>
-    <section><h2>Model tokens per day</h2>
+        <b>${p.done}/${p.total}</b></li>`).join("")}</ul></section>
+    <section class="rk-plate"><h2>Model tokens per day</h2>
       <ul class="usage">${u.map((d) => `<li><span>${esc(day(d.day))}</span><i class="bar wide"><i style="width:${(d.tokens / max) * 100}%"></i></i><b>${(d.tokens / 1000).toFixed(0)}k · ${d.calls} calls</b></li>`).join("")}</ul>
     </section>`);
 }

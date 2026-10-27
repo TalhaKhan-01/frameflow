@@ -8,7 +8,7 @@ const makes = data.videos.filter((v: { timeline?: unknown }) => v.timeline)
 const night = new URLSearchParams(location.search).get("night");
 const house = mountHouse(document.getElementById("house")!, {
   makes, night: night === null ? undefined : night === "1",
-  stats: ["901 ideas collected so far.", "4 Shorts made, 2 posted.", "The kettle is always on."],
+  stats: ["901 ideas collected so far.", "4 videos made, 2 posted.", "The kettle is always on."],
   links: { library: "/#/library", lessons: "/#/lessons" },
 });
 (window as unknown as { house: unknown }).house = house;
