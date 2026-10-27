@@ -131,9 +131,11 @@ def research(stories, out):
 WRITER_SYSTEM = """You write The Daily Habit, a daily news show for YouTube Shorts / Instagram Reels, read aloud by the narrator
 Habit (warm, quick, a little cheeky; Indian, speaks clear English; audience Indians aged 18-30, most don't code).
 Format: a cold open, then one segment per story in the given order, then the outro. Every segment is 22-28 spoken words
-(about 8-10 seconds; never over 30) and does four things: a hook that names the story, ONE fact (the strongest), a witty line or pun
-that is actually funny and never cringe (wordplay on the story, a desi everyday comparison, a deadpan aside), and a quick
-handoff into the next story (the last segment hands off to the outro).
+(about 8-10 seconds; never over 30): a hook that names the story, ONE fact (the strongest), why it matters to the viewer
+in plain words, and a quick handoff into the next story (the last segment hands off to the outro).
+Humour: at most MAX_JOKES witty lines in the whole episode, only where one comes naturally from the story (a light desi
+comparison, a deadpan aside). Never force a pun; a clear, sharp line beats a weak joke. The owner found forced jokes
+cringe, so when in doubt, leave it out.
 Hard rules:
 - Use only the verified facts given. Never add a number, name or claim that is not in them; never overstate (see cautions).
 - No digits anywhere in `say`: write numbers as words the way a person says them ("ninety percent", "sixteen point three
@@ -142,7 +144,7 @@ Hard rules:
   no "in today's episode", no greeting.
 - open: 10-20 words, starts with "Breaking:" and teases the top two stories with a stake.
 - outro: 10-20 words, a one-line wrap that calls back to one story, and ends exactly with "Make learning a Habit."
-- witty: copy the exact witty sentence or phrase from `say` (it must appear in say verbatim).
+- witty: copy the exact witty sentence from `say` (verbatim), or "" when the segment has no joke (most segments).
 - emotion: Habit's face for that line, one of neutral, excited, surprised, doubtful, smug, worried, laughing, serious.
   Match it to the line, and vary it across the episode.
 - headline: the on-screen topic strip, at most 38 characters. wall: one big word or number for the studio wall, at most
@@ -154,6 +156,10 @@ Hard rules:
   headline {top, bottom, kicker}, quote {text (max 20 words, verbatim from a fact), who}, list {title, items: 3 short}.
   Every number in a graphic must be in the verified facts. Labels short (max 28 characters).
 Return JSON only."""
+
+def writer_system():
+    return WRITER_SYSTEM.replace("MAX_JOKES", str(cfg().get("max_jokes", 3)))
+
 
 G_ITEM = {"type": "object", "properties": {"label": {"type": "string"}, "value": {"type": "string"}}}
 LINE = {"type": "object", "required": ["say", "emotion"], "properties": {"say": {"type": "string"}, "emotion": {"type": "string", "enum": EMOTIONS}}}
@@ -176,7 +182,7 @@ def stories_block(data):
     out = []
     for s in data["stories"]:
         out.append(f"STORY {s['story']} ({s['lane']}) {s['headline']} [source: {s.get('source_name', '')}]\n"
-                   f"  pun seed (improve or replace): {s.get('pun', '')}\n"
+                   f"  a possible light angle (use only if it comes naturally): {s.get('pun', '')}\n"
                    + "\n".join(f"  {f['id']}: {f['text']}" for f in s["facts"])
                    + (f"\n  cautions: {'; '.join(s.get('cautions', [])[:3])}" if s.get("cautions") else ""))
     return "\n".join(out)
@@ -206,7 +212,7 @@ def lint(script, data):
         errs.append("outro must end exactly with 'Make learning a Habit.'")
     facts = {f["id"]: f for s in data["stories"] for f in s["facts"]}
     for g in script["segments"]:
-        if g["witty"].strip().strip(".") not in g["say"]:
+        if g["witty"].strip() and g["witty"].strip().strip(".") not in g["say"]:
             errs.append(f"segment {g['story']}: witty line is not in say verbatim")
         if len(g["headline"]) > 40:
             errs.append(f"segment {g['story']}: headline over 38 characters")
@@ -229,6 +235,9 @@ def lint(script, data):
     secs = sum(words(t) for _, t, _, _ in lines) / wps() + STING + GAP * len(lines) + END_HOLD
     if not c["length"][0] - 8 <= secs <= c["length"][1]:
         errs.append(f"estimated length {secs:.0f} s (target {c['length'][0]}-{c['length'][1]} s)")
+    jokes = sum(1 for g in script["segments"] if g["witty"].strip())
+    if jokes > c.get("max_jokes", 3):
+        errs.append(f"{jokes} witty lines (at most {c.get('max_jokes', 3)}: keep only the ones that come naturally)")
     types = [g["graphic"]["type"] for g in script["segments"]]
     if max(types.count(t) for t in set(types)) > 3:
         errs.append(f"graphics too samey: {types} (no type more than 3 times)")
@@ -241,8 +250,8 @@ def lint(script, data):
 JUDGE_SYSTEM = """You are the independent script editor (table read) for The Daily Habit, a fast daily news show (8 stories
 in about 85 seconds) read aloud by Habit for Indians aged 18-30. Read the script aloud in your head, against the verified
 facts. Score each row 0-2 (2 = ready to air, 1 = mixed, 0 = broken):
-hook (the open stops a scroll), clarity (each story is understood in one listen, no jargon), wit (the witty lines are
-genuinely funny or clever, not cringe, not forced), flow (handoffs make it one show, not a list), accuracy (every claim is
+hook (the open stops a scroll), clarity (each story is understood in one listen, no jargon), wit (the few witty lines
+land naturally; any forced or cringe joke scores 0 for this row; no joke is better than a forced one), flow (handoffs make it one show, not a list), accuracy (every claim is
 in the facts, nothing overstated, cautions respected), variety (emotions and graphics fit and vary), ending (the outro lands).
 For every row under 2 give one concrete fix naming the segment. Be strict: 2 means a professional editor would air it.
 The format is fixed; never suggest changing it: the open starts with "Breaking:" (10-20 words), every segment is 22-28
@@ -271,7 +280,7 @@ def write(data, out, ep, date):
     ask = (f"Episode {ep} of The Daily Habit, {date}. {len(data['stories'])} stories, in this order:\n{stories_block(data)}\n\n"
            + (f"House lessons from earlier videos (apply what fits a news rundown):\n{lessons.read_text()[:2500]}\n\n" if lessons.exists() else "")
            + "Write the episode.")
-    script = llm.call(ask, WRITER_SYSTEM, WRITER_SCHEMA, model=c["writer_model"], purpose="show.write", effort="high", timeout=1500)
+    script = llm.call(ask, writer_system(), WRITER_SCHEMA, model=c["writer_model"], purpose="show.write", effort="high", timeout=1500)
     history, best, reads = [], None, 0
     for rnd in range(2 * c["doctor_rounds"] + 2):   # a lint-only repair may follow any fix round that broke the format
         errs = lint(script, data)
@@ -288,7 +297,7 @@ def write(data, out, ep, date):
         notes = "\n".join(f"- {e}" for e in errs) or "\n".join(f"- {f['row']}: {f['fix']}" for f in tr["fixes"])
         script = llm.call(f"{ask}\n\nYour draft:\n{json.dumps(script, ensure_ascii=False)}\n\nFix these problems (keep what works, "
                           f"change only what the notes need, every rule still applies; count the words of every segment: 22-28):\n{notes}",
-                          WRITER_SYSTEM, WRITER_SCHEMA, model=c["doctor_model"], purpose=f"show.doctor{rnd + 1}", effort="medium", timeout=1500)
+                          writer_system(), WRITER_SCHEMA, model=c["doctor_model"], purpose=f"show.doctor{rnd + 1}", effort="medium", timeout=1500)
     (out / "script-rounds.json").write_text(json.dumps(history, ensure_ascii=False, indent=1))
     if best is None:
         raise RuntimeError(f"no draft passed the script checks: {history[-1]['lint'][:4]}")
@@ -441,16 +450,25 @@ def mix(c, voice_at, out):
     i = int(th_at * SR)
     mtrack[i:i + len(th)] += th[:n - i] * 10 ** (m.get("theme_gain_db", -8) / 20)
     bed_from = c["stingAt"] + STING - 0.2
-    bed = music.bed("news", total - bed_from + 1.0, seed=5).astype(np.float32)
+    track = m.get("track", "investigations")
+    if track.startswith("synth:"):
+        bed = music.bed(track[6:], total - bed_from + 1.0, seed=5).astype(np.float32)
+    else:   # a real track, looped to the show's length, like the single-story Shorts
+        src = sound.load(sound.MUSIC_DIR / sound.TRACKS[track][0])
+        need = int((total - bed_from + 1.0) * SR)
+        bed = np.concatenate([src] * (need // len(src) + 1))[:need].astype(np.float32)
+        bed /= max(np.max(np.abs(bed)), 1e-9) / 0.9
+    fade = min(int(0.6 * SR), len(bed))
+    bed[:fade] *= np.linspace(0, 1, fade)[:, None]
     i = int(bed_from * SR)
     bed = bed[:n - i]
-    gain = np.full(n, 10 ** (m.get("bed_gain_db", -24) / 20), np.float32)
+    gain = np.full(n, 10 ** (m.get("bed_gain_db", -13) / 20), np.float32)
     talk = np.zeros(n, np.float32)
     for _, start, secs in voice_at:
         talk[int(start * SR):int((start + secs) * SR)] = 1
     k = int(0.15 * SR)
     talk = np.convolve(talk, np.ones(k) / k, mode="same").astype(np.float32)
-    duck = 10 ** (m.get("duck_db", -10) / 20)
+    duck = 10 ** (m.get("duck_db", -7) / 20)
     g = gain * (1 - talk * (1 - duck))
     mtrack[i:i + len(bed)] += bed * g[i:i + len(bed), None]
     # end card: the theme's sting cut again
@@ -480,6 +498,7 @@ def mix(c, voice_at, out):
     final = out / "mix.wav"
     media.ffmpeg("-i", str(raw), "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000", "-ac", "2", str(final))
     (out / "sfx.json").write_text(json.dumps(sheet, indent=1))
+    (out / "music.json").write_text(json.dumps({"track": track, "bed_from": bed_from, **m}, indent=1))
     return final, sheet
 
 
@@ -660,7 +679,10 @@ def produce(day, ep, slug, data, script, out):
     led = sound.ledger()
     assets = [{"file": f"sfx2/{n}.wav", **{k: led.get(f"sfx2/{n}.wav", {}).get(k) for k in ("source", "licence", "url", "author")}}
               for n in sorted({x["name"] for x in sheet})]
-    assets += [{"file": "theme + bed", "source": "frameflow.show.theme / frameflow.music (synthesised)", "licence": "original work by Talha Khan"}]
+    assets += [{"file": "theme", "source": "frameflow.show.theme (synthesised)", "licence": "original work by Talha Khan"}]
+    track = cfg().get("music", {}).get("track", "")
+    if track and not track.startswith("synth:"):
+        assets.append(led.get(f"music-cc/{sound.TRACKS[track][0]}", {"file": track}))
     (out / "assets.json").write_text(json.dumps(assets, indent=1))
     facts = [dict(f, story=s["story"]) for s in data["stories"] for f in s["facts"]]
     stories = {s["story"]: s for s in data["stories"]}
@@ -709,11 +731,11 @@ def revise(day, notes):
     with progress.step("writer: Talha's revise notes", desk="writer"):
         script = llm.call(f"{ask}\n\nThe aired draft:\n{json.dumps(old, ensure_ascii=False)}\n\nThe owner asked for these changes "
                           f"(apply them exactly; keep everything else; every rule still applies):\n{notes}",
-                          WRITER_SYSTEM, WRITER_SCHEMA, model=c["doctor_model"], purpose="show.revise", effort="medium", timeout=1500)
+                          writer_system(), WRITER_SCHEMA, model=c["doctor_model"], purpose="show.revise", effort="medium", timeout=1500)
         errs = lint(script, data)
         if errs:
             script = llm.call(f"{ask}\n\nYour draft:\n{json.dumps(script, ensure_ascii=False)}\n\nFix these problems, keeping the owner's "
-                              f"changes:\n" + "\n".join(f"- {e}" for e in errs), WRITER_SYSTEM, WRITER_SCHEMA, model=c["doctor_model"],
+                              f"changes:\n" + "\n".join(f"- {e}" for e in errs), writer_system(), WRITER_SCHEMA, model=c["doctor_model"],
                               purpose="show.revise-fix", effort="medium", timeout=1500)
             errs = lint(script, data)
         if errs:

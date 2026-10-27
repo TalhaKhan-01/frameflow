@@ -29,8 +29,11 @@
  "doctor_rounds": 2,
  "judge_model": "opus",
  "music": {
-  "bed_gain_db": -24,
-  "duck_db": -10,
-  "theme_gain_db": -8
- }
+  "track": "investigations",
+  "bed_gain_db": -13,
+  "duck_db": -7,
+  "theme_gain_db": -8,
+  "_about": "a real music bed under the whole show, like the single-story Shorts (energy gain about -12 dB, 7 dB dip under the voice); Talha 27 Oct: 'no bg music while the show runs'. track = a sound.TRACKS name (CC BY: credited in the post text) or 'synth:<mood>' for an original frameflow.music bed"
+ },
+ "max_jokes": 3
 }
