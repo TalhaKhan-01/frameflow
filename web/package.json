@@ -7,7 +7,8 @@
     "dev": "vite --host 127.0.0.1 --port 7308 --strictPort",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 7308 --strictPort",
-    "walk": "node scripts/walk.mjs"
+    "walk": "node scripts/walk.mjs",
+    "build:house": "vite build --config vite.house.config.js"
   },
   "devDependencies": {
     "playwright": "1.63.0",
