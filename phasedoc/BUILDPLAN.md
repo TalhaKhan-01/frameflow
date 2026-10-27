@@ -473,6 +473,7 @@
     - [~] **P15.4.2** Revise runs exactly the change order (render stages option)  
       _Acceptance:_ a re-mix-only order re-runs the mix and no voice or frames; a words order enters at the writer and goes through every desk to one render (progress records)
       _Note 2026-10-26:_ producer.apply runs only the order's stages (remix_stage for sound, board.run for words/visuals/voice, cover redraw, packaging with owner_notes); tests/test_producer_apply.py 4 passed with stubs. Live progress record still to come (P15.6.5)
+      _Note 2026-10-27:_ deferred by Talha (27 Oct): after the visual redesign
     - [x] **P15.4.3** Telegram Revise: known issues as buttons, own words, Go / Change it / Cancel  
       _Acceptance:_ with Telegram stubbed: Revise -> issues message -> toggles -> Done -> change-order message -> Go spawns revise; Cancel restores the video card; Change it waits for new words
       _Note 2026-10-26:_ bot: Revise -> numbered issues as toggles (✓), All / Done / Cancel, own words any time -> 'order' job (state ordering) -> order message with Go / Change it / Cancel; tests/test_revise_flow.py 3 passed (incl. stale buttons do nothing)
@@ -501,6 +502,7 @@
       _Acceptance:_ the next real make shows every desk's gate and one render; animatic vs final score recorded; Claude calls and folder size compared with the 26 Oct make in the vault log; a loose-sentence Revise runs only its order's stages
       _Note 2026-10-27:_ 26 Oct night test ended on the usage limit in the last screening (37 min); board.make now resumes after the plan (645e1bb). Live proof moves to the 27 Oct 15:00 make
       _Note 2026-10-27:_ 28 Oct test make (started by hand, lean): every desk's gate recorded, one render, animatic 14 = final 14; 29.7 min; 405k tokens vs ~835k; still to do: one real Revise from loose words
+      _Note 2026-10-27:_ deferred by Talha (27 Oct): after the visual redesign
     - [x] **P15.6.6** Lean profile: model and effort per job, measured on a real make  
       _Acceptance:_ frameflow profile use lean sets Opus/high only for draft, storyboard and animatic screening, Sonnet/medium for hooks and fix rounds, Haiku for card text; the next board make's tokens per desk (llm-usage + skill usage logs) are written in vault Docs/Token Budget.md and come in under the 26 Oct diet make
       _Note 2026-10-27:_ built 04923b7 (skills: hooks_effort/doctor_effort keys; cards_model); lean active; measurement pending on the 28 Oct test make
@@ -508,6 +510,7 @@
     - [ ] **P15.6.7** Scoped writer fixes so the director can stay scene-only  
       _Acceptance:_ in a fix round whose notes name scenes, the writer changes only the lines of those scenes (other beats byte-identical, beat count kept), so direct.revise takes the director's --scenes path; on a replay of the 28 Oct notes the director fix runs scene-only and costs under half of the 81k full fix
       _Note 2026-10-27:_ found on the 28 Oct test: both director fixes were full rewrites (~40k each) because the writer rewrote the whole script (beat count changed) and some notes (captions, sources) named no scene; the full redraw also undid visuals that had passed (gap 2.6 -> 3.5 s)
+      _Note 2026-10-27:_ deferred by Talha (27 Oct): after the visual redesign
   - **P15.7 Public side after the build** (0/2)
     - [~] **P15.7.1** Studio web app shows the board  
       _Acceptance:_ web export includes desks, gates and the hit rate; the live https://frameflow-studio-tau.vercel.app shows them after the PIN; deployed by git push, production SHA = HEAD
