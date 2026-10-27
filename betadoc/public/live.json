@@ -1,18 +1,18 @@
 {
- "generated": "2026-10-27T10:30:18",
- "ideas": 901,
- "videos_made": 4,
+ "generated": "2026-10-27T11:13:02",
+ "ideas": 1097,
+ "videos_made": 5,
  "videos_posted": 2,
  "card_posts": 2,
- "lessons": 29,
+ "lessons": 31,
  "library": 99,
- "leaves_done": 96,
- "leaves_partial": 31,
- "leaves_total": 136,
+ "leaves_done": 99,
+ "leaves_partial": 30,
+ "leaves_total": 137,
  "today": {
-  "day": "2026-10-27",
-  "lane": "Money",
-  "state": "skipped"
+  "day": "2026-10-28",
+  "lane": "How tech works",
+  "state": "video-sent"
  },
  "latest": {
   "title": "Microsoft's AI Beat Doctors on Hard Test Cases. Wait, What?",
@@ -48,10 +48,84 @@
   "instagram": "https://www.instagram.com/madebythirdspace/"
  },
  "board": {
-  "videos": 0,
-  "one_render": 0,
+  "videos": 1,
+  "one_render": 1,
   "first_render_passed": 0,
-  "animatic_within_1": 0,
-  "latest": null
+  "animatic_within_1": 1,
+  "latest": {
+   "title": "Thieves stole $100M+ of AI freight, mostly with paperwork",
+   "renders": 1,
+   "fix_rounds": 2,
+   "minutes": 33.1,
+   "animatic": 14,
+   "final": 14,
+   "max": 22,
+   "desks": [
+    {
+     "label": "Showrunner",
+     "gate": null
+    },
+    {
+     "label": "Researcher",
+     "gate": null
+    },
+    {
+     "label": "Fact-checker",
+     "gate": true
+    },
+    {
+     "label": "Packaging",
+     "gate": true
+    },
+    {
+     "label": "Writer",
+     "gate": null
+    },
+    {
+     "label": "Director",
+     "gate": null
+    },
+    {
+     "label": "Narrator",
+     "gate": false
+    },
+    {
+     "label": "Script editor",
+     "gate": true
+    },
+    {
+     "label": "Standards",
+     "gate": true
+    },
+    {
+     "label": "Animatic",
+     "gate": false
+    },
+    {
+     "label": "Art director",
+     "gate": false
+    },
+    {
+     "label": "Screening",
+     "gate": false
+    },
+    {
+     "label": "Render",
+     "gate": null
+    },
+    {
+     "label": "QC",
+     "gate": false
+    },
+    {
+     "label": "You",
+     "gate": null
+    },
+    {
+     "label": "Analyst",
+     "gate": null
+    }
+   ]
+  }
  }
 }

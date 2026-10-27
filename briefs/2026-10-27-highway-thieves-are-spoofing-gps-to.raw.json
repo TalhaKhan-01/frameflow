@@ -1,0 +1,107 @@
+{
+ "topic": "Organised thieves have stolen over $100 million of AI data-center freight on US highways since June 2026, mostly by hijacking trucking-broker accounts and faking identities, with GPS spoofing in at least one big case; AI hardware makes every truckload worth millions.",
+ "audience": "Indians aged 18-30, curious about tech, AI and money, mostly non-coders. They know AI needs huge data centers and chips are expensive. They probably don't know how freight brokering works or that GPS can be faked.",
+ "angle_hint": "Twist: the headline says GPS spoofing, but the bigger trick is paperwork and accounts. Thieves mostly break into the trust system (hacked broker accounts, fake loads, fake driver IDs), not the truck. GPS faking is one tool in a con, and thieves even rammed police escorts. Why now: one AI server rack costs about $3M, so a truck is a vault on wheels. Indian angle is framing only (no India theft data found): India's data-center build-out and tracked logistics rely on the same trust in digital tracking.",
+ "facts": [
+  {
+   "id": "f1",
+   "text": "NBC News reported thieves have stolen more than $100 million in data center freight since June 2026.",
+   "source": "https://yro.slashdot.org/story/26/10/26/1759233/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo",
+   "also": [
+    "https://www.nbcnews.com/tech/security/grand-theft-ai-highway-thieves-are-stealing-millions-data-center-gear-rcna603733"
+   ]
+  },
+  {
+   "id": "f2",
+   "text": "Thieves hack freight brokers' accounts, post fake shipments to attract real bids, and send malicious links to trucking companies; once clicked, they take over accounts and bid on real shipments.",
+   "source": "https://yro.slashdot.org/story/26/10/26/1759233/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo"
+  },
+  {
+   "id": "f3",
+   "text": "Real drivers are sometimes hired unknowingly to pick up cargo; in other cases fake driver's licenses place accomplices as drivers.",
+   "source": "https://yro.slashdot.org/story/26/10/26/1759233/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo"
+  },
+  {
+   "id": "f4",
+   "text": "In one of the largest thefts, GPS tracking coordinates were spoofed to avoid digital monitoring.",
+   "source": "https://yro.slashdot.org/story/26/10/26/1759233/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo"
+  },
+  {
+   "id": "f5",
+   "text": "Targets include servers, fiber-optic cables, memory chips, copper wire and bitcoin mining machines.",
+   "source": "https://yro.slashdot.org/story/26/10/26/1759233/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo"
+  },
+  {
+   "id": "f6",
+   "text": "In two of the largest thefts, nothing was recovered, and off-duty police officers hired as escorts were targeted in hit-and-run incidents.",
+   "source": "https://yro.slashdot.org/story/26/10/26/1759233/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo"
+  },
+  {
+   "id": "f7",
+   "text": "A Los Angeles County Sheriff's sergeant told NBC this is how most of these thefts are now carried out, unlike earlier mostly opportunistic highway thefts.",
+   "source": "https://yro.slashdot.org/story/26/10/26/1759233/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo"
+  },
+  {
+   "id": "f8",
+   "text": "In Los Angeles County, police recovered data center cooling equipment bound for Deepcool AI, mixed with nicotine pouches, TVs and cosmetics.",
+   "source": "https://yro.slashdot.org/story/26/10/26/1759233/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo"
+  },
+  {
+   "id": "f9",
+   "text": "Cook County Sheriff's Office estimated two stolen loads held about $300,000 in copper wire and about $1 million in data center power equipment.",
+   "source": "https://yro.slashdot.org/story/26/10/26/1759233/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo"
+  },
+  {
+   "id": "f10",
+   "text": "Scott Cornell of SPG Cargo & Logistics put known data center freight thefts at $110.6 million since June 3 (as of Aug. 14, 2026); individual cases ranged from $2 million to $38 million.",
+   "source": "https://www.freightwaves.com/news/nearly-111m-in-data-center-freight-stolen-as-thieves-test-bump-and-run-tactic"
+  },
+  {
+   "id": "f11",
+   "text": "Thieves deliberately crashed into security escorts on two high-value tech loads and the drivers kept going; Cornell linked both to carrier verification failures and said drivers 'weren't properly vetted'.",
+   "source": "https://www.freightwaves.com/news/nearly-111m-in-data-center-freight-stolen-as-thieves-test-bump-and-run-tactic"
+  },
+  {
+   "id": "f12",
+   "text": "Cornell estimated six or seven of every 10 stolen US loads now leave the country.",
+   "source": "https://www.freightwaves.com/news/nearly-111m-in-data-center-freight-stolen-as-thieves-test-bump-and-run-tactic"
+  },
+  {
+   "id": "f13",
+   "text": "Overhaul says cargo thieves stole more than $150 million in AI equipment in 2026, and thefts of data center equipment, chips and computing components rose 34% since 2024.",
+   "source": "https://landline.media/theft-by-deception-continues-to-drive-high-value-losses/"
+  },
+  {
+   "id": "f14",
+   "text": "A flagship AI server rack costs about $3 million, per Overhaul, so one truckload can hold eight figures in value.",
+   "source": "https://landline.media/theft-by-deception-continues-to-drive-high-value-losses/"
+  },
+  {
+   "id": "f15",
+   "text": "Overhaul says deception (not force) was used in 92% of thefts involving high-value technology shipments, a shift 'from force to fraud'.",
+   "source": "https://landline.media/theft-by-deception-continues-to-drive-high-value-losses/"
+  },
+  {
+   "id": "f16",
+   "text": "Arizona passed a law in July 2026 creating a statewide cargo theft task force and enhanced sentences for fraud-based theft; California, Michigan and Tennessee also passed cargo theft laws in 2026.",
+   "source": "https://landline.media/theft-by-deception-continues-to-drive-high-value-losses/"
+  },
+  {
+   "id": "f17",
+   "text": "Cornell recommends secure digital bills of lading and thorough carrier and driver checks, noting paper bills of lading let thieves alter product descriptions.",
+   "source": "https://www.freightwaves.com/news/nearly-111m-in-data-center-freight-stolen-as-thieves-test-bump-and-run-tactic"
+  }
+ ],
+ "cautions": [
+  "I could not open Ars Technica or NBC News (blocked/paywalled); NBC details come via a Slashdot summary. Check originals before quoting.",
+  "The totals differ by source and definition: $110.6M (Cornell, since June 3, as of Aug), over $150M (Overhaul, all 2026 AI equipment). Don't mix them or call any exact.",
+  "GPS spoofing is reported in only one large case; FreightWaves does not mention it. Don't imply it is the main method. Fraud and account takeover are.",
+  "Escort attacks were on two loads; Cornell cautioned against calling it a nationwide trend.",
+  "The Cornell figure is an estimate of 'known reported' thefts; the 'six or seven in ten leave the country' figure is his estimate, not a measured stat.",
+  "Nothing found on India-specific thefts; keep the Indian angle as analogy, not fact.",
+  "Spoofing mechanics (fake GPS signals vs falsifying tracker data) were not explained in the sources I read; don't state which was used."
+ ],
+ "notes": "Tone: heist-movie but grounded; open with 'a truck worth Rs 800 crore vanished, and its GPS said it was fine'. Analogy: like someone phoning the school, posing as your parent, to collect your friend's kid; the lock was never the weakness, the verification was. Explain spoofing as feeding the tracker a fake location, so the dashboard shows a truck where it isn't. Practical takeaway: for businesses, verify identities through a second channel and don't trust a dot on a map; for viewers, don't click links in 'urgent' work messages. Ending question: if a tracking dot on a screen can lie, what else do we trust just because it's on a dashboard?",
+ "lane": "how-tech-works",
+ "story_url": "https://arstechnica.com/tech-policy/2026/10/highway-thieves-are-spoofing-gps-to-steal-millions-in-data-center-bound-cargo/"
+}

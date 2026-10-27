@@ -11,6 +11,8 @@
     "words_per_second": 2.89,
     "_words_per_second": "measured from the real voice (words / voice seconds, pauses included), median of the last videos; frameflow.bar.calibrate() updates it after every voice and copies it to the writer's and director's configs",
     "measured_from": [
+      "2026-10-27-highway-thieves-are-spoofing-gps-to",
+      "p15-board-test",
       "2026-10-26-china-s-moonshot-ai-launches-kimi",
       "2026-10-25-microsoft-develops-ai-tool-that-can",
       "black-october"

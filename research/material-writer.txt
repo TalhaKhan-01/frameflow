@@ -1,8 +1,8 @@
 - hook (bold-claim, scored 10/14): Microsoft's new AI doctor pays for every test. In pretend money.
+- hook (analogy, scored 10/14): Picture a family WhatsApp group where every uncle is a doctor.
 - hook (question, scored 11/14): What if an AI had to pay for every test it ordered?
-- hook (mini-story, scored 9/14): On Thursday, Science published an AI that argues with itself.
-- hook (contrast, scored 11/14): It beat generalist doctors. It hasn't met a single real patient.
+- hook (question, scored 9/14): How do you even check if an AI is a good doctor?
 - analogy: Earlier AI tests weren't step by step. They handed over the whole question paper.
-- analogy: So what did it actually win? First rank in a very hard mock test.
-- analogy: The cause? A hole in PHP, the cook that makes each page fresh when you open it.
 - analogy: Basically a society committee. Except this one actually checks the accounts.
+- analogy: The cause? A hole in PHP, the cook that makes each page fresh when you open it.
+- analogy: Nearly seven in ten sites we can check? Cooked in PHP. The internet's dal-chawal.

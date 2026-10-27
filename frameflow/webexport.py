@@ -263,7 +263,7 @@ def live(data):
                                   "gates": {k: g["pass"] for k, g in gates.items()}, "media": media},
             "channels": data["channels"],
             "board": {**{k: v for k, v in (data.get("board") or {}).items() if k != "desks"},
-                      "latest": next(({"title": v["yt_title"] or v["title"], "renders": v["board"]["renders"],
+                      "latest": next(({"title": v.get("yt_title") or v["title"], "renders": v["board"]["renders"],
                                        "fix_rounds": v["board"]["fix_rounds"], "minutes": v["board"]["minutes"],
                                        "animatic": v.get("animatic_total"), "final": v["review_total"], "max": v.get("review_max"),
                                        "desks": [{"label": d["label"], "gate": d["gate"]} for d in v["board"]["desks"]]}
