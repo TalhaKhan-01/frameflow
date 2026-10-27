@@ -420,6 +420,8 @@ TASKS = [
      "the Cabin shows the owner only as a silhouette whose phone rings at the approval step of a replay; Habit's ID card and booth sign read 'Bade Sahab ka Khaas'; screenshots looked at", "hq"),
     ("P17.3.7", "P17.3", "HQ live on Vercel by git push",
      "web npm run walk prints WALK OK at 1440, 390 and --reduced; scripts/deploy-check.sh studio passes; production SHA = HEAD", "hq"),
+    ("P17.3.8", "P17.3", "Studio pages as rooms of the HQ, professional with technical spec panels (Talha 27 Oct, instead of trims)",
+     "Run Sheet, Screening Room, Print Shop, Notice Board, Archive and Engine Room use the room kit (sign, live floor, resident, spec panel); no Shorts schedule line; web npm run walk prints WALK OK at 1440, 390 and --reduced; deploy-check studio LIVE OK at HEAD", "hq"),
     ("P18", "", "The brand in every reel: crew cameos, the house end card, running gags", "", ""),
     ("P18.1", "P18", "Cameo stings: Sach-in's stamp on a checked fact, Kat's scissors on a cut, Click Bhai on the cover",
      "a scene plan can carry cameo cues; tests/scene_acceptance.py renders each cameo with 0 errors and the sheet shows it; one real video uses two cameos", "reels"),
