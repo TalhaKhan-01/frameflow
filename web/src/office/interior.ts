@@ -6,6 +6,28 @@ import { DESK, FLOOR, RUNNER } from "./desks";
 import { drawStation } from "./stations";
 import { CHATS } from "./cast";
 
+// Idle habits (P17.3.5): a seated, idle person now and then shows what they think about, as a 7 × 6 pixel icon
+// ('#' in the icon's ink). One per desk, in the spirit of the Cast Bible.
+const HABIT_ICON: Record<string, { ink: string; g: string[] }> = {
+  showrunner: { ink: "r", g: [".#####.", "#..#..#", "#..##.#", "#.....#", ".#####.", "......."] },        // the clock
+  researcher: { ink: "V", g: [".###...", ".#.#...", ".###.#.", ".#.#.#.", ".###...", "....#.."] },        // the phone, breaking!
+  factcheck: { ink: "r", g: ["..###..", "..###..", "...#...", "#######", "#######", "......."] },          // the stamp
+  packaging: { ink: "r", g: ["...#...", "..###..", ".#####.", "...#...", "...#...", "......."] },          // the red arrow
+  writer: { ink: "r", g: [".##.##.", "#######", "#######", ".#####.", "..###..", "...#..."] },             // dil se
+  editor: { ink: "k", g: ["#...#..", ".#.#...", "..#....", ".#.#...", "#...#..", "......."] },            // kat
+  director: { ink: "k", g: ["#######", "#.....#", "#.###.#", "#.....#", "#######", "......."] },          // the frame
+  standards: { ink: "V", g: ["#####..", "#...#..", "#.#.#..", "#...#..", "#####..", "......."] },          // the rulebook
+  narrator: { ink: "V", g: ["..#....", "..##...", "..#.#..", "###....", "###....", "......."] },           // a note
+  animatic: { ink: "k", g: ["####...", "#..##..", "#..#.#.", "#..#.#.", "#####..", "......."] },          // the flipbook
+  artdirector: { ink: "r", g: [".###...", "#####..", "#####..", ".###...", "..#....", "..#...."] },       // a paint blob
+  screening: { ink: "V", g: ["#.....#", ".#...#.", "..#.#..", "...#...", "...#...", "......."] },         // seeti!
+  animator: { ink: "r", g: ["..#....", ".###...", "#####..", "#####..", ".###...", "......."] },          // overheating
+  qc: { ink: "k", g: [".###...", "#...#..", "#...#..", ".###...", "....#..", ".....#."] },                // the loupe
+  publisher: { ink: "r", g: ["#######", "##...##", "#.#.#.#", "#..#..#", "#######", "......."] },          // the post
+  analyst: { ink: "V", g: [".....#.", "....#..", "#..#...", ".##....", "#######", "......."] },          // the chart
+  you: { ink: "k", g: ["...#...", "..#.#..", ".#.#.#.", "..#.#..", "...#...", "......."] },               // thinking
+};
+
 export const INT_W = 256, INT_H = 160;
 const WALL = 56, TILE = 16, COLS = 16, ROWS = 6, SEAT_ROW = 1;
 export const LIFT_TILE: [number, number] = [14, 0];
@@ -180,6 +202,14 @@ export class FloorScene {
       }
     }
     items.sort((a, b) => a.z - b.z).forEach((i) => i.draw());
+    for (const a of this.actors) {   // idle habits above seated, idle people, staggered so the room never pops all at once
+      if (!a.desk || a.mode !== "sit" || k.on.has(a.desk) || k.reduced || !HABIT_ICON[a.desk]) continue;
+      if ((k.t + a.home[0] * 2.3) % 9 > 2.4) continue;
+      const ic = HABIT_ICON[a.desk], h = seatXY(a.home[0]), x = h.x + 2, y = h.y - 14;
+      p.rect(x - 2, y - 2, 11, 10, "p"); p.rect(x - 2, y - 2, 11, 1, "k"); p.rect(x - 2, y + 7, 11, 1, "k");
+      p.rect(x - 2, y - 2, 1, 10, "k"); p.rect(x + 8, y - 2, 1, 10, "k"); p.rect(x + 1, y + 8, 2, 2, "k");
+      ic.g.forEach((row, j) => [...row].forEach((c, n) => c === "#" && p.rect(x + n, y + j, 1, 1, ic.ink)));
+    }
     for (const st of stamps) {
       const h = this.headOf(st.desk);
       if (!h) continue;
