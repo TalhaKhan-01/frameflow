@@ -39,6 +39,19 @@ for (const [name, width, reduced] of [["desktop", 1440, false], ["phone", 390, f
         await page.waitForTimeout(900);
         await page.screenshot({ path: `walk/${tag}-${Math.round(f * 100)}.png` });
       }
+      // Thirdspace House (P16): scrolling to a floor story takes the building inside that floor
+      await page.evaluate(() => {   // into the trigger band: mid-screen on desktop, below the sticky stage on phones
+        const li = document.querySelector('.floors li[data-floor="2"]'), r = li.getBoundingClientRect();
+        const band = innerWidth <= 900 ? 0.77 : 0.5;
+        window.scrollBy(0, r.top + r.height / 2 - innerHeight * band);
+      });
+      await page.waitForTimeout(1600);
+      const inside = await page.evaluate(() => [document.querySelector("#house-stage")?.getAttribute("data-view"), document.querySelector("#house-stage .house-where b")?.textContent]);
+      if (inside[0] !== "int" || !inside[1]?.includes("Booth")) fail(`${tag}: the house did not go inside the Booth (${inside})`);
+      await page.screenshot({ path: `walk/${tag}-house.png` });
+      await page.evaluate(() => document.getElementById("house").scrollIntoView({ block: "start" }));
+      await page.waitForTimeout(1200);
+      await page.screenshot({ path: `walk/${tag}-house-top.png` });
       const drawn = await page.evaluate(() => {
         const c = document.getElementById("scrub"); const d = c.getContext("2d").getImageData(180, 320, 1, 1).data; return d[3];
       });

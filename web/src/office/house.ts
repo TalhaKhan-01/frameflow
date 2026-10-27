@@ -365,7 +365,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
 
     // compose
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = view === "ext" || trans?.kind === "in" || trans?.kind === "out" ? (isNight ? pal.slots.V : pal.slots.W) : pal.bg;
+    ctx.fillStyle = view === "ext" || trans?.kind === "in" || trans?.kind === "out" ? (isNight ? pal.slots.V : pal.slots.W) : isNight ? pal.slots.d : pal.bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     const blit = (src: HTMLCanvasElement, f: Fit, alpha = 1) => {
       ctx.globalAlpha = alpha;

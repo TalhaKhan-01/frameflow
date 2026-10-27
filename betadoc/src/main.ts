@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { ink } from "./ink";
+import { mountHouse, type MakeRef } from "@office/house";
 
 gsap.registerPlugin(ScrollTrigger);
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -14,7 +15,7 @@ type Live = {
   latest?: { title: string; seconds: number; links: Record<string, string>; gates: Record<string, boolean> };
   board?: { videos: number; one_render: number; first_render_passed: number; animatic_within_1: number;
     latest?: { title: string; renders: number; fix_rounds: number; minutes: number; animatic: number | null; final: number; max: number;
-      desks: { label: string; gate: boolean | null }[] } | null };
+      desks: { label: string; gate: boolean | null }[]; timeline?: MakeRef["timeline"] } | null };
 };
 const escH = (x: unknown) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const STATE: Record<string, string> = { "topic-sent": "topic card out", picked: "story picked", making: "being made",
@@ -57,7 +58,33 @@ fetch("/live.json", { cache: "no-store" }).then((r) => r.json()).then((d: Live) 
         screened ${escH(L.animatic ?? "–")}/${escH(L.max)} on the animatic and ${escH(L.final)}/${escH(L.max)} after.</p>
       <ul class="board-desks">${L.desks.map((x) => `<li class="${x.gate === false ? "no" : x.gate ? "ok" : ""}">${escH(x.label)}${x.gate === false ? " ✗" : x.gate ? " ✓" : ""}</li>`).join("")}</ul>` : ""}`;
   }
-}).catch(() => { document.getElementById("wire-text")!.textContent = "Live wire · offline"; });
+  houseFrom(d);
+}).catch(() => { document.getElementById("wire-text")!.textContent = "Live wire · offline"; houseFrom(null); });
+
+// ---------- Thirdspace House: the board as a building; scrolling the floor stories takes the camera inside each ----------
+function houseFrom(d: Live | null) {
+  const L = d?.board?.latest;
+  const house = mountHouse(document.getElementById("house-stage")!, {
+    makes: L?.timeline ? [{ id: "latest", title: L.title, timeline: L.timeline }] : [],
+    night: true,
+    stats: d ? [`${d.ideas.toLocaleString("en-IN")} ideas collected so far.`, `${d.videos_posted} Shorts posted.`, `${d.lessons} lessons the desks read before each make.`] : undefined,
+    label: "Thirdspace House, replaying the latest make. Arrow keys pick a floor, Enter goes inside, Escape returns to the street.",
+  });
+  const items = [...document.querySelectorAll<HTMLElement>(".floors li")];
+  let shown: string | null = null;
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      const f = (e.target as HTMLElement).dataset.floor!;
+      items.forEach((li) => li.classList.toggle("on", li === e.target));
+      if (f !== shown) { shown = f; house.enter(f); }
+    }
+  }, { rootMargin: matchMedia("(max-width: 900px)").matches ? "-72% 0px -18% 0px" : "-45% 0px -45% 0px" });   // phones: below the sticky stage
+  items.forEach((li) => io.observe(li));
+  // back on the street when the floor stories are scrolled past in either direction
+  new IntersectionObserver(([e]) => { if (!e.isIntersecting && shown) { shown = null; items.forEach((li) => li.classList.remove("on")); house.exit(); } })
+    .observe(document.querySelector(".floors")!);
+}
 
 // ---------- hero video ----------
 const video = document.getElementById("hero-video") as HTMLVideoElement;
