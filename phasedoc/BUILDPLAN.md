@@ -485,6 +485,7 @@
       _Note 2026-10-26:_ README (layout + 'How a video is made'), vault Docs/Frameflow Studio Board.md (desks, gates, measured numbers, open points), Decisions/Skills and Modules Not Agents.md, index lines, Claude setup README skills list
     - [ ] **P15.6.5** Live proof on a real 14:00 make and one real Revise  
       _Acceptance:_ the next real make shows every desk's gate and one render; animatic vs final score recorded; Claude calls and folder size compared with the 26 Oct make in the vault log; a loose-sentence Revise runs only its order's stages
+      _Note 2026-10-27:_ 26 Oct night test ended on the usage limit in the last screening (37 min); board.make now resumes after the plan (645e1bb). Live proof moves to the 27 Oct 15:00 make
   - **P15.7 Public side after the build** (0/2)
     - [~] **P15.7.1** Studio web app shows the board  
       _Acceptance:_ web export includes desks, gates and the hit rate; the live https://frameflow-studio-tau.vercel.app shows them after the PIN; deployed by git push, production SHA = HEAD
