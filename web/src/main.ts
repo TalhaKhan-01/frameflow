@@ -134,10 +134,11 @@ function shell(active: string, body: string) {
 const STEPS = ["topic-sent", "picked", "making", "video-sent", "queued", "posting", "posted"];
 const STEP_LABEL: Record<string, string> = { "topic-sent": "Topic card", picked: "Picked", making: "Making",
   "video-sent": "Awaiting approval", "awaiting-notes": "Notes asked", queued: "Queued for 11:30", posting: "Posting",
-  posted: "Posted", skipped: "Skipped", rejected: "Rejected", failed: "Stopped" };
+  posted: "Posted", skipped: "Skipped", rejected: "Rejected", failed: "Stopped", retired: "Retired" };
 
 function pill(state: string) {
-  const tone = state === "posted" ? "good" : ["failed", "rejected", "needs-work"].includes(state) ? "bad" : "wait";
+  const tone = state === "posted" ? "good" : state === "retired" ? "off"
+    : ["failed", "rejected", "needs-work"].includes(state) ? "bad" : "wait";
   return `<span class="pill ${tone}">${esc(STEP_LABEL[state] ?? state.replace(/-/g, " "))}</span>`;
 }
 

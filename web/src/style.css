@@ -83,7 +83,7 @@ button:disabled { opacity: .6; cursor: progress; }
 .figures.small b { font-size: 1.45rem; }
 
 .pill { display: inline-block; font: 600 .74rem/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; padding: .45em .7em; border: 1.5px solid currentColor; white-space: nowrap; }
-.pill.good { color: var(--good); } .pill.bad { color: var(--red); } .pill.wait { color: var(--wait); }
+.pill.good { color: var(--good); } .pill.bad { color: var(--red); } .pill.wait { color: var(--wait); } .pill.off { color: var(--muted); }
 .tag { display: inline-block; font: 600 .72rem var(--mono); padding: .1em .45em; background: var(--paper-2); border: 1px solid var(--line); }
 .tag.on { color: var(--good); border-color: var(--good); }
 

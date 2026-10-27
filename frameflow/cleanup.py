@@ -39,7 +39,7 @@ def ready_for_posted(row):
         if run is None:   # posted by hand before the daily runs existed: wait 3 days after posting
             return (videos.now()[:10] > (row["updated_at"] or "")[:10]) and _days_since(row["updated_at"]) >= 3
         return bool(run.get("stats_at"))
-    return row["status"] in ("rejected", "needs-work", "awaiting-approval") and _days_since(row["updated_at"]) >= 3
+    return row["status"] in ("rejected", "retired", "needs-work", "awaiting-approval") and _days_since(row["updated_at"]) >= 3
 
 
 def _days_since(iso):
