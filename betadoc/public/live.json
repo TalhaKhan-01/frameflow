@@ -1,18 +1,18 @@
 {
- "generated": "2026-10-27T11:13:02",
+ "generated": "2026-10-27T11:25:24",
  "ideas": 1097,
  "videos_made": 5,
  "videos_posted": 2,
  "card_posts": 2,
- "lessons": 31,
+ "lessons": 34,
  "library": 99,
  "leaves_done": 99,
  "leaves_partial": 30,
- "leaves_total": 137,
+ "leaves_total": 138,
  "today": {
   "day": "2026-10-28",
   "lane": "How tech works",
-  "state": "video-sent"
+  "state": "posting"
  },
  "latest": {
   "title": "Microsoft's AI Beat Doctors on Hard Test Cases. Wait, What?",
