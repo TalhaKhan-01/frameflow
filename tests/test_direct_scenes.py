@@ -50,3 +50,54 @@ def test_beats_moved_or_global_note_means_full_fix(world):
     (out / "flag").write_text("")
     direct.revise("brief.json", out, {"fixes": [{"row": "pacing", "fix": "the whole thing drags"}]})
     assert "--scenes" not in director_args(calls)
+
+
+# ---------- P15.6.7: notes scoped to scenes, the writer and the director stay inside them ----------
+from pathlib import Path
+
+FX = json.loads((Path(__file__).parent / "fixtures" / "notes-2026-10-28-round2.json").read_text())
+
+
+def test_note_scope_reads_scenes_times_hook_and_cover():
+    slots = [(0.0, 5.0), (5.0, 10.0), (15.0, 10.0), (25.0, 5.0)]
+    assert direct.note_scope("flow: Scene 4 to Scene 6 drags", slots, 3) == {4, 5, 6}
+    assert direct.note_scope("pacing: around 17 s a viewer would leave", slots, 3) == {2}
+    assert direct.note_scope("captions: overlaps at 4 to 6s", slots, 3) == {0, 1}
+    assert direct.note_scope("captions: overlaps at 27s", slots, 3) == "cover"   # only the end card is there
+    assert direct.note_scope("honesty: the hook's claim overreaches; see Scene 2", slots, 3) == {0, 2}
+    assert direct.note_scope("sources: the end card stat is unsourced", slots, 3) == "cover"
+    assert direct.note_scope("flow: KEEP unchanged: the ending", slots, 3) == "keep"
+    assert direct.note_scope("pacing: the whole thing drags", slots, 3) is None
+    assert direct.scope(["flow: scene 1 is slow", "sources: the end card stat"], slots, 3) == {1}
+    assert direct.scope(["flow: scene 1 is slow", "pacing: the whole thing drags"], slots, 3) is None
+
+
+def test_real_28_oct_notes_all_scoped():
+    """Every note of the 28 Oct round 2 maps to scenes, so neither desk falls back to a full rewrite."""
+    w = direct.scope(FX["writer"], FX["slots"], FX["story_scenes"])
+    d = direct.scope(FX["director"], FX["slots"], FX["story_scenes"])
+    assert w is not None and d is not None
+    assert len(w) < FX["story_scenes"] and len(d) < FX["story_scenes"]
+
+
+def test_scoped_round_passes_beats_and_scenes(world):
+    out, calls = world
+    (out / "flag").write_text("")
+    board = {"scenes": [{"beats": [0]}, {"beats": [1]}, {"beats": [2]}]}
+    (out / "director" / "storyboard.json").write_text(json.dumps(board))
+    direct.revise("brief.json", out, {"fixes": [{"row": "flow", "fix": "Scene 1: the line is written, not spoken"},
+                                                  {"row": "pacing", "fix": "scene 2: add a beat on 'trust'"}]})
+    w = next(c for c in calls if "writer.py" in c[0])
+    assert w[w.index("--beats") + 1] == "1"
+    d = director_args(calls)
+    assert d[d.index("--scenes") + 1] == "1,2", "the director redraws the named scene and the one whose words changed"
+    assert "re-time their cues" in (out / "review1-director-notes.txt").read_text()
+
+
+def test_unscoped_writer_note_means_full_fixes(world):
+    out, calls = world
+    (out / "flag").write_text("")
+    (out / "director" / "storyboard.json").write_text(json.dumps({"scenes": [{"beats": [0]}, {"beats": [1]}, {"beats": [2]}]}))
+    direct.revise("brief.json", out, {"fixes": [{"row": "story", "fix": "the story never builds"}, {"row": "pacing", "fix": "scene 2: a beat"}]})
+    assert "--beats" not in next(c for c in calls if "writer.py" in c[0])
+    assert "--scenes" not in director_args(calls), "a whole-script rewrite moves words everywhere: full director"

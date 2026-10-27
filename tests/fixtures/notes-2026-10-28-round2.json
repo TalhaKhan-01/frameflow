@@ -1,0 +1,124 @@
+{
+ "about": "28 Oct GPS make, fix round 2 notes (animatic screening) with the voice timing of that make; for P15.6.7",
+ "writer": [
+  "flow: Scene 4, line 1 to line 2: 'post fake shipments, real bids roll in' never says how a fake posting gets cargo stolen, so step one is a loose fact. The viewer can't tell whether the fake loads are bait to collect carrier details or the con itself. Say what step one gets the thieves before step two starts.",
+  "flow: Scene 5 to Scene 6 (about 38s): 'Back to the hacked account' comes right after step two, which also hacked an account, so the viewer doesn't know which one. The dhobi analogy (a fake sender tells a real worker to hand goods to a stranger) fits a different link of the chain than either step. Put the analogy next to the step it explains, or say which account it is about.",
+  "flow: Scene 8 to Scene 9 (about 57s): we hear that thieves rammed escorts (force), then straight away 'Trust failed, not the truck', with nothing to bridge them. A first-time viewer will hear a contradiction. Scene 9 needs a line that connects the two, e.g. the rammed loads were still found and booked through the fake paperwork, if the source supports that.",
+  "persona_humour: There are only two real comic beats (marriage bureau in Scene 4, mummy/dhobi in Scene 6), and the brief asks for 3 to 5. Add a light beat that carries a fact in Scene 2 (the dashboard happily tracking a truck that is somewhere else) or Scene 7 (the unknowing driver doing an honest day's work for a crook). Also swap the stock 'Case closed? Not quite.' at 16s for something with Habit's own voice.",
+  "sources: The end card stat 'Can hold eight figures' is a number the script never states or sources. Either drop it or back it with the $3M-per-rack figure. Scene 0's $100M+ figure comes from the FreightWaves piece (nearly $111M), but the 1s credit shows slashdot. Credit FreightWaves there too.",
+  "honesty: The hook's 'Mostly paperwork' is pinned on this $100M+ haul, but the 92% figure is Overhaul's number for high-value tech thefts in general, and Scene 8 shows force was used on two of these loads. The end card title 'NOBODY BROKE A LOCK' adds to the problem. Word the hook as the industry pattern (e.g. 'most thefts like this run on paperwork') and change the end card title so it doesn't deny the ramming."
+ ],
+ "director": [
+  "flow: Scene 4, line 1 to line 2: 'post fake shipments, real bids roll in' never says how a fake posting gets cargo stolen, so step one is a loose fact. The viewer can't tell whether the fake loads are bait to collect carrier details or the con itself. Say what step one gets the thieves before step two starts.",
+  "flow: Scene 5 to Scene 6 (about 38s): 'Back to the hacked account' comes right after step two, which also hacked an account, so the viewer doesn't know which one. The dhobi analogy (a fake sender tells a real worker to hand goods to a stranger) fits a different link of the chain than either step. Put the analogy next to the step it explains, or say which account it is about.",
+  "flow: Scene 8 to Scene 9 (about 57s): we hear that thieves rammed escorts (force), then straight away 'Trust failed, not the truck', with nothing to bridge them. A first-time viewer will hear a contradiction. Scene 9 needs a line that connects the two, e.g. the rammed loads were still found and booked through the fake paperwork, if the source supports that.",
+  "visual_storytelling: Scene 2 (10 to 15s) is two empty boxes and a bar, and no truck or moving dot is ever drawn. Draw a truck on a map with its real dot and a ghost dot sliding away, so you can see the 'lying dot' idea. The empty chat window at 40s should also start with the first bubble already typing.",
+  "pacing: The longest gap is 2.6s at 26.4s (limit 2.5), at the start of Scene 4, where the three characters stand still. Make the broker point or draw a link between shipper and trucker on 'freight brokers'.",
+  "captions: Several overlaps. The source credit covers the character name tags at 25 to 31s and 46 to 49s (SHIPPER/BROKER/DRIVER A are cut off). The 'FREIGHT BROKER' label runs into the heading at 28 to 31s. The DECEPTION cards and the struck-through steps pile on top of each other at 19 to 22s. The RAMMED stamp spills off the right edge and covers LOAD 1 at 52s. The 'LOCKED' tags are clipped at 4s. Move the credit off the name tags and keep labels clear of the headings.",
+  "sources: The end card stat 'Can hold eight figures' is a number the script never states or sources. Either drop it or back it with the $3M-per-rack figure. Scene 0's $100M+ figure comes from the FreightWaves piece (nearly $111M), but the 1s credit shows slashdot. Credit FreightWaves there too.",
+  "honesty: The hook's 'Mostly paperwork' is pinned on this $100M+ haul, but the 92% figure is Overhaul's number for high-value tech thefts in general, and Scene 8 shows force was used on two of these loads. The end card title 'NOBODY BROKE A LOCK' adds to the problem. Word the hook as the industry pattern (e.g. 'most thefts like this run on paperwork') and change the end card title so it doesn't deny the ramming.",
+  "pacing: from the swipe read: around 57 s a viewer would leave: Right after the ramming reveal, 'Trust failed, not the truck' sounds like it contradicts what we just saw. Viewers may feel the thesis fell apart and leave before the closing question.",
+  "pacing: from the swipe read: around 38 s a viewer would leave: 'Back to the hacked account' jumps backwards right after step two, and the chat window is empty at 40s. The viewer loses track of which account is meant and has nothing new to look at.",
+  "pacing: measured on the draft: nothing new is drawn for 2.6 s from 26.4 s, in scene 4 (cast), while the voice says: \"cargo to truckers. Step one, hack\". Add one beat in scene 4 cued on a word from that line (its cues name the phrase), so something moves at least every 2.5 s. Change only that scene; keep every other scene exactly as it is."
+ ],
+ "slots": [
+  [
+   0.0,
+   4.442
+  ],
+  [
+   4.442,
+   7.044
+  ],
+  [
+   11.486,
+   7.859
+  ],
+  [
+   19.345,
+   6.885
+  ],
+  [
+   26.23,
+   6.338
+  ],
+  [
+   32.568,
+   5.762
+  ],
+  [
+   38.33,
+   6.585
+  ],
+  [
+   44.915,
+   5.736
+  ],
+  [
+   50.651,
+   6.034
+  ],
+  [
+   56.685,
+   6.229
+  ],
+  [
+   62.914,
+   7.436
+  ],
+  [
+   70.35,
+   8.973
+  ],
+  [
+   79.323,
+   5.836
+  ],
+  [
+   85.159,
+   3.336
+  ]
+ ],
+ "story_scenes": 13,
+ "scene_beats": [
+  [
+   0
+  ],
+  [
+   1
+  ],
+  [
+   2
+  ],
+  [
+   3
+  ],
+  [
+   4
+  ],
+  [
+   5
+  ],
+  [
+   6
+  ],
+  [
+   7
+  ],
+  [
+   8
+  ],
+  [
+   9
+  ],
+  [
+   10
+  ],
+  [
+   11
+  ],
+  [
+   12
+  ]
+ ]
+}

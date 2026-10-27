@@ -73,6 +73,8 @@ def scenes_named(notes):
         refs = re.findall(r"\bscenes?(?:\(s\))?\s*((?:\d+\s*(?:[-–→>]+|,|and|to)?\s*)+)", note, re.I)
         if not refs:
             return None
+        for a, b in re.findall(r"\bscenes?\s*(\d+)\s*(?:to|[-–→>]+)\s*scenes?\s*(\d+)", note, re.I):   # "Scene 4 to Scene 6"
+            found |= set(range(int(a), int(b) + 1))
         for ref in refs:
             for a, b in re.findall(r"(\d+)\s*[-–]\s*(\d+)", ref):
                 found |= set(range(int(a), int(b) + 1))
@@ -80,23 +82,94 @@ def scenes_named(notes):
     return sorted(found) or None
 
 
+RANGE = re.compile(r"(\d+(?:\.\d+)?)\s*s?\s*(?:to|-|–)\s*(\d+(?:\.\d+)?)\s*s\b", re.I)
+POINT = re.compile(r"(?:at|around|about|from|near|~)\s*(\d+(?:\.\d+)?)\s*s\b", re.I)
+HOOK = re.compile(r"\b(?:the hook|hook's|first line|opening line)\b", re.I)
+COVER = re.compile(r"\b(?:end ?card|cover|thumbnail)\b", re.I)
+
+
+def note_scope(note, slots=None, story=None):
+    """The story scenes one note is about: the scenes it names; else the seconds it gives, through the voice timing
+    (slots: (start, length) per plan scene); else the hook, scene 0. "cover" for a note about the end card or cover only
+    (the cover desk redoes those), "keep" for a keep-line, None when it concerns the whole video."""
+    if "KEEP unchanged" in note:
+        return "keep"
+    named = scenes_named([note])
+    if named:
+        return set(named) | ({0} if HOOK.search(note) else set())
+    if slots:
+        spans = [(float(a), float(b)) for a, b in RANGE.findall(note)] + [(float(x), float(x)) for x in POINT.findall(note)]
+        hit = {i for a, b in spans for i, (st, d) in enumerate(slots) if st <= b and a < st + d}
+        if hit:
+            story_hit = {i for i in hit if story is None or i < story}
+            return story_hit or "cover"
+    if HOOK.search(note):
+        return {0}
+    if COVER.search(note):
+        return "cover"
+    return None
+
+
+def scope(notes, slots=None, story=None):
+    """Scenes a set of notes is about (a set, possibly empty), or None as soon as one note concerns the whole video."""
+    found = set()
+    for n in notes:
+        s = note_scope(n, slots, story)
+        if s is None:
+            return None
+        if isinstance(s, set):
+            found |= s
+    return found
+
+
+def _slots(out, plan):
+    """(start, length) per plan scene from the last voice take, or None before there is a voice."""
+    voice = out / "render" / "voice"
+    if not plan or not (voice / "durations.json").exists():
+        return None
+    from frameflow import build   # build pulls in the render stack; only needed here
+    try:
+        return build.timings(plan, voice)
+    except (KeyError, ValueError, IndexError):
+        return None
+
+
 def revise(brief_path, out, review, lane="how-tech-works"):
     """Send a review's fixes back: words to the writer's doctor, picture/pacing/sound to the director's doctor
-    (which also re-maps the storyboard to the revised beats), then recompile the plan."""
+    (which also re-maps the storyboard to the revised beats), then recompile the plan.
+
+    Both desks stay inside the scenes the notes are about when they can (P15.6.7): the writer rewrites only those
+    scenes' beats (doctor --beats, merged in code, so the beat count holds) and the director redraws only those scenes
+    plus the ones whose words changed. A note about the whole video sends that desk back to a full fix."""
     out = Path(out)
     wdir, ddir = out / "writer", out / "director"
     w_notes = [f"{f['row']}: {f['fix']}" for f in review["fixes"] if f["row"] in WRITER_ROWS]
     d_notes = [f"{f['row']}: {f['fix']}" for f in review["fixes"] if f["row"] in DIRECTOR_ROWS]
     n = len(list(out.glob("review*-writer-notes.txt"))) + 1
     beats_before = len(json.loads((wdir / "script.json").read_text())["beats"]) if (wdir / "script.json").exists() else None
+    board = json.loads((ddir / "storyboard.json").read_text()) if (ddir / "storyboard.json").exists() else None
+    plan = json.loads((out / "plan.json").read_text()) if (out / "plan.json").exists() else None
+    story = len(board["scenes"]) if board else None
+    slots = _slots(out, plan)
+    w_scope, w_scoped = None, False
     if w_notes:
         (out / f"review{n}-writer-notes.txt").write_text("\n".join(w_notes))
-        with progress.step("writer fixes the script", desk="writer", notes=len(w_notes)):
-            skill([WRITER, "--project", ROOT, "doctor", brief_path, "--out", wdir, "--notes", out / f"review{n}-writer-notes.txt"])
+        w_scope = scope(w_notes, slots, story) if board else None
+        beats = sorted({b for sc in (w_scope or ()) if sc < len(board["scenes"]) for b in board["scenes"][sc]["beats"]}) if board else []
+        w_scoped = bool(beats)
+        label = f"writer fixes scenes {', '.join(map(str, sorted(w_scope)))} only" if w_scoped else "writer fixes the script"
+        with progress.step(label, desk="writer", notes=len(w_notes)):
+            skill([WRITER, "--project", ROOT, "doctor", brief_path, "--out", wdir, "--notes", out / f"review{n}-writer-notes.txt"]
+                  + (["--beats", ",".join(map(str, beats))] if w_scoped else []))
     beats_after = len(json.loads((wdir / "script.json").read_text())["beats"])
-    scenes = scenes_named(d_notes)
-    local = scenes is not None and beats_before == beats_after   # scene-only: every note names its scenes, the beats didn't move
-    (out / f"review{n}-director-notes.txt").write_text("\n".join(d_notes + ([] if local else ["The script may have changed: map every beat once, in order."])))
+    d_scope = scope(d_notes, slots, story)
+    # scene-only when every director note has its scenes, the beats didn't move, and the writer (if it ran) stayed in scope
+    local = d_scope is not None and beats_before == beats_after and (not w_notes or w_scoped)
+    scenes = sorted(d_scope | (w_scope if w_scoped else set())) if local else None
+    if local and not scenes:
+        local = False   # nothing to point at: let the director check the whole storyboard
+    extra = [f"The words changed in scenes {', '.join(map(str, sorted(w_scope)))}: re-time their cues and events to the new lines."] if local and w_scoped else []
+    (out / f"review{n}-director-notes.txt").write_text("\n".join(d_notes + extra + ([] if local else ["The script may have changed: map every beat once, in order."])))
     with progress.step("director fixes " + (f"scenes {', '.join(map(str, scenes))} only" if local else "the storyboard"), desk="director",
                        notes=len(d_notes)):
         skill([DIRECTOR, "--project", ROOT, "doctor", ddir / "storyboard.json", "--script", wdir / "script.json", "--catalog", CATALOG,
