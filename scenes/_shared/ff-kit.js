@@ -332,5 +332,35 @@
   /* A vertical position given either in pixels or as a fraction of the frame height (0-1). */
   const ypos = (v, fallback) => (typeof v !== "number" ? fallback : v <= 1 ? v * 1920 : v);
 
-  window.FF = { icon, ypos, pivot, scene, kicker, NS, el, svg, originVars, sketcher, text, fitText, colors, rng, draw, hide, pop, slam, shake, wiggle, boil, scramble, type, transitions, at, drift, tok };
+  /* Pixel art from the HQ (web/src/office/sprites.ts): the crew keep their Riso Press colours in every theme.
+     FF.pixel draws a grid of slot letters ('.' is clear) as crisp rects; FF.pixelText uses the HQ's 3 x 5 font. */
+  const PIX = { k: "#1B1B1B", s: "#F0B8A8", h: "#1F3A93", a: "#D2392B", A: "#1F3A93", b: "#5B2A6E", w: "#F3EBDD",
+    m: "#7F8CC0", r: "#D2392B", p: "#FBF6EC", g: "#FF6B5B", y: "#F2C6BC", V: "#1F3A93" };
+  const HABIT_PX = [
+    "..mmmmmmmm..", ".mhhhhhhhhm.", ".mhhhhhhhhm.", "mmssssssssmm", "mmksssskssmm", "mmssssssssmm", "..sssoosss..",
+    "...ssssss...", "..aaawwaaa..", ".aaaaaaaaaa.", "saaaaaaaaaas", "saaaaaaaaaas", "saaaaaaaaaas", ".aaaaaaaaaa.",
+    ".bbbbbbbbbb.", ".bbbbbbbbbb.", ".bbbb..bbbb.", ".bbbb..bbbb.", ".kkkk..kkkk."];
+  const pixel = (parent, grid, x, y, size, colors = {}) => {
+    const g = el("g", { "shape-rendering": "crispEdges" }, parent);
+    grid.forEach((row, r) => {
+      for (let c = 0; c < row.length; ) {   // one rect per run of the same slot keeps the SVG small
+        const ch = row[c]; let e = c + 1;
+        while (e < row.length && row[e] === ch) e++;
+        const fill = ch === "." ? null : colors[ch] ?? PIX[ch] ?? ch;
+        if (fill) el("rect", { x: x + c * size, y: y + r * size, width: (e - c) * size, height: size, fill }, g);
+        c = e;
+      }
+    });
+    return g;
+  };
+  const GLYPHS = "A .#. #.# ### #.# #.#|B ##. #.# ##. #.# ##.|C .## #.. #.. #.. .##|D ##. #.# #.# #.# ##.|E ### #.. ##. #.. ###|F ### #.. ##. #.. #..|G .## #.. #.# #.# .##|H #.# #.# ### #.# #.#|I ### .#. .#. .#. ###|J ..# ..# ..# #.# .#.|K #.# ##. #.. ##. #.#|L #.. #.. #.. #.. ###|M #.# ### ### #.# #.#|N #.# ### ### ### #.#|O .#. #.# #.# #.# .#.|P ##. #.# ##. #.. #..|Q .#. #.# #.# ##. .##|R ##. #.# ##. #.# #.#|S .## #.. .#. ..# ##.|T ### .#. .#. .#. .#.|U #.# #.# #.# #.# ###|V #.# #.# #.# #.# .#.|W #.# #.# ### ### #.#|X #.# #.# .#. #.# #.#|Y #.# #.# .#. .#. .#.|Z ### ..# .#. #.. ###|0 ### #.# #.# #.# ###|1 .#. ##. .#. .#. ###|2 ##. ..# .#. #.. ###|3 ##. ..# .#. ..# ##.|4 #.# #.# ### ..# ..#|5 ### #.. ##. ..# ##.|6 .## #.. ### #.# ###|7 ### ..# .#. .#. .#.|8 ### #.# ### #.# ###|9 ### #.# ### ..# ##.|! .#. .#. .#. ... .#.|? ##. ..# .#. ... .#.|. ... ... ... ... .#.|: ... .#. ... .#. ...|/ ..# ..# .#. #.. #..|- ... ... ### ... ...|+ ... .#. ### .#. ...|$ .## ##. .#. .## ##.|% #.. ..# .#. #.. ..#";
+  const FONT = {};
+  for (const g of GLYPHS.split("|")) { const [ch, ...rows] = g.trim().split(" "); FONT[ch] = rows; }
+  const pixelText = (parent, cx, cy, str, size, slot = "r") => {
+    const s_ = str.toUpperCase(), w = s_.length * 4 - 1;
+    const rows = [0, 1, 2, 3, 4].map((r) => [...s_].map((ch) => (FONT[ch] ?? ["...", "...", "...", "...", "..."])[r].replace(/#/g, slot)).join("."));
+    return pixel(parent, rows, cx - (w * size) / 2, cy - (5 * size) / 2, size);
+  };
+
+  window.FF = { pixel, pixelText, HABIT_PX, icon, ypos, pivot, scene, kicker, NS, el, svg, originVars, sketcher, text, fitText, colors, rng, draw, hide, pop, slam, shake, wiggle, boil, scramble, type, transitions, at, drift, tok };
 })();

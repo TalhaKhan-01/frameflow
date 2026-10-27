@@ -545,9 +545,10 @@
     - [x] **P16.3.2** Control panel: the building, live during a make  
       _Acceptance:_ the control panel serves the latest make's timeline as JSON from the progress log; a test writer appending progress events makes the panel's building show the new desk within 1 s and the LIVE badge appear
       _Note 2026-10-27:_ frameflow-control 3c1c9de + frameflow 22d310d: /api/house (newest make by start time, running = root open and pid alive), engine bundle via npm run build:house; live test: a fake running make's new narrator step showed in 298 ms with the LIVE badge, 0 page errors; test file removed; panel tests 15 passed
-    - [ ] **P16.3.3** Pixel Habit and the house in the reel end card and carousel covers (ask Talha first)  
+    - [~] **P16.3.3** Pixel Habit and the house in the reel end card and carousel covers (ask Talha first)  
       _Acceptance:_ Talha approves the look; tests/scene_acceptance.py endcard PASSes with the pixel Habit drawn; one card cover rendered with the house mark
       _Note 2026-10-27:_ Talha 27 Oct: approved, the changes come from tomorrow (28 Oct make on); scope to confirm at the start of the next session (recommendation: end card first, covers after)
+      _Note 2026-10-27:_ End card done 27 Oct (Talha's scope: end card first): pixel Habit (HQ booth look, mouth moves on the outro) by the Follow button, credit on the house sign in pixel letters; FF.pixel/pixelText/HABIT_PX in ff-kit.js. tests/scene_acceptance.py endcard PASS. Live from the 28 Oct make. Open: Talha's OK on a real post, then the carousel cover.
 - **P17 The Daily Habit HQ: the crew, their voices, and the Studio app as the headquarters (plan 2026-10-27)** (13/16)
   - **P17.1 Direction and cast** (3/3)
     - [x] **P17.1.1** Direction note: portfolio not product, the HQ is the app, the house makes its own content  

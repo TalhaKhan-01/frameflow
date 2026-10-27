@@ -9,7 +9,8 @@
         /* endcard: the house outro, added by the pipeline after the last story beat. It opens as the video's cover
            (Habit mark, the cover title, the key drawing and a stat: the thumbnail frame, before data.coverAt), then on
            the "follow" cue the drawing gives way to the call to action: tagline, a Follow button a drawn finger taps
-           (it flips to Following) and the handle. Everything stays above the caption band. */
+           (it flips to Following) and the handle. The pixel Habit from the HQ stands by the button and says the outro;
+           the credit hangs on the house sign (black plate, red pixel letters). Everything stays above the caption band. */
         (() => {
           const D = __DATA__;
           const DUR = __DUR__;
@@ -70,25 +71,43 @@
           const tag = FF.text(cta, 540, 880, D.tagline || "New habit every day", { size: 70, font: hand });
           FF.fitText(tag, 860, 70);
           const btn = FF.el("g", {}, cta);
-          const BW = 520, BH = 136, BY = 1050;
-          const R = BH / 2, L = 540 - BW / 2 + R, Rx = 540 + BW / 2 - R;
+          const BX = 590, BW = 480, BH = 128, BY = 1060;
+          const R = BH / 2, L = BX - BW / 2 + R, Rx = BX + BW / 2 - R;
           const pill = `M ${L} ${BY - R} L ${Rx} ${BY - R} A ${R} ${R} 0 0 1 ${Rx} ${BY + R} L ${L} ${BY + R} A ${R} ${R} 0 0 1 ${L} ${BY - R} Z`;
           const on = k.path(btn, pill, { fill: C.red, width: 4.5 });
           const off = k.path(btn, pill, { fill: C.fill2, width: 4.5 });
           gsap.set(off, { opacity: 0 });
-          const label = FF.text(btn, 540, BY + 4, "+ " + (D.button || "Follow"), { size: 64, fill: C.fill, font: body, weight: 800 });
-          const done = FF.text(btn, 540, BY + 4, "✓ Following", { size: 60, fill: C.ink, font: body, weight: 800 });
+          const label = FF.text(btn, BX, BY + 4, "+ " + (D.button || "Follow"), { size: 64, fill: C.fill, font: body, weight: 800 });
+          const done = FF.text(btn, BX, BY + 4, "✓ Following", { size: 60, fill: C.ink, font: body, weight: 800 });
           gsap.set(done, { opacity: 0 });
-          const handle = FF.text(cta, 540, 1200, D.handle || "", { size: 46, fill: C.muted, font: body, weight: 600 });
-          FF.fitText(handle, 860, 46);
-          const credit = FF.text(cta, 540, 1262, D.credit || "", { size: 34, fill: C.red, font: serif, weight: 600 });
-          FF.fitText(credit, 860, 34);
+          const handle = FF.text(cta, 590, 1172, D.handle || "", { size: 44, fill: C.muted, font: body, weight: 600 });
+          FF.fitText(handle, 600, 44);
+
+          // the house sign: the credit on a black plate in the HQ's pixel letters
+          const credit = FF.el("g", {}, cta);
+          if (D.credit) {
+            const PX = 5, w = Math.min((D.credit.length * 4 - 1) * PX + 28, 820);
+            FF.el("rect", { x: 540 - w / 2, y: 1222, width: w, height: 5 * PX + 18, fill: "#1B1B1B" }, credit);
+            FF.pixelText(credit, 540, 1222 + (5 * PX + 18) / 2, D.credit, PX, "r");
+          }
+
+          // the pixel Habit (headphones, as in the HQ's booth), mouth moving while the outro is said
+          const PS = 12, HX = 96, HY = 1188 - 19 * PS;
+          const habit = FF.el("g", { opacity: 0 }, s);
+          FF.pixel(habit, FF.HABIT_PX, HX, HY, PS, { o: "#F0B8A8" });
+          const open = FF.pixel(habit, FF.HABIT_PX.slice(6, 7), HX, HY + 6 * PS, PS, { o: "#1B1B1B" });
+          gsap.set(open, { opacity: 0 });
           tl.set(cta, { opacity: 1 }, follow + 0.12);
           FF.pop(tl, tag, follow + 0.12, { from: 0.6, dur: 0.3 });
-          FF.pivot(btn, 540, BY);
+          FF.pivot(btn, BX, BY);
           FF.pop(tl, btn, follow + 0.24, { from: 0.3, dur: 0.36 });
           tl.fromTo(handle, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.25 }, follow + 0.4);
           tl.fromTo(credit, { opacity: 0 }, { opacity: 1, duration: 0.3 }, follow + 0.55);
+          FF.pivot(habit, HX + 6 * PS, HY + 19 * PS);
+          tl.set(habit, { opacity: 1 }, follow + 0.06);
+          tl.fromTo(habit, { scale: 0.4, y: 30 }, { scale: 1, y: 0, duration: 0.3, ease: "back.out(2.4)" }, follow + 0.06);
+          for (let t = follow + 0.2, i = 0; t < Math.min(follow + 1.3, DUR - 0.3); t += 0.11, i++) tl.set(open, { opacity: i % 2 ? 0 : 1 }, t);
+          tl.set(open, { opacity: 0 }, Math.min(follow + 1.3, DUR - 0.3));
 
           // a drawn finger taps the button, which flips to Following
           const tap = Math.min(follow + 1.0, DUR - 0.7);
@@ -97,12 +116,12 @@
           gsap.set(hand_, { scale: 1.6, transformOrigin: "0 0" });
           k.path(hand_, "M 0 0 L 0 -70 Q 0 -86 16 -86 Q 32 -86 32 -70 L 32 -18 L 78 -10 Q 100 -6 98 18 L 92 70 L 8 70 L -26 26 Q -36 10 -20 4 Z",
             { fill: C.lit, width: 4 });
-          tl.fromTo(finger, { opacity: 0, x: 860, y: 1330 }, { opacity: 1, x: 590, y: BY + 20, duration: 0.4, ease: "power2.out" }, tap - 0.42);
+          tl.fromTo(finger, { opacity: 0, x: 860, y: 1330 }, { opacity: 1, x: BX + 50, y: BY + 20, duration: 0.4, ease: "power2.out" }, tap - 0.42);
           tl.to(btn, { scale: 0.92, duration: 0.08 }, tap);
           tl.to(btn, { scale: 1, duration: 0.18, ease: "back.out(3)" }, tap + 0.08);
           tl.set([on, label], { opacity: 0 }, tap + 0.05);
           tl.set([off, done], { opacity: 1 }, tap + 0.05);
-          tl.to(finger, { x: 760, y: 1250, opacity: 0, duration: 0.3, ease: "power1.in" }, tap + 0.3);
+          tl.to(finger, { x: 820, y: 1250, opacity: 0, duration: 0.3, ease: "power1.in" }, tap + 0.3);
           sc.finish();
         })();
       </script>
