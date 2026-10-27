@@ -486,7 +486,9 @@
     - [ ] **P15.6.5** Live proof on a real 14:00 make and one real Revise  
       _Acceptance:_ the next real make shows every desk's gate and one render; animatic vs final score recorded; Claude calls and folder size compared with the 26 Oct make in the vault log; a loose-sentence Revise runs only its order's stages
   - **P15.7 Public side after the build** (0/2)
-    - [ ] **P15.7.1** Studio web app shows the board  
+    - [~] **P15.7.1** Studio web app shows the board  
       _Acceptance:_ web export includes desks, gates and the hit rate; the live https://frameflow-studio-tau.vercel.app shows them after the PIN; deployed by git push, production SHA = HEAD
-    - [ ] **P15.7.2** Betadoc tells the studio-board story  
+      _Note 2026-10-26:_ Studio: Board tab + 'How it was made' per video (boardview.py), deployed 8341118, walk ok 1440/390; shows real numbers after the first board-made video
+    - [~] **P15.7.2** Betadoc tells the studio-board story  
       _Acceptance:_ betadoc pages describe the desks, the animatic and one render with real numbers from the live proof; walk at 1440, 390 and --reduced clean; live on Vercel by git push, production SHA = HEAD
+      _Note 2026-10-26:_ betadoc: board section with live numbers from live.json, architecture/matrix/roadmap updated, deployed 8341118, walks ok; real numbers after the live proof
