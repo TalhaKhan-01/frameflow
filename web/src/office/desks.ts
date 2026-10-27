@@ -29,7 +29,7 @@ export const DESKS: Desk[] = [
   { id: "screening", label: "Screening", about: "The full screening on the animatic, scored like a strict first viewer.", floor: "3", action: "read", look: look("d", "A", "b") },
   { id: "animator", label: "Render", about: "The delivery render, once.", floor: "4", action: "rack", look: look("k", "b", "A") },
   { id: "qc", label: "QC", about: "Loudness, black frames, motion and captions.", floor: "4", action: "type", look: look("A", "m", "b") },
-  { id: "you", label: "Talha", about: "Approves, revises or rejects on Telegram.", floor: "5", action: "phone", look: look("k", "A", "k") },
+  { id: "you", label: "Bade Sahab", about: "The owner: approves, revises or rejects on the hotline (Telegram). Only ever a silhouette.", floor: "5", action: "phone", look: { colors: { h: "k", s: "k", a: "k", b: "k", w: "k" } } },
   { id: "publisher", label: "Publisher", about: "Uploads to YouTube, Instagram and Facebook, then checks every post.", floor: "R", action: "beam", look: look("k", "a", "A") },
   { id: "analyst", label: "Analyst", about: "48 h results, tied back to each decision.", floor: "R", action: "chalk", look: look("d", "p", "b", "specs") },
 ];

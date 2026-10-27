@@ -39,3 +39,20 @@ export const CAST: Person[] = [
   { id: "cat", name: "Cache", title: "The Cat", catchphrase: "Meow.", rival: "Buffer Bhaiya's warm top", cue: "meow", voice: "none", floor: "awning" },
 ];
 export const PERSON = Object.fromEntries(CAST.map((p) => [p.id, p])) as Record<string, Person>;
+
+// Office chats (P17.3.5): when a desk is idle its person sometimes walks over to a floor-mate (a rival first) and they
+// trade a line. Key "from>to": [what the visitor says, the reply]. Only pairs that share a floor can meet.
+export const CHATS: Record<string, [string, string]> = {
+  "researcher>factcheck": ["Breaking! …probably.", "Source dikhao."],
+  "factcheck>researcher": ["Yeh number kahan se aaya?", "Ek tweet mein tha… probably."],
+  "writer>editor": ["Yeh line dil se likhi hai.", "Kat."],
+  "editor>writer": ["Teen line? Ek kaafi hai.", "Kahani ka dil kaat rahi ho!"],
+  "packaging>writer": ["Title mein SHOCKING daal do.", "Main kavi hoon, clickbait nahi."],
+  "director>editor": ["Yahan slow motion chahiye!", "Kat."],
+  "animatic>artdirector": ["Draft hai, dil pe mat lo.", "Yeh colour humara nahi hai."],
+  "screening>animatic": ["Seeti maar scene!", "Abhi toh sirf draft hai!"],
+  "qc>animator": ["Ek pixel idhar-udhar.", "Ek minute… ek minute…"],
+  "standards>narrator": ["Terms and conditions apply.", "Bade Sahab ne kaha hai, chalega."],
+  "showrunner>you": ["11:30 matlab 11:30.", "Theek hai. Post karo."],
+  "analyst>publisher": ["Data jhooth nahi bolta.", "Post ho gaya, sir!"],
+};

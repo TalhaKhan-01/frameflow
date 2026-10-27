@@ -4,6 +4,7 @@
 import { Painter, person, textWidth } from "./sprites";
 import { DESK, FLOOR, RUNNER } from "./desks";
 import { drawStation } from "./stations";
+import { CHATS } from "./cast";
 
 export const INT_W = 256, INT_H = 160;
 const WALL = 56, TILE = 16, COLS = 16, ROWS = 6, SEAT_ROW = 1;
@@ -26,6 +27,7 @@ interface Actor {
   flip: boolean;
   goingHome: boolean;
   say?: string;
+  visit?: string;                 // the floor-mate this person walked over to chat with
 }
 
 export interface FloorTick { t: number; dt: number; on: Set<string>; makeHere: string | null; night: boolean; reduced: boolean }
@@ -34,6 +36,7 @@ export class FloorScene {
   actors: Actor[] = [];
   blocked = new Set<string>();
   door = 0;   // lift doors, 0 shut .. 1 open
+  chat: { from: string; to: string; start: number } | null = null;   // an office chat in progress (P17.3.5)
   constructor(public id: string) {
     const f = FLOOR[id];
     const cols = seatCols(f.desks.length);
@@ -85,6 +88,12 @@ export class FloorScene {
   }
   private pickErrand(a: Actor): [number, number] {
     const others = this.actors.filter((o) => o !== a && o.desk);
+    const mates = others.filter((o) => CHATS[`${a.desk}>${o.desk}`]);
+    if (mates.length && !this.chat && Math.random() < 0.7) {   // go and needle a floor-mate
+      const o = mates[Math.floor(Math.random() * mates.length)];
+      a.visit = o.desk!;
+      return [o.home[0], o.home[1] + 1];
+    }
     const r = Math.random();
     if (r < 0.25 && this.id !== "R") return [COOLER[0] + 1, COOLER[1]];
     if (r < 0.55) return [TABLE[0] + (Math.random() < 0.5 ? -1 : 2), TABLE[1]];
@@ -118,10 +127,12 @@ export class FloorScene {
           const t = this.tileOf(a);
           if (a.desk && t[0] === a.home[0] && t[1] === a.home[1]) { a.mode = "sit"; a.goingHome = false; }
           else if (!a.desk && t[0] === LIFT_TILE[0] && t[1] === LIFT_TILE[1] && !target) a.mode = "gone";
-          else { a.mode = "stand"; a.wait = 2 + Math.random() * 4; }
+          else if (a.visit && !this.chat) { a.mode = "stand"; a.wait = 5; this.chat = { from: a.desk!, to: a.visit, start: k.t }; a.visit = undefined; }
+          else { a.mode = "stand"; a.wait = 2 + Math.random() * 4; a.visit = undefined; }
         }
       }
     }
+    if (this.chat && (k.t - this.chat.start > 4.8 || k.on.has(this.chat.from))) this.chat = null;   // a busy rival still gets needled
     const runner = this.actors.find((a) => !a.desk);
     const near = runner && runner.mode !== "gone" && Math.hypot(runner.x - feet(...LIFT_TILE).x, runner.y - feet(...LIFT_TILE).y) < 28;
     const want = near || (runner?.mode === "gone" && target) ? 1 : 0;
@@ -135,6 +146,12 @@ export class FloorScene {
       if (x >= box.x && x < box.x + box.w && y >= box.y && y < box.y + box.h) return a.desk;
     }
     return null;
+  }
+  /** The chat line showing now: the visitor speaks first, the reply comes after 2.2 s. */
+  chatNow(t: number): { desk: string; text: string } | null {
+    if (!this.chat) return null;
+    const lines = CHATS[`${this.chat.from}>${this.chat.to}`], late = t - this.chat.start > 2.2;
+    return { desk: late ? this.chat.to : this.chat.from, text: lines[late ? 1 : 0] };
   }
   /** Where a desk's person is now (for speech bubbles): head position in px. */
   headOf(desk: string): { x: number; y: number } | null {
@@ -221,6 +238,7 @@ function room(p: Painter, id: string, k: FloorTick) {
         for (let y = 6; y < 46; y += 8) for (let x = 6; x < 88; x += 8) if (((x + y) / 8) % 2 > 0.5) p.rect(x, y, 5, 5, "X");
         const air = on("narrator");
         p.rect(170, 10, 42, 14, "k"); p.rect(172, 12, 38, 10, air ? "r" : "d"); p.text("ON AIR", 180, 15, air ? "p" : "m");
+        p.rect(90, 37, 79, 9, "k"); p.text("BADE SAHAB KA KHAAS", 92, 39, "g");   // Habit's plaque (P17.3.6)
         break;
       }
       case "1": {
@@ -246,6 +264,11 @@ function room(p: Painter, id: string, k: FloorTick) {
       case "5": {
         p.rect(10, 8, 56, 34, "l"); p.rect(12, 10, 52, 30, "p"); p.text("THIRDSPACE", 18, 16, "r"); p.text("PRODUCTIONS", 16, 26, "V");
         p.rect(176, 10, 20, 20, "k"); p.rect(178, 12, 16, 16, "p"); p.rect(186, 14, 1, 7, "k"); p.rect(186, 20, 5, 1, "r");
+        // Bade Sahab's nameplate and the hotline, which rings while a video waits for his approval (P17.3.6)
+        p.rect(106, 37, 43, 9, "k"); p.text("BADE SAHAB", 108, 39, "p");
+        const ring = on("you") && Math.floor(k.t * 8) % 2, jx = ring ? 1 : 0;
+        p.rect(72 + jx, 34, 20, 8, "r"); p.rect(70 + jx, 30, 24, 4, "k"); p.rect(79 + jx, 36, 6, 4, "p");
+        if (on("you")) p.text("RING!", 72, 22, Math.floor(k.t * 4) % 2 ? "r" : "V");
         break;
       }
       case "G": {

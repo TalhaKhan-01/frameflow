@@ -48,6 +48,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
       <button class="house-street" type="button" hidden>← Street</button>
       <div class="house-tip" hidden></div>
       <div class="house-bubble" hidden></div>
+      <div class="house-bubble house-chat" hidden></div>
       <div class="house-card" role="dialog" aria-live="polite" hidden></div>
     </div>
     <nav class="house-lift" aria-label="Floors">${FLOORS.map((f) =>
@@ -63,7 +64,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
   const $ = <T extends Element>(sel: string) => root.querySelector(sel) as T;
   const stage = $<HTMLDivElement>(".house-stage"), canvas = $<HTMLCanvasElement>("canvas");
   const ctx = canvas.getContext("2d")!;
-  const bubble = $<HTMLDivElement>(".house-bubble"), tip = $<HTMLDivElement>(".house-tip"), card = $<HTMLDivElement>(".house-card");
+  const bubble = $<HTMLDivElement>(".house-bubble:not(.house-chat)"), chatEl = $<HTMLDivElement>(".house-chat"), tip = $<HTMLDivElement>(".house-tip"), card = $<HTMLDivElement>(".house-card");
   const where = $<HTMLDivElement>(".house-where"), streetBtn = $<HTMLButtonElement>(".house-street");
   const play = $<HTMLButtonElement>(".hr-play"), speedBtn = $<HTMLButtonElement>(".hr-speed");
   const scrub = $<HTMLInputElement>(".hr-scrub"), timeEl = $<HTMLSpanElement>(".hr-time"), makeSel = $<HTMLSelectElement>(".hr-make");
@@ -409,6 +410,17 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
         bubble.style.top = `${Math.max(48, at.y - bubble.offsetHeight - 8)}px`;
       } else bubble.hidden = true;
     } else bubble.hidden = true;
+    // an office chat on this floor (P17.3.5), unless the make's own bubble is on the same person
+    const chat = view === "int" && floor && !trans ? scenes[floor].chatNow(t) : null;
+    const chatAt = chat && (!cur || cur.desk !== chat.desk) ? scenes[floor!].headOf(chat.desk) : null;
+    if (chat && chatAt) {
+      const at = toScreen(chatAt.x, chatAt.y - 2, shown), html = `<b>${esc(nameOf(chat.desk))}</b> ${esc(chat.text)}`;
+      if (chatEl.innerHTML !== html) chatEl.innerHTML = html;
+      chatEl.hidden = false;
+      const w = chatEl.offsetWidth, sw = stage.clientWidth;
+      chatEl.style.left = `${Math.max(6, Math.min(sw - w - 6, at.x - w / 2))}px`;
+      chatEl.style.top = `${Math.max(48, at.y - chatEl.offsetHeight - 8)}px`;
+    } else chatEl.hidden = true;
     if (player.has && !scrubbing) scrub.value = String(Math.round(player.frac * 1000));
     if (player.has) timeEl.textContent = `${mmss(player.makeSeconds())} into the make`;
     if (now - mirrorAt > 1000) { mirrorAt = now; renderMirror(); }
