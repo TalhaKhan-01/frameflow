@@ -575,8 +575,9 @@
     - [x] **P17.3.4** The Cast page: staff ID cards for the whole crew  
       _Acceptance:_ a Cast room shows one ID card per cast.ts entry (pixel portrait, name, title, desk, catchphrase, rival, this week's work); walk counts the cards = cast size
       _Note 2026-10-27:_ 22 ID cards live (5cbb8b1); new hires marked 'joining soon'
-    - [ ] **P17.3.5** Crew life: names on desks, idle habits, rivals meeting, bubbles with real snippets and voice cues  
+    - [~] **P17.3.5** Crew life: names on desks, idle habits, rivals meeting, bubbles with real snippets and voice cues  
       _Acceptance:_ in a replayed make each working character's bubble shows a real snippet from the timeline, idle characters do their habit, and at least two rival pairs meet and exchange a line; screenshots looked at
+      _Note 2026-10-27:_ names done: bubbles, desk cards (name, desk, catchphrase), hover tips, screen-reader list, Chai-tanya's card. Open: idle habits per character, rival pairs meeting with a line, voice cues
     - [~] **P17.3.6** Bade Sahab: the silhouette in the Cabin with the green phone; Habit badged 'Bade Sahab ka Khaas'  
       _Acceptance:_ the Cabin shows the owner only as a silhouette whose phone rings at the approval step of a replay; Habit's ID card and booth sign read 'Bade Sahab ka Khaas'; screenshots looked at
       _Note 2026-10-27:_ Habit's ID card reads 'Bade Sahab ka Khaas' and Bade Sahab's card is a silhouette (5cbb8b1); still open: the silhouette and ringing phone inside the Cabin during a replay, the booth sign
