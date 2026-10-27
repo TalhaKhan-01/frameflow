@@ -71,7 +71,8 @@ function overlay(base: Grid, over: Grid): Grid {
   });
 }
 
-export interface PersonOpts { habit?: string; shirt?: "a" | "A"; talk?: boolean; walk?: number; seated?: boolean }
+export interface PersonOpts { habit?: string; shirt?: "a" | "A"; talk?: boolean; walk?: number; seated?: boolean;
+  colors?: Record<string, string>; blink?: boolean }
 
 export function person(opts: PersonOpts = {}): Grid {
   let g = PERSON.slice();
@@ -79,17 +80,25 @@ export function person(opts: PersonOpts = {}): Grid {
   if (opts.habit && HABITS[opts.habit]) g = overlay(g, HABITS[opts.habit].over);
   g = g.map((r) => r.replace(/o/g, opts.talk ? "k" : "s"));
   if (opts.shirt === "A") g = g.map((r) => r.replace(/a/g, "A"));
+  if (opts.blink) g = g.map((r, y) => (y === 4 ? r.replace(/k/g, "s") : r));
+  const c = opts.colors;
+  if (c) g = g.map((r) => [...r].map((ch) => c[ch] ?? ch).join(""));
   return opts.seated ? g.slice(0, 14) : g;
 }
 
-// 3 × 5 pixel letters, enough for signs and stamps.
-const FONT: Record<string, string[]> = {
-  O: ["###", "#.#", "#.#", "#.#", "###"], N: ["#.#", "###", "###", "###", "#.#"], A: [".#.", "#.#", "###", "#.#", "#.#"],
-  I: ["###", ".#.", ".#.", ".#.", "###"], R: ["##.", "#.#", "##.", "#.#", "#.#"], K: ["#.#", "##.", "#..", "##.", "#.#"],
-  V: ["#.#", "#.#", "#.#", "#.#", ".#."], E: ["###", "#..", "##.", "#..", "###"], F: ["###", "#..", "##.", "#..", "#.."],
-  D: ["##.", "#.#", "#.#", "#.#", "##."], Y: ["#.#", "#.#", ".#.", ".#.", ".#."], T: ["###", ".#.", ".#.", ".#.", ".#."],
-  B: ["##.", "#.#", "##.", "#.#", "##."], H: ["#.#", "#.#", "###", "#.#", "#.#"], G: ["###", "#..", "#.#", "#.#", "###"], " ": ["...", "...", "...", "...", "..."],
-};
+// 3 × 5 pixel letters for signs, stamps and labels.
+const GLYPHS = `A .#. #.# ### #.# #.#|B ##. #.# ##. #.# ##.|C .## #.. #.. #.. .##|D ##. #.# #.# #.# ##.|E ### #.. ##. #.. ###
+|F ### #.. ##. #.. #..|G .## #.. #.# #.# .##|H #.# #.# ### #.# #.#|I ### .#. .#. .#. ###|J ..# ..# ..# #.# .#.
+|K #.# ##. #.. ##. #.#|L #.. #.. #.. #.. ###|M #.# ### ### #.# #.#|N #.# ### ### ### #.#|O .#. #.# #.# #.# .#.
+|P ##. #.# ##. #.. #..|Q .#. #.# #.# ##. .##|R ##. #.# ##. #.# #.#|S .## #.. .#. ..# ##.|T ### .#. .#. .#. .#.
+|U #.# #.# #.# #.# ###|V #.# #.# #.# #.# .#.|W #.# #.# ### ### #.#|X #.# #.# .#. #.# #.#|Y #.# #.# .#. .#. .#.
+|Z ### ..# .#. #.. ###|0 ### #.# #.# #.# ###|1 .#. ##. .#. .#. ###|2 ##. ..# .#. #.. ###|3 ##. ..# .#. ..# ##.
+|4 #.# #.# ### ..# ..#|5 ### #.. ##. ..# ##.|6 .## #.. ### #.# ###|7 ### ..# .#. .#. .#.|8 ### #.# ### #.# ###
+|9 ### #.# ### ..# ##.|! .#. .#. .#. ... .#.|? ##. ..# .#. ... .#.|. ... ... ... ... .#.|: ... .#. ... .#. ...
+|/ ..# ..# .#. #.. #..|- ... ... ### ... ...|+ ... .#. ### .#. ...|$ .## ##. .#. .## ##.|% #.. ..# .#. #.. ..#`;
+const FONT: Record<string, string[]> = { " ": ["...", "...", "...", "...", "..."] };
+for (const g of GLYPHS.replace(/\n/g, "").split("|")) { const [ch, ...rows] = g.trim().split(" "); FONT[ch] = rows; }
+export const textWidth = (s: string) => s.length * 4 - 1;
 
 export class Painter {
   constructor(public ctx: CanvasRenderingContext2D, public pal: Palette) {}

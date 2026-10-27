@@ -1,0 +1,65 @@
+/* Thirdspace House (P16): the stage, lift buttons, replay bar, desk cards. Riso Press inks. */
+.house {
+  --h-paper: #F3EBDD; --h-ink: #1B1B1B; --h-red: #D2392B; --h-blue: #1F3A93; --h-purple: #5B2A6E;
+  --h-mono: "JetBrains Mono", ui-monospace, monospace; --h-serif: "Fraunces", Georgia, serif;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "stage lift" "replay replay";
+  gap: 10px; color: var(--h-ink); font-family: var(--h-mono); position: relative;
+}
+.house-stage { grid-area: stage; position: relative; height: var(--house-h, min(78vh, 760px)); min-height: 420px;
+  border: 3px solid var(--h-ink); background: var(--h-paper); overflow: hidden; outline: none; touch-action: pan-y; }
+.house[data-view="int"] .house-stage { touch-action: none; }
+.house-stage:focus-visible { box-shadow: 0 0 0 3px var(--h-red); }
+.house-stage canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.house-where { position: absolute; left: 10px; top: 10px; background: var(--h-paper); border: 2px solid var(--h-ink);
+  padding: 4px 10px; display: grid; gap: 1px; max-width: calc(100% - 140px); pointer-events: none; }
+.house-where b { font: 700 15px/1.2 var(--h-serif); }
+.house-where small { font-size: 11px; opacity: .75; }
+.house-live { font-size: 11px; font-weight: 700; color: var(--h-paper); background: var(--h-red); padding: 1px 6px; justify-self: start;
+  animation: house-pulse 1.2s steps(2) infinite; }
+@keyframes house-pulse { 50% { opacity: .55; } }
+.house-street { position: absolute; right: 10px; top: 10px; font: 700 13px var(--h-mono); background: var(--h-ink); color: var(--h-paper);
+  border: 0; padding: 8px 12px; cursor: pointer; }
+.house-street:hover, .house-street:focus-visible { background: var(--h-red); }
+.house-tip { position: absolute; pointer-events: none; background: var(--h-ink); color: var(--h-paper); font-size: 12px; padding: 4px 8px;
+  max-width: 230px; line-height: 1.35; }
+.house-bubble { position: absolute; max-width: min(320px, 70%); background: #fff; border: 2px solid var(--h-ink); padding: 5px 9px;
+  font-size: 12px; line-height: 1.35; pointer-events: none; box-shadow: 3px 3px 0 var(--h-blue); }
+.house-bubble b { color: var(--h-red); margin-right: 4px; }
+.house-bubble::after { content: ""; position: absolute; left: calc(50% - 5px); bottom: -8px; border: 5px solid transparent; border-top-color: var(--h-ink); border-bottom: 0; }
+.house-lift { grid-area: lift; display: flex; flex-direction: column; gap: 4px; background: var(--h-ink); padding: 6px; align-self: start; }
+.house-lift button { width: 40px; height: 34px; font: 700 13px var(--h-mono); background: var(--h-paper); color: var(--h-ink); border: 0; cursor: pointer; }
+.house-lift button:hover, .house-lift button:focus-visible { background: #F2C6BC; }
+.house-lift button[aria-current="true"] { background: var(--h-red); color: var(--h-paper); }
+.house-replay { grid-area: replay; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+.house-replay button, .house-replay select { font: 700 12px var(--h-mono); background: var(--h-ink); color: var(--h-paper); border: 0; padding: 6px 10px; cursor: pointer; }
+.house-replay select { max-width: 260px; }
+.hr-scrub { flex: 1 1 200px; accent-color: var(--h-red); height: 18px; background: var(--ticks, none); }
+.hr-time { min-width: 13ch; }
+.house--noreplay .hr-play, .house--noreplay .hr-speed, .house--noreplay .hr-scrub, .house--noreplay .hr-make { display: none; }
+.house--live .hr-play, .house--live .hr-speed, .house--live .hr-scrub { display: none; }
+.house-card { position: absolute; right: 10px; bottom: 10px; width: min(360px, calc(100% - 20px)); max-height: calc(100% - 70px); overflow: auto;
+  background: var(--h-paper); border: 3px solid var(--h-ink); box-shadow: 5px 5px 0 var(--h-red); padding: 12px 14px; font-size: 12.5px; line-height: 1.45; }
+.house-card h3 { font: 800 22px/1.1 var(--h-serif); margin: 0 0 6px; }
+.house-card h4 { font: 700 12px var(--h-mono); text-transform: uppercase; letter-spacing: .06em; margin: 10px 0 4px; color: var(--h-blue); }
+.house-card p { margin: 0 0 6px; }
+.hc-floor { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--h-red); }
+.hc-close { position: absolute; right: 6px; top: 4px; border: 0; background: none; font-size: 22px; cursor: pointer; color: var(--h-ink); }
+.hc-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hc-steps li { border-left: 4px solid var(--h-ink); padding: 2px 0 2px 8px; display: grid; gap: 1px; }
+.hc-steps li.yes { border-color: var(--h-blue); }
+.hc-steps li.no { border-color: var(--h-red); }
+.hc-steps em { font-style: normal; color: var(--h-red); font-size: 11px; }
+.hc-steps q { font-size: 11.5px; opacity: .85; }
+.hc-link { display: inline-block; margin-top: 8px; color: var(--h-paper); background: var(--h-blue); padding: 5px 10px; text-decoration: none; font-weight: 700; }
+.hc-quiet { opacity: .7; }
+.house-mirror { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; padding: 0; }
+.house-mirror:focus-within { position: static; width: auto; height: auto; clip: auto; grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px; list-style: none; }
+.house-mirror button { font: 12px var(--h-mono); }
+@media (max-width: 700px) {
+  .house { grid-template-columns: 1fr; grid-template-areas: "stage" "lift" "replay"; }
+  .house-stage { height: var(--house-h-m, 72vh); min-height: 380px; }
+  .house-lift { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  .house-lift button { width: 36px; }
+  .house-card { left: 0; right: 0; bottom: 0; width: auto; max-height: 60%; box-shadow: 0 -4px 0 var(--h-red); }
+}
+@media (prefers-reduced-motion: reduce) { .house-live { animation: none; } }
