@@ -25,7 +25,7 @@
   "instagram",
   "facebook"
  ],
- "paused": true,
+ "paused": false,
  "laptop_hours": [
   "10:00",
   "17:00"
