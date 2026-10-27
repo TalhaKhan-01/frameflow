@@ -734,3 +734,4 @@
     - [~] **P24.7.1** One daily make produces The Daily Habit end to end (topic card, 8 topics, script, voice, render, QA, Telegram card)  
       _Acceptance:_ the make finishes unattended; QA and screening pass at the bar; Talha approves on Telegram; posted at 11:30 on YouTube, Instagram and Facebook
       _Note 2026-10-27:_ 27 Oct 21:42: Ep 1 made unattended end to end (topic card 20:47, ticks 20:56, make 21:29-21:42, card sent); QA pass, editors 17/28 below the bar; waits for Talha's approval and the 11:30 post
+      _Note 2026-10-27:_ 27 Oct 22:04: Ep 1 revised once (music bed, fewer jokes) and approved on Telegram; card post approved 22:08; both queued for 28 Oct 11:30
