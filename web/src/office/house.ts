@@ -46,6 +46,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
       <canvas></canvas>
       <div class="house-where"><b></b><span class="house-live" hidden>LIVE · make running</span><small></small></div>
       <button class="house-street" type="button" hidden>← Street</button>
+      <button class="house-sound" type="button" aria-pressed="false" title="Voice cues">♪ Sound off</button>
       <div class="house-tip" hidden></div>
       <div class="house-bubble" hidden></div>
       <div class="house-bubble house-chat" hidden></div>
@@ -69,6 +70,24 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
   const play = $<HTMLButtonElement>(".hr-play"), speedBtn = $<HTMLButtonElement>(".hr-speed");
   const scrub = $<HTMLInputElement>(".hr-scrub"), timeEl = $<HTMLSpanElement>(".hr-time"), makeSel = $<HTMLSelectElement>(".hr-make");
   const mirror = $<HTMLUListElement>(".house-mirror"), liveBadge = $<HTMLSpanElement>(".house-live");
+  // voice cues (P17.2.4): a short signature sound per person with their bubble, only after the visitor turns sound on
+  const soundBtn = $<HTMLButtonElement>(".house-sound"), cues = new Map<string, HTMLAudioElement>();
+  let soundOn = false, lastCueKey = "";
+  soundBtn.addEventListener("click", () => {
+    soundOn = !soundOn;
+    soundBtn.setAttribute("aria-pressed", String(soundOn));
+    soundBtn.textContent = soundOn ? "♪ Sound on" : "♪ Sound off";
+  });
+  function cue(desk: string, key: string) {
+    if (!soundOn || key === lastCueKey) return;
+    lastCueKey = key;
+    const name = PERSON[desk]?.cue;
+    if (!name) return;
+    let a = cues.get(name);
+    if (!a) { a = new Audio(`/cues/${name}.ogg`); a.volume = 0.5; cues.set(name, a); }
+    a.currentTime = 0;
+    a.play().catch(() => { /* no file here (e.g. the control panel), or the browser said no */ });
+  }
 
   const buf = (w: number, h: number) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
   const ext = buf(EXT_W, EXT_H), intA = buf(INT_W, INT_H), intB = buf(INT_W, INT_H);
@@ -403,7 +422,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
       const text = cur.say ?? cur.label;
       if (at && !trans) {
         const html = `<b>${esc(nameOf(cur.desk))}</b> ${esc(text)}`;
-        if (bubble.innerHTML !== html) bubble.innerHTML = html;
+        if (bubble.innerHTML !== html) { bubble.innerHTML = html; cue(cur.desk, "make:" + cur.desk + ":" + text); }
         bubble.hidden = false;
         const w = bubble.offsetWidth, sw = stage.clientWidth;
         bubble.style.left = `${Math.max(6, Math.min(sw - w - 6, at.x - w / 2))}px`;
@@ -415,7 +434,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
     const chatAt = chat && (!cur || cur.desk !== chat.desk) ? scenes[floor!].headOf(chat.desk) : null;
     if (chat && chatAt) {
       const at = toScreen(chatAt.x, chatAt.y - 2, shown), html = `<b>${esc(nameOf(chat.desk))}</b> ${esc(chat.text)}`;
-      if (chatEl.innerHTML !== html) chatEl.innerHTML = html;
+      if (chatEl.innerHTML !== html) { chatEl.innerHTML = html; cue(chat.desk, "chat:" + chat.desk + ":" + chat.text); }
       chatEl.hidden = false;
       const w = chatEl.offsetWidth, sw = stage.clientWidth;
       chatEl.style.left = `${Math.max(6, Math.min(sw - w - 6, at.x - w / 2))}px`;

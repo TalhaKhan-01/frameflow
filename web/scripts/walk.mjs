@@ -106,6 +106,14 @@ for (const width of [1440, 390]) {
     await page.screenshot({ path: `walk/house-end-${width}.png` });
   }
   console.log(`${width} house: floors, lift, card, street, scrub ok`);
+  // voice cues (P17.2.4): off until the visitor turns them on; then a bubble brings its person's cue
+  if ((await page.locator(".house-sound").getAttribute("aria-pressed")) !== "false") fail(`${width} cues: sound is not off by default`);
+  const cueResp = page.waitForResponse((r) => r.url().includes("/cues/") && r.url().endsWith(".ogg"), { timeout: 30000 }).catch(() => null);
+  await page.locator(".house-sound").click();
+  if (await page.locator(".hr-play").getAttribute("aria-label") === "Play") await page.locator(".hr-play").click();
+  const r = await cueResp;
+  if (!r || ![200, 206].includes(r.status())) fail(`${width} cues: no cue played after sound on (${r ? r.status() : "none"})`);
+  else console.log(`${width} cues: ${r.url().split("/").pop()} played`);
 
   if (await page.locator("video").count() === 0) {
     await page.goto(`${base}/#/video/2026-10-25-black-october`);

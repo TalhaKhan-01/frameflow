@@ -68,3 +68,6 @@
 .house-card .hc-role { font: 600 .78rem var(--mono, monospace); color: #D2392B; margin: -.2em 0 .5em; }
 .house-chat { background: #FBF6EC; border-style: dashed; }
 .house-chat b { color: #1F3A93; }
+.house-sound { position: absolute; right: 10px; bottom: 10px; font: 600 .75rem var(--mono, monospace); padding: .35em .7em;
+  background: #FBF6EC; color: #1B1B1B; border: 2px solid #1B1B1B; z-index: 3; }
+.house-sound[aria-pressed="true"] { background: #D2392B; color: #FBF6EC; }
