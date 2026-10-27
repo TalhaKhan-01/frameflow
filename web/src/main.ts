@@ -2,6 +2,7 @@
 // plain data/studio.json and shows at once. Locked mode (`frameflow web lock`): data/studio.enc is AES-GCM
 // encrypted by `frameflow web export`; the PIN derives the key (PBKDF2-SHA256) here in the browser.
 import "./style.css";
+import { mountHouse } from "./office/house";
 
 type Any = any; // the snapshot is plain JSON from webexport.py
 type Box = { v: number; iter: number; salt: string; iv: string; ct: string };
@@ -83,8 +84,8 @@ function lock(message = "") {
 }
 
 // ---------- shell ----------
-const TABS: [string, string][] = [["today", "Today"], ["videos", "Videos"], ["board", "Board"], ["cards", "Card posts"],
-  ["lessons", "Lessons"], ["library", "Library"], ["build", "Build"]];
+const TABS: [string, string][] = [["today", "The House"], ["videos", "Screening Room"], ["board", "Board"], ["cards", "Print Shop"],
+  ["lessons", "Notice Board"], ["library", "Archive"], ["build", "Build"]];
 const DESK_ABOUT: Record<string, string> = {
   showrunner: "owns the run; turns a revise request into a change order", researcher: "facts and sources for the story",
   factcheck: "re-reads every source; checks the script's numbers", packaging: "title, cover line and hook promise, before writing",
@@ -102,7 +103,10 @@ function deskStrip(b: Any) {
     <p class="meta">${b.renders} delivery render${b.renders === 1 ? "" : "s"} · ${b.fix_rounds} fix round${b.fix_rounds === 1 ? "" : "s"} before it · ${esc(b.minutes ?? "–")} min in all</p>`;
 }
 
+let house: { destroy(): void } | null = null;
+
 function shell(active: string, body: string) {
+  house?.destroy(); house = null;
   const gen = data.generated;
   app.innerHTML = `
   <header class="mast">
@@ -171,23 +175,37 @@ function today() {
     </article>`;
   }).join("");
   const posted = data.videos.filter((v: Any) => v.status === "posted").length;
+  const active = data.lessons.filter((x: Any) => x.status === "active").length;
   shell("today", `
     <section class="lead">
+      <p class="kicker">Thirdspace House · home of The Daily Habit Studio</p>
+      <h1>Every desk, <em>at work</em>.</h1>
+      <p class="lede">Each floor is a desk of the board. Watch the last make climb the house from the newsroom to the roof, or tap a floor to go inside.</p>
+    </section>
+    <div id="house" class="house-wrap"></div>
+    <section class="lead">
       <p class="kicker">Today's edition</p>
-      <h1>Picked at 15:00, made by 17:00,<br/>posted at <em>11:30</em>.</h1>
+      <h2 class="h1ish">Picked at 15:00, made by 17:00, posted at <em>11:30</em>.</h2>
       <div class="figures">
         <div><b>${data.ideas}</b><span>ideas collected</span></div>
         <div><b>${data.videos.length}</b><span>Shorts made</span></div>
         <div><b>${posted}</b><span>posted</span></div>
-        <div><b>${data.lessons.filter((x: Any) => x.status === "active").length}</b><span>active lessons</span></div>
+        <div><b>${active}</b><span>active lessons</span></div>
       </div>
     </section>
     ${body || '<p class="meta">No daily runs yet.</p>'}`);
+  const makes = data.videos.filter((v: Any) => v.timeline?.events?.length)
+    .map((v: Any) => ({ id: v.id, title: v.yt_title || v.title, timeline: v.timeline, href: `#/video/${encodeURIComponent(v.id)}` }));
+  house = mountHouse(document.getElementById("house")!, {
+    makes,
+    stats: [`${data.ideas} ideas collected so far.`, `${data.videos.length} Shorts made, ${posted} posted.`, `${active} lessons the desks read before each make.`],
+    links: { library: "#/library", lessons: "#/lessons", videos: "#/videos" },
+  });
 }
 
 function videos() {
   shell("videos", `
-    <section class="lead"><p class="kicker">Every Short so far</p><h1>Videos</h1></section>
+    <section class="lead"><p class="kicker">The Screening Room · every Short so far</p><h1>Videos</h1></section>
     <div class="grid">${data.videos.map((v: Any) => `
       <a class="vcard" href="#/video/${encodeURIComponent(v.id)}">
         ${v.media?.cover ? `<img src="/${esc(v.media.cover)}" alt="" loading="lazy" width="360" height="640" />`
@@ -246,7 +264,7 @@ function video(id: string) {
 
 function cards() {
   shell("cards", `
-    <section class="lead"><p class="kicker">Carousel posts from the same brief</p><h1>Card posts</h1></section>
+    <section class="lead"><p class="kicker">The Print Shop · carousel posts from the same brief</p><h1>Card posts</h1></section>
     ${data.cards.map((c: Any) => `
     <article class="cardpost">
       <div class="run-head"><h2>${esc(c.title ?? c.id)}</h2>${pill(c.state)}</div>
@@ -270,7 +288,7 @@ function lessons() {
       <p>${esc(l.text)}</p>
     </li>`).join("");
   shell("lessons", `
-    <section class="lead"><p class="kicker">What each video taught the next one</p><h1>Lessons</h1>
+    <section class="lead"><p class="kicker">The Notice Board, in the Archive · what each video taught the next one</p><h1>Lessons</h1>
       <p class="lede">Reviews, failed checks and Talha's notes become lessons. The best 8 per area go into the writer's and director's prompts.</p></section>
     <div class="filters" role="group" aria-label="Filter by area"><button data-a="" aria-pressed="true">All</button>${areas.map((a) =>
       `<button data-a="${esc(a)}" aria-pressed="false">${esc(a)}</button>`).join("")}</div>
@@ -290,7 +308,7 @@ function library() {
     ["scenes", "Scene recipes", (s) => `<li><span><span class="tag">${esc(s.template)}</span> ${esc(s.text)}</span></li>`],
   ];
   shell("library", `
-    <section class="lead"><p class="kicker">Reused, never imposed</p><h1>Asset library</h1>
+    <section class="lead"><p class="kicker">The Archive shelves · reused, never imposed</p><h1>Asset library</h1>
       <p class="lede">Passing videos leave behind facts, spare hooks, analogies and scene ideas. New videos are offered matching ones, with freshness and variety rules.</p>
       <div class="figures">${tabs.map(([k, l]) => `<div><b>${lib.counts[k]}</b><span>${l.toLowerCase()}</span></div>`).join("")}</div></section>
     ${tabs.map(([k, l, f]) => `<section><h2>${l}</h2><ol class="options plain">${(lib[k] as Any[]).slice(0, 40).map(f).join("")}</ol></section>`).join("")}`);

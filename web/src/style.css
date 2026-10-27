@@ -175,3 +175,11 @@ summary { cursor: pointer; font-weight: 600; }
 .desklist li { break-inside: avoid; margin: 0 0 .7em; }
 .desklist b { display: block; font-family: var(--serif); font-size: 1.05rem; }
 .desklist span { color: var(--muted); font-size: .92rem; }
+
+/* P16 Thirdspace House: the building on the home page, and the riso print touch on the rooms */
+.house-wrap { margin: 0 0 40px; }
+.h1ish { font: 800 clamp(1.6rem, 3.4vw, 2.4rem)/1.1 var(--serif); margin: 0 0 18px; }
+.h1ish em { color: var(--red); }
+.run, .vcard { border: 2px solid var(--ink); box-shadow: 5px 5px 0 var(--blue); }
+.vcard:hover { box-shadow: 7px 7px 0 var(--red); }
+.kicker { letter-spacing: .12em; }

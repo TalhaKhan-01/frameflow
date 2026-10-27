@@ -50,6 +50,42 @@ for (const width of [1440, 390]) {
     await page.screenshot({ path: `walk/${v.replace(/\W+/g, "-")}-${width}.png`, fullPage: true });
     console.log(`${width} ${v}: ok (${text} chars)`);
   }
+  // Thirdspace House (P16): tap a floor, the lift buttons, a desk card, back to the street, the replay scrubber
+  await page.goto(`${base}/#/today`);
+  await page.waitForSelector(".house canvas", { timeout: 15000 });
+  await page.waitForTimeout(800);
+  const viewOf = () => page.evaluate(() => document.querySelector(".house")?.getAttribute("data-view"));
+  await page.locator(".house-lift button[data-floor='2']").click();
+  await page.waitForTimeout(900);
+  if (await viewOf() !== "int") fail(`${width} house: the lift button did not go inside`);
+  if (!(await page.locator(".house-where b").textContent())?.includes("Booth")) fail(`${width} house: floor 2 is not the Booth`);
+  await page.locator(".house-lift button[data-floor='1']").click();
+  await page.waitForTimeout(700);
+  if (!(await page.locator(".house-where b").textContent())?.includes("Writers")) fail(`${width} house: the lift did not change floors`);
+  await page.screenshot({ path: `walk/house-inside-${width}.png` });
+  await page.locator(".house-mirror button[data-desk='writer']").focus();
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(300);
+  if (await page.locator(".house-card").isHidden()) fail(`${width} house: the desk card did not open`);
+  else if (!(await page.locator(".house-card h3").textContent())?.includes("Writer")) fail(`${width} house: wrong desk card`);
+  await page.screenshot({ path: `walk/house-card-${width}.png` });
+  await page.locator(".house-stage").focus();
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(800);
+  if (await viewOf() !== "ext") fail(`${width} house: Escape did not return to the street`);
+  await page.locator(".house-stage canvas").click();   // the middle of the street view is always a floor
+  await page.waitForTimeout(900);
+  if (await viewOf() !== "int") fail(`${width} house: tapping a floor did not go inside`);
+  await page.locator(".house-street").click();
+  await page.waitForTimeout(800);
+  if (await page.locator(".hr-scrub").count()) {
+    await page.locator(".hr-scrub").evaluate((el) => { el.value = "990"; el.dispatchEvent(new Event("input")); });
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `walk/house-end-${width}.png` });
+  }
+  console.log(`${width} house: floors, lift, card, street, scrub ok`);
+
   if (await page.locator("video").count() === 0) {
     await page.goto(`${base}/#/video/2026-10-25-black-october`);
   }

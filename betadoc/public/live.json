@@ -1,13 +1,13 @@
 {
- "generated": "2026-10-27T11:51:54",
+ "generated": "2026-10-27T12:48:00",
  "ideas": 1097,
  "videos_made": 5,
  "videos_posted": 3,
  "card_posts": 4,
  "lessons": 34,
  "library": 99,
- "leaves_done": 99,
- "leaves_partial": 30,
+ "leaves_done": 101,
+ "leaves_partial": 28,
  "leaves_total": 138,
  "today": {
   "day": "2026-10-28",
@@ -124,7 +124,420 @@
      "label": "Analyst",
      "gate": null
     }
-   ]
+   ],
+   "timeline": {
+    "seconds": 3727.0,
+    "events": [
+     {
+      "t": 0.0,
+      "d": 99.0,
+      "desk": "researcher",
+      "label": "research brief",
+      "status": "done"
+     },
+     {
+      "t": 99.0,
+      "d": 39.0,
+      "desk": "factcheck",
+      "label": "fact-check the brief",
+      "status": "done",
+      "gate": true,
+      "say": "16 supported, 1 corrected, 0 dropped, 0 unreachable"
+     },
+     {
+      "t": 138.0,
+      "d": 0.0,
+      "desk": "showrunner",
+      "label": "showrunner: run sheet (evidence so far)",
+      "status": "done"
+     },
+     {
+      "t": 138.0,
+      "d": 20.0,
+      "desk": "packaging",
+      "label": "packaging: the promise before writing",
+      "status": "done",
+      "gate": true,
+      "say": "The first line must make viewers want to know how thieves took over $100 million of AI data-center freight, and why t..."
+     },
+     {
+      "t": 158.0,
+      "d": 231.0,
+      "desk": "writer",
+      "label": "writer: hooks, story and script (shorts-writer)",
+      "status": "done",
+      "say": "Thieves stole $100M+ of AI freight, mostly with paperwork"
+     },
+     {
+      "t": 389.0,
+      "d": 233.0,
+      "desk": "director",
+      "label": "director: storyboard and sound plan (shorts-director)",
+      "status": "done"
+     },
+     {
+      "t": 622.0,
+      "d": 22.0,
+      "desk": "packaging",
+      "label": "cover text",
+      "status": "done"
+     },
+     {
+      "t": 644.0,
+      "d": 113.0,
+      "desk": "narrator",
+      "label": "voice (text to speech)",
+      "status": "done"
+     },
+     {
+      "t": 757.0,
+      "d": 12.0,
+      "desk": "narrator",
+      "label": "caption timing (speech to words)",
+      "status": "done"
+     },
+     {
+      "t": 769.0,
+      "d": 0.0,
+      "desk": "narrator",
+      "label": "narrator checks (timing on the real voice)",
+      "status": "done",
+      "gate": false,
+      "say": "rehooks: longest stretch without a re-hook 12.8 s (max 10.5)"
+     },
+     {
+      "t": 769.0,
+      "d": 0.0,
+      "desk": "factcheck",
+      "label": "fact-check the script's numbers",
+      "status": "done",
+      "gate": true,
+      "say": "every number said is in the verified facts"
+     },
+     {
+      "t": 769.0,
+      "d": 38.0,
+      "desk": "editor",
+      "label": "table read (script editor)",
+      "status": "done",
+      "gate": false,
+      "score": "10/16",
+      "say": "flow: Writer, Scene 6 to 7 (43.1s to 48.4s): the mummy/dhobi analogy comes right after the driver beat, but it illust..."
+     },
+     {
+      "t": 807.0,
+      "d": 126.0,
+      "desk": "writer",
+      "label": "writer fixes the script",
+      "status": "done",
+      "fix": true
+     },
+     {
+      "t": 933.0,
+      "d": 159.0,
+      "desk": "director",
+      "label": "director fixes the storyboard",
+      "status": "done",
+      "fix": true
+     },
+     {
+      "t": 1092.0,
+      "d": 0.0,
+      "desk": "packaging",
+      "label": "cover text",
+      "status": "done",
+      "fix": true
+     },
+     {
+      "t": 1092.0,
+      "d": 72.0,
+      "desk": "narrator",
+      "label": "voice (text to speech)",
+      "status": "done"
+     },
+     {
+      "t": 1164.0,
+      "d": 7.0,
+      "desk": "narrator",
+      "label": "caption timing (speech to words)",
+      "status": "done"
+     },
+     {
+      "t": 1171.0,
+      "d": 0.0,
+      "desk": "narrator",
+      "label": "narrator checks (timing on the real voice)",
+      "status": "done",
+      "gate": false,
+      "say": "rehooks: longest stretch without a re-hook 12.0 s (max 10.5)"
+     },
+     {
+      "t": 1171.0,
+      "d": 0.0,
+      "desk": "factcheck",
+      "label": "fact-check the script's numbers",
+      "status": "done",
+      "gate": true,
+      "say": "every number said is in the verified facts"
+     },
+     {
+      "t": 1171.0,
+      "d": 22.0,
+      "desk": "editor",
+      "label": "table read (script editor)",
+      "status": "done",
+      "gate": false,
+      "score": "8/16",
+      "say": "hook: Writer, Scene 0: 'Over a hundred million dollars... Mostly paperwork' is abstract, and the on-screen strip of p..."
+     },
+     {
+      "t": 1193.0,
+      "d": 0.0,
+      "desk": "animator",
+      "label": "build scenes (HyperFrames project)",
+      "status": "done"
+     },
+     {
+      "t": 1193.0,
+      "d": 0.0,
+      "desk": "standards",
+      "label": "standards (labels, licences, numbers)",
+      "status": "done",
+      "gate": true
+     },
+     {
+      "t": 1193.0,
+      "d": 44.0,
+      "desk": "animatic",
+      "label": "animatic (12 fps draft render)",
+      "status": "done",
+      "gate": false,
+      "say": "12.1 visual events per 10 s (min 4.0), longest gap 2.6 s (max 2.5) at 26.4 s"
+     },
+     {
+      "t": 1237.0,
+      "d": 7.0,
+      "desk": "artdirector",
+      "label": "art director (stills of the draft)",
+      "status": "done",
+      "gate": true
+     },
+     {
+      "t": 1244.0,
+      "d": 77.0,
+      "desk": "screening",
+      "label": "screening on the animatic",
+      "status": "done",
+      "gate": false,
+      "score": "15/22",
+      "say": "57s Right after the ramming reveal, 'Trust failed, not the truck' sounds like it contradicts what we just saw. Viewer..."
+     },
+     {
+      "t": 1321.0,
+      "d": 54.0,
+      "desk": "writer",
+      "label": "writer fixes the script",
+      "status": "done",
+      "fix": true
+     },
+     {
+      "t": 1375.0,
+      "d": 121.0,
+      "desk": "director",
+      "label": "director fixes the storyboard",
+      "status": "done",
+      "fix": true
+     },
+     {
+      "t": 1496.0,
+      "d": 0.0,
+      "desk": "packaging",
+      "label": "cover text",
+      "status": "done",
+      "fix": true
+     },
+     {
+      "t": 1496.0,
+      "d": 86.0,
+      "desk": "narrator",
+      "label": "voice (text to speech)",
+      "status": "done"
+     },
+     {
+      "t": 1582.0,
+      "d": 10.0,
+      "desk": "narrator",
+      "label": "caption timing (speech to words)",
+      "status": "done"
+     },
+     {
+      "t": 1592.0,
+      "d": 0.0,
+      "desk": "narrator",
+      "label": "narrator checks (timing on the real voice)",
+      "status": "done",
+      "gate": false,
+      "say": "rehooks: longest stretch without a re-hook 15.6 s (max 10.5)"
+     },
+     {
+      "t": 1592.0,
+      "d": 0.0,
+      "desk": "factcheck",
+      "label": "fact-check the script's numbers",
+      "status": "done",
+      "gate": true,
+      "say": "every number said is in the verified facts"
+     },
+     {
+      "t": 1592.0,
+      "d": 37.0,
+      "desk": "editor",
+      "label": "table read (script editor)",
+      "status": "done",
+      "gate": true,
+      "score": "12/16",
+      "say": "flow: Writer, scene 2: it opens with \"Yes, GPS was spoofed\", which answers a question nobody asked. The hook never me..."
+     },
+     {
+      "t": 1629.0,
+      "d": 0.0,
+      "desk": "animator",
+      "label": "build scenes (HyperFrames project)",
+      "status": "done"
+     },
+     {
+      "t": 1629.0,
+      "d": 0.0,
+      "desk": "standards",
+      "label": "standards (labels, licences, numbers)",
+      "status": "done",
+      "gate": true
+     },
+     {
+      "t": 1629.0,
+      "d": 53.0,
+      "desk": "animatic",
+      "label": "animatic (12 fps draft render)",
+      "status": "done",
+      "gate": false,
+      "say": "10.2 visual events per 10 s (min 4.0), longest gap 3.5 s (max 2.5) at 66.8 s"
+     },
+     {
+      "t": 1682.0,
+      "d": 8.0,
+      "desk": "artdirector",
+      "label": "art director (stills of the draft)",
+      "status": "done",
+      "gate": false,
+      "say": "scene 9: nothing drawn above the captions from 56.8 s to 57.8 s"
+     },
+     {
+      "t": 1690.0,
+      "d": 70.0,
+      "desk": "screening",
+      "label": "screening on the animatic",
+      "status": "done",
+      "gate": false,
+      "score": "14/22",
+      "say": "7s 'Why now?' comes with no timeline set up, and the split-flap shows a garbled, wrong number (0403700000) spilling o..."
+     },
+     {
+      "t": 1760.0,
+      "d": 89.0,
+      "desk": "animator",
+      "label": "render frames",
+      "status": "done"
+     },
+     {
+      "t": 1849.0,
+      "d": 18.0,
+      "desk": "animator",
+      "label": "sound mix (voice, music, effects)",
+      "status": "done"
+     },
+     {
+      "t": 1868.0,
+      "d": 10.0,
+      "desk": "qc",
+      "label": "technical QC (QA gates)",
+      "status": "done",
+      "gate": false,
+      "say": "events: 9.9 visual events per 10 s (min 4.0), longest gap 3.4 s (max 2.5) at 63.3 s"
+     },
+     {
+      "t": 1878.0,
+      "d": 25.0,
+      "desk": "screening",
+      "label": "final screening (render vs animatic)",
+      "status": "done",
+      "gate": false,
+      "score": "14/22"
+     },
+     {
+      "t": 1903.0,
+      "d": 16.0,
+      "desk": "analyst",
+      "label": "lessons for the next videos",
+      "status": "done"
+     },
+     {
+      "t": 1919.0,
+      "d": 0.0,
+      "desk": "analyst",
+      "label": "asset library",
+      "status": "done"
+     },
+     {
+      "t": 1919.0,
+      "d": 0.0,
+      "desk": "analyst",
+      "label": "vault note",
+      "status": "done"
+     },
+     {
+      "t": 1919.0,
+      "d": 18.0,
+      "desk": "you",
+      "label": "send video card to Telegram",
+      "status": "done"
+     },
+     {
+      "t": 1937.0,
+      "d": 50.0,
+      "desk": "packaging",
+      "label": "make card post (carousel)",
+      "status": "done"
+     },
+     {
+      "t": 1987.0,
+      "d": 0.0,
+      "desk": "analyst",
+      "label": "storage cleanup (rounds level)",
+      "status": "done"
+     },
+     {
+      "t": 2957.0,
+      "d": 654.0,
+      "desk": "publisher",
+      "label": "post to facebook",
+      "status": "failed"
+     },
+     {
+      "t": 3611.0,
+      "d": 0.0,
+      "desk": "publisher",
+      "label": "post to youtube",
+      "status": "failed"
+     },
+     {
+      "t": 3611.0,
+      "d": 116.0,
+      "desk": "publisher",
+      "label": "post to instagram",
+      "status": "failed"
+     }
+    ]
+   }
   }
  }
 }
