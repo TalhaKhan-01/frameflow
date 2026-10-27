@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-26T21:49:14",
+ "generated": "2026-10-27T10:30:18",
  "ideas": 901,
  "videos_made": 4,
  "videos_posted": 2,
@@ -7,12 +7,12 @@
  "lessons": 29,
  "library": 99,
  "leaves_done": 96,
- "leaves_partial": 29,
- "leaves_total": 142,
+ "leaves_partial": 31,
+ "leaves_total": 136,
  "today": {
   "day": "2026-10-27",
   "lane": "Money",
-  "state": "video-sent"
+  "state": "skipped"
  },
  "latest": {
   "title": "Microsoft's AI Beat Doctors on Hard Test Cases. Wait, What?",
