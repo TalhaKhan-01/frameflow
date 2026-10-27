@@ -122,7 +122,7 @@ def _screening(cmd, files, out_file):
             direct.skill([SCREENING, "--project", ROOT, cmd, *files, "--out", out_file], timeout=2400, strict=True)
             return json.loads(Path(out_file).read_text())
         except RuntimeError as e:
-            if attempt == 2:
+            if attempt == 2 or "limit" in str(e) and "resets" in str(e):   # a usage limit won't pass on a retry: daily waits for the reset
                 raise
             progress.note("screening call failed; trying once more", error=str(e)[-300:])
 
@@ -158,7 +158,7 @@ def table_read(out, plan, brief_path):
             direct.skill([EDITOR, "--project", ROOT, "read", out / "table-read-input.json", "--out", path], timeout=900, strict=True)
             return json.loads(path.read_text())
         except RuntimeError as e:
-            if attempt == 2:
+            if attempt == 2 or "limit" in str(e) and "resets" in str(e):   # a usage limit won't pass on a retry: daily waits for the reset
                 raise
             progress.note("table read failed; trying once more", error=str(e)[-300:])
 

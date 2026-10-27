@@ -80,21 +80,37 @@ def package(brief_path, out_dir):
     return b["package"]
 
 
+CHECKPOINT = "board-checkpoint.json"
+
+
 def make(brief_path, lane, out=None, skip_writer=False, skip_director=False, quality="looks"):
-    pc = profiles.pipeline()
+    """A make that stopped after the plan (usage limit, shutdown) resumes at the narrator from its checkpoint: plan.json is
+    always the last valid plan, and re-voicing is local. 26 Oct: a limit hit in the last screening threw away 37 minutes."""
+    import re
+    slug = re.sub(r"[^a-z0-9]+", "-", Path(brief_path).stem.lower()).strip("-")
+    out_dir = Path(out) if out else direct.ROOT / "out" / slug
+    cp = out_dir / CHECKPOINT
+    if cp.exists():
+        c = json.loads(cp.read_text())
+        if c.get("brief") == str(brief_path) and Path(c["plan"]).exists():
+            progress.note("resuming after the plan (checkpoint): writer and director skipped", plan=c["plan"])
+            r = run(brief_path, Path(c["plan"]), lane, quality)
+            cp.unlink(missing_ok=True)
+            return r
     if not skip_writer:
-        import re
-        slug = re.sub(r"[^a-z0-9]+", "-", Path(brief_path).stem.lower()).strip("-")
         from frameflow import analyst
         with progress.step("showrunner: run sheet (evidence so far)", desk="showrunner") as info:
-            sheet = analyst.run_sheet(brief_path, Path(out) if out else direct.ROOT / "out" / slug)
+            sheet = analyst.run_sheet(brief_path, out_dir)
             info.update({"videos_with_results": sheet["videos_with_results"], "evidence": sheet["evidence"][1:4]})
-        package(brief_path, Path(out) if out else direct.ROOT / "out" / slug)
+        package(brief_path, out_dir)
     with progress.step("script and storyboard (writer + director)", desk="writer"):
         d = direct.direct(brief_path, out, lane, skip_writer, skip_director)
     if d["errors"]:
         return {"status": "plan-invalid", **d}
-    return run(brief_path, Path(d["plan"]), lane, quality)
+    cp.write_text(json.dumps({"brief": str(brief_path), "plan": str(d["plan"])}))
+    r = run(brief_path, Path(d["plan"]), lane, quality)
+    cp.unlink(missing_ok=True)
+    return r
 
 
 def run(brief_path, plan_path, lane, quality="looks"):
