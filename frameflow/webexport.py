@@ -129,6 +129,7 @@ def videos(con):
              "words": report.get("words"), "voice": report.get("voice_engine"),
              "links": {k: u for k, u in (("youtube", r["youtube_url"]), ("instagram", r["instagram_url"])) if u},
              "review_max": review.get("max"), "board": boardview.for_video(con, r["id"]),
+             "timeline": boardview.timeline_for_video(con, r["id"]),
              "animatic_total": _read(render / "animatic-review.json", {}).get("total")}
         if posted:
             v["yt_title"] = pub.get("yt_title")
@@ -266,7 +267,8 @@ def live(data):
                       "latest": next(({"title": v.get("yt_title") or v["title"], "renders": v["board"]["renders"],
                                        "fix_rounds": v["board"]["fix_rounds"], "minutes": v["board"]["minutes"],
                                        "animatic": v.get("animatic_total"), "final": v["review_total"], "max": v.get("review_max"),
-                                       "desks": [{"label": d["label"], "gate": d["gate"]} for d in v["board"]["desks"]]}
+                                       "desks": [{"label": d["label"], "gate": d["gate"]} for d in v["board"]["desks"]],
+                                       "timeline": v.get("timeline")}
                                       for v in data["videos"] if v.get("board")), None)}}
 
 
