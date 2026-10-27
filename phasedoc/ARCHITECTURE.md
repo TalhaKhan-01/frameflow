@@ -87,19 +87,20 @@ The top row is the groundwork. The two rows below are the daily pipeline, from a
 | `pilot` | Black October pilot video | P9 |
 | `automation` | Telegram bot (approvals, /status, /pause, /ab), evening topic run with lane rotation, make-and-approve loop, 11:30 post queue | P10 |
 | `learning` | Lessons ledger fed by reviews, Talha's notes and 48 h stats; lessons injected into writer/director; weekly promotion | P11 |
+| `web` | Studio web app (read-only snapshot, open or PIN mode, auto-refresh after posts) | P13 |
+| `betadoc` | Story page, documentation and narrated tour | P13 |
+| `control` | Frameflow Control panel (127.0.0.1:7310): controls, connection lights, Making view | P14 |
+| `studio` | The studio board: desks with gates, animatic, one delivery render, showrunner Revise, analyst | P15 |
 
-## The v2 pipeline as it runs today (2026-10-25)
-One command per video, `frameflow make2 <brief.json>`, then Talha's approval, then `frameflow publish` / `upload`:
+## The pipeline as it runs today (2026-10-27): the studio board
+The day (P10, `frameflow.daily` driven by the bot's tick): **14:00** topic card (3 stories, lane rotation tech → AI → money) → pick, or auto-pick at **15:00** → make → video card on Telegram (Approve / Approve anyway / Revise / Reject) → **11:30** next day: YouTube (The Pilot in Studio), Facebook and Instagram (API; The Pilot while the Meta token is blocked) and the card post → links → +48 h stats card → lessons → asset library → cleanup.
 
-1. **Brief** (`briefs/<slug>.json`): sourced facts and cautions.
-2. **Writer** (shorts-writer skill, Opus): angles, 20-hook room, judge keeps 3, beat script in Habit's voice with delivery markup. Budget 50-86 s.
-3. **Director** (shorts-director skill): storyboard (world, metaphor, scene template, cues, transitions, sound cues, music).
-4. **Cover** (`frameflow.cover`): cover title, drawing and stat. `compile_plan` appends the **house end card** (cover moment, spoken follow line, Follow button).
-5. **Render** (`pipeline.render`): Chatterbox voice → Whisper word timings → captions in the script's spelling → HyperFrames drawn scenes (Paper Press) → score + SFX mix, loudnorm and limiter → `final.mp4` + `cover.png`.
-6. **Checks**: 9 QA gates (length, visual events, re-hooks, size, loudness, black frames, caption WER, voice start, licences), then review v2 (Opus, 10 rows, pass at 15/20 with no row at 0). On a fail, the fixes go back to the writer and director (at most 2 rounds).
-7. **Approval**: Talha watches and says approve (`frameflow approve`). This is the only human step.
-8. **Publish**: pack (titles, description with sources and CC BY music credits, tags, caption). YouTube is uploaded and published by The Pilot in Studio; Instagram goes by API, or by The Pilot for Reels the API won't take. Then `frameflow posted` records the links.
-9. **Feedback**: 48-hour stats and the weekly learnings report (now P11).
+A make (`videos.make2` → `board.make`, P15), every desk's gate before the next:
+1. **Research brief** (`brief.py`) → **fact-checker** (skill shorts-factcheck): unsupported facts dropped, partial ones corrected.
+2. **Showrunner run sheet** (`analyst.py`: evidence from videos with 48 h results) → **packaging** (social-caption concept mode: title, cover line, hook promise).
+3. **Writer** (shorts-writer) and **director** (shorts-director), each linting the measurable targets first. A valid plan writes a checkpoint: a make stopped later (usage limit) resumes at step 4.
+4. **Narrator**: Chatterbox voice → Whisper word timings → `precheck.py` (re-hooks, caption accuracy, length, voice start) + script numbers vs the verified facts → **script editor** table read (shorts-editor). Fails → one text fix round (`timing_fix_rounds`).
+5. **Scenes** (HyperFrames, Paper Press) → **standards** (`standards.py`: labels, licences, on-screen numbers) → **animatic** (`animatic.py`, 12 fps draft) → **art director** (`artdirect.py`: empty, black, off-brand) → **screening** (shorts-screening on the draft's stills). Fails → one fix round (`animatic_fix_rounds`), back to step 4.
+6. **One delivery render** → technical QC (`qa.py` gates) → **final screening** (render vs animatic). No loop after the render: the honest numbers go to Talha, and his Revise is the fix path (showrunner change order → only its stages re-run).
 
-## Next: the daily loop (P10, P11; design in vault Decisions/Daily Automation.md)
-20:00 the day before: topic card on Telegram (3 stories in the lane's rotation tech → AI → money) → pick (auto-pick at 22:30) → make2 → video card (Approve / Revise / Reject) → posted at 11:30, or right away if approved later → links → 48 h stats card → lessons ledger → the next video's prompts.
+One bar for every desk: `research/quality-bar.json`. Progress per step: `logs/progress-<day>.jsonl` (control panel Making view, Studio Board tab).

@@ -8,5 +8,11 @@
  "P6": "One command builds the finished video; automatic checks and an AI review test it against the quality bar; nothing goes out without Talha's approval.",
  "P7": "Ready-to-paste titles, descriptions and captions for manual upload, then statistics after 48 hours and a weekly report on what to change.",
  "P8": "Three pilot videos in three lanes, a week of daily posting, and a retrospective that adjusts the lane mix with real numbers.",
- "P9": "Quality v2: a human-style scriptwriter with a named narrator (Habit), a director that storyboards drawn, fast-cut scenes, an expressive voice, a sound-design layer and a stricter quality bar, proven on a Black October pilot video."
+ "P9": "Quality v2: a human-style scriptwriter with a named narrator (Habit), a director that storyboards drawn, fast-cut scenes, an expressive voice, a sound-design layer and a stricter quality bar, proven on a Black October pilot video.",
+ "P10": "One video a day on its own, with Talha deciding on Telegram: a 14:00 topic card, a 15:00 auto-pick, the make, a video card to approve, and posting at 11:30 on YouTube, Instagram and Facebook.",
+ "P11": "Every video teaches the next: reviews, Talha's notes and 48-hour stats become lessons the writer and director read, and the ones that keep helping become house rules.",
+ "P12": "Spend less per video: reuse drawings and clips that worked, clean up old renders, and turn the same research into a Habit card post.",
+ "P13": "The public side: a read-only Studio web app with every run and video, and a betadoc story page with a narrated tour, both deployed by git push.",
+ "P14": "One local control panel to watch and steer every step, with the same buttons as Telegram and a live view of what a make is doing.",
+ "P15": "Work like a real studio: each role is a desk with its own check, fixes happen on a cheap draft (the animatic), and the real render happens once."
 }
