@@ -134,7 +134,7 @@ def endcard(cover, plan_id):
     b = brand()
     say = b["outro_lines"][zlib.crc32(plan_id.encode()) % len(b["outro_lines"])]
     data = {"title": cover["title"], "mark": cover.get("mark", 0), "art": cover.get("art", []), "narrator": b["narrator"],
-            "tagline": b["tagline"], "handle": b["handle"], "button": b["button"], "coverAt": b["cover_at"],
+            "tagline": b["tagline"], "handle": b["handle"], "credit": b.get("credit", ""), "button": b["button"], "coverAt": b["cover_at"],
             "cues": {"follow": say.split()[0].strip(",.!?").lower()}}
     if cover.get("stat"):
         data["stat"] = cover["stat"]

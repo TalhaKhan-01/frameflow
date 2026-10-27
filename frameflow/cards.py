@@ -98,7 +98,7 @@ def topics():
 
 # ---------- slides ----------
 
-SYSTEM = """You design one Instagram/Facebook carousel for Thirdspace, a daily news-explainer page for AI, tech and money
+SYSTEM = """You design one Instagram/Facebook carousel for The Daily Habit Studio by Thirdspace Productions, a daily news-explainer page for AI, tech and money
 (narrator and mascot: Habit; audience: Indians aged 18-30, curious, most don't code). Craft: one idea per slide, read in about
 3 seconds; very little text; the same rhythm on every slide; plain words with an Indian everyday analogy where it helps.
 Slide 1 is the hook: a BOLD but TRUE claim, ideally with a number or a challenge ("This bug sat inside 7 of 10 websites for

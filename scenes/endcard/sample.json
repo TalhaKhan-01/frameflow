@@ -1,4 +1,4 @@
-{"type": "endcard", "say": "Follow, and tomorrow you learn the next one.", "duration": 3.2,
+{"type": "endcard", "say": "Make learning a Habit.", "duration": 3.2,
  "data": {"title": ["THE PHP", "BACKDOOR"], "mark": 1, "art": ["stranger", "door"], "stat": "34 million sites exposed",
-          "tagline": "New habit every day", "handle": "@madebythirdspace", "narrator": "Habit", "coverAt": 0.75,
-          "cues": {"follow": "follow"}}}
+          "tagline": "Make learning a Habit", "credit": "A Thirdspace Production", "handle": "@madebythirdspace", "narrator": "Habit", "coverAt": 0.75,
+          "cues": {"follow": "make"}}}

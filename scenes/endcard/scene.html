@@ -81,11 +81,14 @@
           gsap.set(done, { opacity: 0 });
           const handle = FF.text(cta, 540, 1200, D.handle || "", { size: 46, fill: C.muted, font: body, weight: 600 });
           FF.fitText(handle, 860, 46);
+          const credit = FF.text(cta, 540, 1262, D.credit || "", { size: 34, fill: C.red, font: serif, weight: 600 });
+          FF.fitText(credit, 860, 34);
           tl.set(cta, { opacity: 1 }, follow + 0.12);
           FF.pop(tl, tag, follow + 0.12, { from: 0.6, dur: 0.3 });
           FF.pivot(btn, 540, BY);
           FF.pop(tl, btn, follow + 0.24, { from: 0.3, dur: 0.36 });
           tl.fromTo(handle, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.25 }, follow + 0.4);
+          tl.fromTo(credit, { opacity: 0 }, { opacity: 1, duration: 0.3 }, follow + 0.55);
 
           // a drawn finger taps the button, which flips to Following
           const tap = Math.min(follow + 1.0, DUR - 0.7);

@@ -1,11 +1,14 @@
 {
  "_about": "House outro and cover: the pipeline appends an end card (scenes/endcard) after every script's last beat. The cover title comes from frameflow.cover; the outro line rotates by video id.",
  "narrator": "Habit",
+ "studio": "The Daily Habit Studio",
+ "house": "Thirdspace Productions",
+ "credit": "A Thirdspace Production",
  "handle": "@madebythirdspace",
- "tagline": "New habit every day",
+ "tagline": "Make learning a Habit",
  "button": "Follow",
  "outro_lines": [
-  "Follow, and tomorrow you learn the next one."
+  "Make learning a Habit."
  ],
  "outro_energy": 0.7,
  "lead_seconds": 0.8,

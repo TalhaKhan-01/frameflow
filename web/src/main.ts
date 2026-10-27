@@ -49,7 +49,7 @@ function lock(message = "") {
   app.innerHTML = `
   <main class="lock">
     <div class="lock-card">
-      <p class="kicker">Frameflow · Studio edition</p>
+      <p class="kicker">The Daily Habit Studio · a Thirdspace Production</p>
       <h1>The newsroom<br/>behind <em>Habit</em>.</h1>
       <p class="lede">Every day a story is picked, written, drawn, voiced, checked and posted. This is where it's tracked.</p>
       <form id="pin-form" autocomplete="off">
@@ -110,12 +110,12 @@ function shell(active: string, body: string) {
       <span>Snapshot ${esc(time(gen))}</span>
       <span class="mast-links"><a href="${REPO}" rel="noopener" class="gh" aria-label="Frameflow on GitHub">${GH_ICON}<span>GitHub</span></a>${openMode ? "" : ` · <a href="#" id="lock-btn">Lock</a>`}</span>
     </div>
-    <a class="mast-title" href="#/today">The Habit Daily <span>Studio</span></a>
+    <a class="mast-title" href="#/today">The Daily Habit <span>Studio</span></a>
     <nav aria-label="Studio sections">${TABS.map(([k, l]) =>
       `<a href="#/${k}" ${k === active ? 'aria-current="page"' : ""}>${l}</a>`).join("")}</nav>
   </header>
   <main class="page">${body}</main>
-  <footer class="foot">Frameflow Studio · read-only · <a href="${REPO}" rel="noopener">source on GitHub</a> · <a href="${esc(data.channels.youtube)}" rel="noopener">YouTube</a> · <a href="${esc(data.channels.instagram)}" rel="noopener">Instagram</a></footer>`;
+  <footer class="foot">The Daily Habit Studio · Thirdspace Productions · made by Frameflow · read-only · <a href="${REPO}" rel="noopener">source on GitHub</a> · <a href="${esc(data.channels.youtube)}" rel="noopener">YouTube</a> · <a href="${esc(data.channels.instagram)}" rel="noopener">Instagram</a></footer>`;
   document.getElementById("lock-btn")?.addEventListener("click", (e) => {
     e.preventDefault(); store.clear(); data = null; location.hash = ""; lock();
   });
