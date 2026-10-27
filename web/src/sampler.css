@@ -1,0 +1,43 @@
+/* Style sampler (dev only). Fonts OFL-1.1, bundled. */
+@font-face { font-family: "Fraunces"; font-weight: 100 900; src: url("./fonts/fraunces-latin-wght-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 100 900; src: url("./fonts/inter-latin-wght-normal.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-weight: 100 800; src: url("./fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2"); }
+@font-face { font-family: "Kalam"; font-weight: 700; src: url("./fonts/kalam-latin-700-normal.woff2") format("woff2"); }
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Inter", system-ui, sans-serif; background: #fff; color: #1b1b1b; }
+.top { padding: 32px 40px 8px; max-width: 1400px; margin: 0 auto; }
+.top h1 { font-family: "Fraunces", serif; font-size: 40px; margin: 0 0 8px; }
+.top p { max-width: 70ch; line-height: 1.5; margin: 0 0 6px; }
+.pal { background: var(--bg); color: var(--ink); padding: 32px 40px 40px; font-family: var(--body); }
+.pal > * { max-width: 1400px; margin-left: auto; margin-right: auto; }
+.pal h2 { font-family: var(--head); font-size: 32px; margin: 0 0 6px; }
+.pal header p { max-width: 75ch; margin: 0 0 10px; line-height: 1.5; }
+.pal .fonts { font-size: 13px; opacity: .75; }
+.sw { list-style: none; display: flex; gap: 8px; padding: 0; margin: 0 0 10px; flex-wrap: wrap; }
+.sw li { width: 72px; height: 44px; border: 2px solid var(--ink); position: relative; }
+.sw span { position: absolute; bottom: -18px; left: 0; font: 11px "JetBrains Mono", monospace; }
+.row { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1.1fr); gap: 28px; align-items: start; margin-top: 30px; }
+figure { margin: 0; }
+figcaption { font-size: 13px; margin-top: 8px; opacity: .75; }
+canvas.px { image-rendering: pixelated; display: block; width: 100%; height: auto; }
+.stage { position: relative; border: 3px solid var(--ink); }
+.bubble { position: absolute; font: 700 13px var(--body); background: #fff; color: #1b1b1b; border: 2px solid #1b1b1b; padding: 4px 8px;
+  opacity: 0; transform: translateY(4px); transition: opacity .2s, transform .2s; white-space: nowrap; }
+.bubble.on { opacity: 1; transform: none; }
+.bubble.b1 { left: 14%; top: 26%; }
+.bubble.b2 { left: 62%; top: 30%; color: var(--accent); }
+.phone { border: 3px solid var(--ink); border-radius: 18px; overflow: hidden; position: relative; aspect-ratio: 9 / 16; background: var(--bg); }
+.estage canvas { width: 100%; }
+.etext { position: absolute; left: 0; right: 0; bottom: 6%; text-align: center; display: grid; gap: 4px; padding: 0 8px; }
+.etext b { font: 700 clamp(14px, 1.6vw, 22px)/1.15 var(--head); color: var(--ink); }
+.etext small { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.etext i { font: italic 11px var(--head); color: var(--accent); }
+.vrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.var { border: 2px solid var(--ink); padding: 6px; text-align: center; font-size: 12px; }
+.var span { display: block; margin-top: 6px; }
+@media (max-width: 900px) {
+  .pal, .top { padding: 24px 16px; }
+  .row { grid-template-columns: 1fr; }
+  .end { max-width: 260px; }
+}
