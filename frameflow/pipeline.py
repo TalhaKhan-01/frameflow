@@ -264,7 +264,7 @@ def remix_stage(out):
 
 
 def render(plan_path, out_dir=None, quality="looks", mood=None, theme=None):
-    """All three stages in a row (revise and reflow still use this; a make goes through frameflow.board)."""
+    """All three stages in a row: the `frameflow render` dev command (a make goes through frameflow.board)."""
     out = voice_stage(plan_path, out_dir)
     build_stage(out, theme)
     return deliver_stage(out, quality, mood)

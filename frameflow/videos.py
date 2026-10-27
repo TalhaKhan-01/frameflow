@@ -1,16 +1,15 @@
 """Video register: every rendered video, its checks, and Talha's approval. Nothing is published without approval.
 
-    frameflow make <idea-id>             script -> render -> qa -> review (+ one rewrite on FIX) -> awaiting approval
+    frameflow make2 <brief.json>         the studio board (frameflow.board) -> awaiting approval or needs-work
     frameflow status                     list videos and their state
     frameflow approve <video-id>         Talha approves (only after watching final.mp4)
     frameflow reject <video-id> <why>    send back with a reason
 """
 import datetime as dt
 import json
-import sqlite3
 from pathlib import Path
 
-from frameflow import ideas, pipeline, progress, qa, review, script
+from frameflow import ideas, progress
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -30,57 +29,6 @@ def db():
 
 def now():
     return dt.datetime.now().replace(microsecond=0).isoformat()
-
-
-def check(out):
-    with progress.step("automatic checks (QA gates)") as info:
-        q = qa.run(out)
-        g = q.get("gates", {})
-        info.update({"pass": q.get("pass"), "passed": sum(1 for x in g.values() if x.get("pass")), "of": len(g),
-                     "failed": [f"{k}: {x.get('detail', '')}"[:160] for k, x in g.items() if not x.get("pass")]})
-    with progress.step("review (Opus watches the video)") as info:
-        r = review.run(out)
-        info.update({"total": r.get("total"), "max": r.get("max"), "pass": r.get("pass"),
-                     "fixes": [f"{x.get('row')}: {x.get('fix', '')}"[:160] for x in r.get("fixes", [])[:4]]})
-    return q, r
-
-
-def make(idea_id):
-    s = script.write(idea_id)
-    if s["fails"]:
-        return {"status": "script-failed", **s}
-    plan_path = Path(s["plan"])
-    report = pipeline.render(plan_path)
-    out = Path(report["final"]).parent
-    q, r = check(out)
-    rewrites = 0
-    if not (q["pass"] and r["pass"]):
-        feedback = [f"{f['row']}: {f['fix']}" for f in r["fixes"]] + [f"automatic check {k}: {g['detail']}" for k, g in q["gates"].items() if not g["pass"]]
-        script.rewrite(plan_path, feedback)
-        rewrites = 1
-        report = pipeline.render(plan_path)
-        q, r = check(out)
-    plan = json.loads(plan_path.read_text())
-    status = "awaiting-approval" if q["pass"] and r["pass"] else "needs-work"
-    try:   # what this video teaches the next ones (frameflow.lessons)
-        from frameflow import lessons
-        lessons.distill(rout)
-    except (Exception, SystemExit) as e:
-        print(f"lessons: {e}")
-    con = db()   # the row first: library.mark_used looks the video up
-    con.execute("INSERT OR REPLACE INTO videos (id, idea_id, plan, out_dir, lane, title, qa_pass, review_total, review_pass, status, note, created_at, updated_at) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (plan["id"], idea_id, str(plan_path), str(out), plan["lane"], plan["title"], int(q["pass"]), r["total"], int(r["pass"]),
-                 status, f"{rewrites} rewrite(s)", now(), now()))
-    con.execute("UPDATE ideas SET status='made' WHERE id=?", (idea_id,))
-    con.commit()
-    try:   # the asset library: record what was reused
-        from frameflow import library
-        library.mark_used(plan["id"])
-    except (Exception, SystemExit) as e:
-        print(f"library: {e}")
-    return {"video": plan["id"], "status": status, "qa": q["pass"], "review": f"{r['total']}/12", "rewrites": rewrites,
-            "seconds": report["seconds"], "final": report["final"]}
 
 
 def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_director=False, quality="looks"):

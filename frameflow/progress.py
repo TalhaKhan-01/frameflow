@@ -6,7 +6,7 @@
 
 Each step writes a 'start' line, then 'end' (with seconds and info) or 'fail' (with the error, SystemExit included),
 to logs/progress-<day>.jsonl. Steps nest: the line carries its parent step's id. daily.main sets the file
-(FF_PROGRESS) for make / revise / reflow / post; without it every call is a no-op. Writing progress never raises:
+(FF_PROGRESS) for make / order / revise / post; without it every call is a no-op. Writing progress never raises:
 a full disk or a bad value must not cost a video.
 """
 import datetime as dt

@@ -32,15 +32,10 @@ def main():
     i.add_argument("action", choices=["collect", "rank", "list"])
     i.add_argument("--hours", type=int, default=48)
     i.add_argument("--top", type=int, default=15)
-    s = sub.add_parser("script", help="ranked idea -> scene plan (plans/<id>.json)")
-    s.add_argument("idea_id", type=int)
-    s.add_argument("--model", default="sonnet")
-    rv = sub.add_parser("review", help="model review against the Quality Bar")
+    rv = sub.add_parser("review", help="full screening of a finished video (shorts-screening)")
     rv.add_argument("out_dir")
-    m = sub.add_parser("make", help="idea -> script -> render -> qa -> review (+1 rewrite) -> awaiting approval")
-    m.add_argument("idea_id", type=int)
     for name in ("make2", "direct"):
-        m2 = sub.add_parser(name, help="Quality v2: brief -> script (shorts-writer) -> storyboard (shorts-director) -> plan" + (" -> video" if name == "make2" else ""))
+        m2 = sub.add_parser(name, help="brief -> the studio board -> video" if name == "make2" else "brief -> writer + director -> plan only")
         m2.add_argument("brief")
         m2.add_argument("--out")
         m2.add_argument("--lane", default="how-tech-works")
@@ -93,16 +88,10 @@ def main():
         else:
             for r in ideas.top(a.top):
                 print(f"{r['score']:3} {r['lane']:15} {r['title'][:70]}\n    hook: {r['hook']}\n    India: {r['india_angle']}")
-    elif a.cmd == "script":
-        from frameflow import script
-        print(json.dumps(script.write(a.idea_id, a.model), indent=1))
     elif a.cmd == "review":
         from frameflow import review
         sys.argv = ["review", a.out_dir]
         review.main()
-    elif a.cmd == "make":
-        from frameflow import videos
-        print(json.dumps(videos.make(a.idea_id), indent=1))
     elif a.cmd == "profile":
         from frameflow import profiles
         profiles.main(a.args)

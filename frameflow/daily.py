@@ -1,10 +1,11 @@
 """Daily automation: one run per posting day, moved along by the Telegram bot (vault Decisions/Daily Automation.md).
 
     python -m frameflow.daily scout [--day YYYY-MM-DD]     topic card for a posting day (default: tomorrow)
-    python -m frameflow.daily make <day>                   brief -> make2 -> video card       (spawned by the bot)
-    python -m frameflow.daily revise <day>                 Talha's notes -> re-render -> card  (spawned by the bot)
+    python -m frameflow.daily make <day>                   brief -> the board -> video card     (spawned by the bot)
+    python -m frameflow.daily order <day>                  Talha's Revise words -> showrunner change order (Go / Change it / Cancel)
+    python -m frameflow.daily revise <day>                 the confirmed change order -> only its stages -> card
     python -m frameflow.daily post <day>                   pack -> YouTube, Instagram, Facebook -> links card
-    python -m frameflow.daily tick                         what the bot runs every 30 s: 20:00 scout, 22:30 auto-pick, 11:30 posts
+    python -m frameflow.daily tick                         what the bot runs every 30 s: 14:00 scout, 15:00 auto-pick, 11:30 posts
     python -m frameflow.daily status
 
 States: topic-sent -> picked -> making -> video-sent -> (revising -> making) -> queued -> posting -> posted,
@@ -281,49 +282,12 @@ def order(day):
 
 
 def revise(day):
-    from frameflow import direct, videos, pipeline
+    """Every revise is a confirmed change order (frameflow.producer): Talha's words become an order he says Go to, and only
+    its stages re-run. The older notes-straight-to-a-re-render path went with the studio board (27 Oct cleanup)."""
     run = get(day)
-    if run.get("order_file") and Path(run["order_file"]).exists() and run.get("state") == "making":   # a confirmed change order
-        return revise_order(day)
-    row = videos.db().execute("SELECT * FROM videos WHERE id=?", (run["video_id"],)).fetchone()
-    notes = (run["notes"] or "").strip()
-    out = Path(row["out_dir"])
-    asked = notes
-    fixes = [{"row": "story", "fix": f"Talha (the channel owner) asks: {notes}"},
-             {"row": "visual_storytelling", "fix": f"Talha (the channel owner) asks: {notes}"}]
-    # a short, general note ("use the review", "make it up to the quality bar") carries nothing to fix: send the review's
-    # own fixes (each to its row: writer or director) and the failed automatic checks, Talha's words on top (26 Oct)
-    if len(notes) < 80 and re.search(r"review|quality|\bbar\b|better|improve|fix (it|this)|as you (think|see)", notes, re.I):
-        rev = json.loads((out / "review.json").read_text()) if (out / "review.json").exists() else {}
-        qa = json.loads((out / "qa.json").read_text()) if (out / "qa.json").exists() else {}
-        found = [{"row": x["row"], "fix": x["fix"]} for x in rev.get("fixes", []) if x.get("row") and x.get("fix")]
-        found += [{"row": "pacing" if k != "rehooks" else "story", "fix": f"automatic check '{k}' failed: {g.get('detail', '')}"}
-                  for k, g in (qa.get("gates") or {}).items() if not g.get("pass") and k in ("events", "blank-frames", "rehooks", "length")]
-        found += [{"row": "story", "fix": f"automatic check '{k}' failed: {g.get('detail', '')}; keep spoken words simple and clearly pronounced"}
-                  for k, g in (qa.get("gates") or {}).items() if not g.get("pass") and k == "captions"]
-        if found:
-            fixes = [{"row": "story", "fix": f"Talha (the channel owner) asks: {notes}. Do it through the fixes below."}] + found
-            notes = "\n".join(f"{x['row']}: {x['fix']}" for x in found)
-            update(day, note=f"general note: sending the review's fixes and failed checks instead ({len(found)} items)")
-    update(day, state="making", note=f"revising with Talha's notes: {notes[:200]}")
-    try:
-        from frameflow import lessons
-        lessons.distill(out, notes=asked, source=f"{run['video_id']} (Talha's revise notes)")
-    except Exception as e:
-        print(f"lessons: {e}")
-    with progress.step("revise script and storyboard", notes=notes[:200]):
-        d = direct.revise(run["brief"], Path(row["plan"]).parent, {"fixes": fixes}, run["lane"])
-    if d["errors"]:
-        raise RuntimeError(f"revised plan invalid: {d['errors']}")
-    report = pipeline.render(Path(d["plan"]), Path(d["plan"]).parent / "render", "looks")
-    q, r = videos.check(Path(report["final"]).parent)
-    con = videos.db()
-    con.execute("UPDATE videos SET qa_pass=?, review_total=?, review_pass=?, status=?, note=?, updated_at=? WHERE id=?",
-                (int(q["pass"]), r["total"], int(r["pass"]), "awaiting-approval" if q["pass"] and r["pass"] else "needs-work",
-                 f"v2 revised from Talha's notes (round {run['revisions']})", videos.now(), run["video_id"]))
-    con.commit()
-    with progress.step("send video card to Telegram"):
-        video_card(day)
+    if not (run.get("order_file") and Path(run["order_file"]).exists()):
+        raise RuntimeError("no confirmed change order: Revise starts with the showrunner (Telegram Revise, or the control panel)")
+    return revise_order(day)
 
 
 def revise_order(day):
@@ -338,38 +302,6 @@ def revise_order(day):
     update(day, order_file=None, revise_picks=None, note=f"change order done: review {r['total']}/{r.get('max')}, QA {'pass' if q['pass'] else 'fail'}")
     with progress.step("send video card to Telegram"):
         video_card(day)
-
-
-def reflow(day):
-    """Re-review a made video with the current review (flow row included); weak flow -> a flow-only revision -> new card."""
-    from frameflow import direct, pipeline, review, videos
-    run = get(day)
-    row = videos.db().execute("SELECT * FROM videos WHERE id=?", (run["video_id"],)).fetchone()
-    if run.get("video_msg"):
-        telegram.clear_buttons(run["video_msg"])
-    telegram.send("Re-checking this video's flow with the new review before you approve it. A fresh card follows.")
-    update(day, state="making", note="reflow: re-review with the flow row")
-    r = review.run(Path(row["out_dir"]))
-    flow = r["scores"].get("flow", 2)
-    update(day, note=f"reflow review {r['total']}/{r['max']}, flow {flow}")
-    if flow < 2:
-        fixes = [x for x in r.get("fixes", []) if x["row"] == "flow"] or [{"row": "flow", "fix": "Smooth the seams between parts."}]
-        d = direct.revise(run["brief"], Path(row["plan"]).parent, {"fixes": fixes}, run["lane"])
-        if d["errors"]:
-            raise RuntimeError(f"revised plan invalid: {d['errors']}")
-        report = pipeline.render(Path(d["plan"]), Path(d["plan"]).parent / "render", "looks")
-        q, r = videos.check(Path(report["final"]).parent)
-        con = videos.db()
-        con.execute("UPDATE videos SET qa_pass=?, review_total=?, review_pass=?, status=?, note=?, updated_at=? WHERE id=?",
-                    (int(q["pass"]), r["total"], int(r["pass"]), "awaiting-approval" if q["pass"] and r["pass"] else "needs-work",
-                     f"v2 flow revision (review {r['total']}/{r['max']}, flow {r['scores'].get('flow')})", videos.now(), run["video_id"]))
-        con.commit()
-        update(day, note=f"after flow revision: review {r['total']}/{r['max']}, flow {r['scores'].get('flow')}")
-    else:
-        con = videos.db()
-        con.execute("UPDATE videos SET review_total=?, review_pass=?, updated_at=? WHERE id=?", (r["total"], int(r["pass"]), videos.now(), run["video_id"]))
-        con.commit()
-    video_card(day)
 
 
 def approve(day):
@@ -571,8 +503,6 @@ def run_step(a, day):
         order(day)
     elif a.step == "revise":
         revise(day)
-    elif a.step == "reflow":
-        reflow(day)
     elif a.step == "post":
         post(day)
     elif a.step == "tick":
@@ -583,12 +513,12 @@ def run_step(a, day):
 
 def main():
     ap = argparse.ArgumentParser(description="Frameflow daily automation")
-    ap.add_argument("step", choices=["scout", "make", "order", "revise", "reflow", "post", "tick", "status"])
+    ap.add_argument("step", choices=["scout", "make", "order", "revise", "post", "tick", "status"])
     ap.add_argument("day", nargs="?")
     ap.add_argument("--day", dest="day_opt")
     a = ap.parse_args()
     day = a.day or a.day_opt
-    if day and a.step in ("make", "order", "revise", "reflow", "post"):   # step-by-step progress for the control panel's Making view
+    if day and a.step in ("make", "order", "revise", "post"):   # step-by-step progress for the control panel's Making view
         os.environ["FF_PROGRESS"] = str(ROOT / "logs" / f"progress-{day}.jsonl")
     try:
         with progress.step(a.step, day=day):
@@ -604,7 +534,7 @@ def main():
             except Exception:
                 pass
             sys.exit(0)
-        if day and a.step in ("make", "order", "revise", "reflow", "post", "scout") and get(day):
+        if day and a.step in ("make", "order", "revise", "post", "scout") and get(day):
             update(day, state="failed", job_pid=None, note=f"{a.step} failed: {e}")
             try:
                 telegram.send(f"The {a.step} step for {day} failed: {str(e)[:300]}\nReply /retry to try again.")
