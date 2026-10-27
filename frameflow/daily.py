@@ -283,7 +283,18 @@ def video_card(day):
 
 def order(day):
     """The showrunner's change order for Talha's Revise words and ticked issues, sent for Go / Change it / Cancel."""
-    from frameflow import producer
+    from frameflow import producer, showdesk
+    run = get(day)
+    if showdesk.is_show(run):   # a show episode: the notes go straight to the writer (no board change order)
+        picks = json.loads(run.get("revise_picks") or "[]")
+        found = producer.issues(day)
+        notes = "\n".join([f"- {(run.get('notes') or '').strip()}"] if (run.get("notes") or "").strip() else []) + \
+                "".join(f"\n- {found[i]}" for i in picks if i < len(found))
+        path = ROOT / "out" / "show" / f"order-{day}.txt"
+        path.write_text(notes.strip())
+        msg = telegram.send(f"I'll rewrite the episode with these notes, then re-voice and re-render it (about 15 min):\n{notes.strip()[:3000]}",
+                            [[("Go", f"ordgo:{day}"), ("Change it", f"ordchg:{day}"), ("Cancel", f"ordno:{day}")]])
+        return update(day, state="order-sent", order_file=str(path), order_msg=str(msg), note="show revise notes sent for Go")
     update(day, state="ordering", note="showrunner: reading the revise request")
     o = producer.order(day)
     msg = telegram.send(producer.message(o), [[("Go", f"ordgo:{day}"), ("Change it", f"ordchg:{day}"), ("Cancel", f"ordno:{day}")]])
@@ -300,8 +311,15 @@ def revise(day):
 
 
 def revise_order(day):
-    from frameflow import producer, videos
+    from frameflow import producer, showdesk, videos
     run = get(day)
+    if showdesk.is_show(run):
+        from frameflow import show
+        show.revise(day, Path(run["order_file"]).read_text())
+        update(day, order_file=None, revise_picks=None, note="show revise done")
+        with progress.step("send video card to Telegram"):
+            video_card(day)
+        return
     q, r = producer.apply(day)
     con = videos.db()
     con.execute("UPDATE videos SET qa_pass=?, review_total=?, review_pass=?, status=?, note=?, updated_at=? WHERE id=?",

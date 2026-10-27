@@ -37,7 +37,7 @@ GAP = 0.3           # breath after each line
 END_HOLD = 2.6
 EMOTIONS = ["neutral", "excited", "surprised", "doubtful", "smug", "worried", "laughing", "serious"]
 GRAPHICS = ["headline", "stat", "versus", "bars", "quote", "list"]
-PATTERNS = [[(0, "split"), (0.55, "pip")], [(0, "pip"), (0.6, "split")], [(0, "full"), (0.4, "split")], [(0, "split"), (0.5, "pip")]]   # Habit on screen most of the time
+PATTERNS = [[(0, "split"), (0.55, "pip")], [(0, "pip"), (0.6, "split")], [(0, "split"), (0.45, "pip")], [(0, "pip"), (0.5, "split")]]   # Habit always on screen (an empty bottom half read as a dead frame, Ep 1 screening)
 
 _spec = importlib.util.spec_from_file_location("factcheck", brief.FACTCHECK)
 factcheck = importlib.util.module_from_spec(_spec)
@@ -690,6 +690,40 @@ def rerender(day):
     data, script = json.loads((out / "research.json").read_text()), json.loads((out / "script.json").read_text())
     r = produce(day, o["episode"], slug, data, script, out)
     daily.update(day, video_id=r["video"], note=f"re-rendered {r['video']}: {r['status']}, review {r['review']}")
+    return r
+
+
+def revise(day, notes):
+    """Talha's Revise on a show episode: his words and ticked issues go to the writer as notes (the script, the graphics,
+    the faces), then the voice, the render, QA and screening run again, and a new card goes out."""
+    run = daily.get(day)
+    o = json.loads(run["options"])
+    slug = slug_for(day, o["episode"])
+    out = OUT / slug
+    data, old = json.loads((out / "research.json").read_text()), json.loads((out / "script.json").read_text())
+    n = len(list(out.glob("revision-*.json"))) + 1
+    shutil.copy(out / "script.json", out / f"revision-{n}.before.json")
+    c = cfg()
+    ask = f"Episode {o['episode']} of The Daily Habit. Stories in order:\n{stories_block(data)}"
+    old.pop("table_read", None)
+    with progress.step("writer: Talha's revise notes", desk="writer"):
+        script = llm.call(f"{ask}\n\nThe aired draft:\n{json.dumps(old, ensure_ascii=False)}\n\nThe owner asked for these changes "
+                          f"(apply them exactly; keep everything else; every rule still applies):\n{notes}",
+                          WRITER_SYSTEM, WRITER_SCHEMA, model=c["doctor_model"], purpose="show.revise", effort="medium", timeout=1500)
+        errs = lint(script, data)
+        if errs:
+            script = llm.call(f"{ask}\n\nYour draft:\n{json.dumps(script, ensure_ascii=False)}\n\nFix these problems, keeping the owner's "
+                              f"changes:\n" + "\n".join(f"- {e}" for e in errs), WRITER_SYSTEM, WRITER_SCHEMA, model=c["doctor_model"],
+                              purpose="show.revise-fix", effort="medium", timeout=1500)
+            errs = lint(script, data)
+        if errs:
+            raise RuntimeError(f"the revised script fails its checks: {errs[:4]}")
+        script["table_read"] = table_read(script, data)
+    (out / f"revision-{n}.json").write_text(json.dumps({"notes": notes, "script": script}, ensure_ascii=False, indent=1))
+    (out / "script.json").write_text(json.dumps(script, ensure_ascii=False, indent=1))
+    shutil.rmtree(out / "voice", ignore_errors=True)
+    r = produce(day, o["episode"], slug, data, script, out)
+    daily.update(day, video_id=r["video"], note=f"revised (round {run['revisions']}): {r['status']}, review {r['review']}")
     return r
 
 
