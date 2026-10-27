@@ -183,3 +183,51 @@ summary { cursor: pointer; font-weight: 600; }
 .run, .vcard { border: 2px solid var(--ink); box-shadow: 5px 5px 0 var(--blue); }
 .vcard:hover { box-shadow: 7px 7px 0 var(--red); }
 .kicker { letter-spacing: .12em; }
+
+/* P17.3 the Daily Habit HQ: the lift panel, the street entrance, the reception board, the crew's ID cards */
+.lift a { display: inline-flex; align-items: center; gap: 6px; }
+.lift a i { font: 700 .7rem/1 var(--mono); font-style: normal; display: inline-grid; place-items: center; width: 1.7em; height: 1.7em;
+  border: 1.5px solid currentColor; border-radius: 50%; }
+.lift a[aria-current="page"] i { background: var(--red); border-color: var(--red); color: var(--paper); }
+
+.street { max-width: 1240px; margin: 0 auto; padding: clamp(20px, 4vw, 48px) 16px 48px; display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.25fr); gap: clamp(20px, 4vw, 56px); align-items: center; min-height: 100svh; }
+.street-copy h1 { font-size: clamp(2.6rem, 7vw, 5rem); line-height: .95; }
+.door { display: inline-flex; align-items: center; gap: .6em; margin: 22px 0 16px; padding: .9em 1.4em; font: 700 1.15rem var(--sans);
+  color: var(--paper); background: var(--red); text-decoration: none; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--blue);
+  transition: transform .15s, box-shadow .15s; }
+.door:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--blue); }
+.door span { transition: transform .2s; } .door:hover span { transform: translateX(4px); }
+.street-house { margin: 0; }
+
+.reception { background: var(--ink); color: var(--paper); border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--red);
+  padding: 16px clamp(14px, 3vw, 26px); margin: 0 0 28px; font-family: var(--mono); }
+.reception .rb-head { margin: 0 0 10px; font-weight: 700; letter-spacing: .2em; font-size: .78rem; color: oklch(0.8 0.1 29); }
+.reception dl { margin: 0; display: grid; gap: 6px; }
+.reception dl div { display: grid; grid-template-columns: 9em 1fr; gap: 12px; border-bottom: 1px dashed oklch(1 0 0 / .18); padding: 4px 0; }
+.reception dt { text-transform: uppercase; font-size: .72rem; letter-spacing: .12em; opacity: .7; padding-top: .2em; }
+.reception dd { margin: 0; font-size: .92rem; }
+.reception .rb-foot { margin: 12px 0 0; font-size: .8rem; opacity: .85; }
+.reception a { color: oklch(0.85 0.08 255); }
+
+.idcards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+.idcard { display: grid; grid-template-columns: 80px 1fr; gap: 14px; background: var(--card); border: 2px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--blue); padding: 14px; position: relative; }
+.idcard::before { content: "THIRDSPACE · STAFF"; position: absolute; top: -9px; right: 12px; background: var(--paper);
+  font: 700 .6rem var(--mono); letter-spacing: .14em; padding: 1px 6px; border: 1.5px solid var(--ink); color: var(--ink); }
+.idcard canvas { width: 80px; height: 96px; image-rendering: pixelated; border: 1.5px solid var(--ink); }
+.idcard h2 { font-size: 1.3rem; margin: 0 0 .15em; }
+.idcard p { margin: .15em 0; font-size: .86rem; }
+.id-title { font: 700 .68rem var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--red); }
+.id-place, .id-rival { color: var(--muted); }
+.id-line { font-family: var(--hand); font-size: 1.05rem !important; color: var(--blue); }
+.id-work { font-size: .8rem !important; border-top: 1px dashed var(--line); padding-top: 6px; margin-top: 6px !important; }
+.id-work q { color: var(--muted); font-style: italic; }
+.idcard.owner { background: var(--ink); color: var(--paper); box-shadow: 5px 5px 0 var(--red); }
+.idcard.owner .id-place, .idcard.owner .id-rival { color: oklch(0.8 0.02 80); }
+.idcard.owner .id-line { color: oklch(0.85 0.08 255); }
+
+@media (max-width: 760px) {
+  .street { grid-template-columns: 1fr; min-height: 0; }
+  .reception dl div { grid-template-columns: 1fr; gap: 2px; }
+}

@@ -3,6 +3,9 @@
 // encrypted by `frameflow web export`; the PIN derives the key (PBKDF2-SHA256) here in the browser.
 import "./style.css";
 import { mountHouse } from "./office/house";
+import { CAST, PERSON } from "./office/cast";
+import { DESK, FLOOR } from "./office/desks";
+import { drawPortrait } from "./office/portrait";
 
 type Any = any; // the snapshot is plain JSON from webexport.py
 type Box = { v: number; iter: number; salt: string; iv: string; ct: string };
@@ -84,8 +87,10 @@ function lock(message = "") {
 }
 
 // ---------- shell ----------
-const TABS: [string, string][] = [["today", "The House"], ["videos", "Screening Room"], ["board", "Board"], ["cards", "Print Shop"],
-  ["lessons", "Notice Board"], ["library", "Archive"], ["build", "Build"]];
+// the HQ's rooms (P17.3): every page is a place in the building; the nav is the lift panel
+const TABS: [string, string, string][] = [["lobby", "G", "Lobby"], ["cast", "G", "The Crew"], ["videos", "3", "Screening Room"],
+  ["board", "5", "Run Sheet"], ["cards", "1", "Print Shop"], ["lessons", "B", "Notice Board"], ["library", "B", "Archive"],
+  ["build", "4", "Engine Room"]];
 const DESK_ABOUT: Record<string, string> = {
   showrunner: "owns the run; turns a revise request into a change order", researcher: "facts and sources for the story",
   factcheck: "re-reads every source; checks the script's numbers", packaging: "title, cover line and hook promise, before writing",
@@ -93,7 +98,7 @@ const DESK_ABOUT: Record<string, string> = {
   narrator: "voice and timing checks on the real voice", standards: "labels, licences, on-screen numbers",
   artdirector: "empty, black and off-brand pictures", animatic: "a 12 fps draft render before the real one",
   screening: "the full screening, on the animatic", animator: "the delivery render, once", qc: "loudness, black, motion, captions",
-  you: "Talha approves, revises or rejects", publisher: "uploads and checks every post", analyst: "48 h results tied to each decision" };
+  you: "Bade Sahab (Talha) approves, revises or rejects", publisher: "uploads and checks every post", analyst: "48 h results tied to each decision" };
 
 function deskStrip(b: Any) {
   if (!b) return `<p class="meta">Made before the studio board (26 Oct 2026): no desk-by-desk record.</p>`;
@@ -114,9 +119,9 @@ function shell(active: string, body: string) {
       <span>Snapshot ${esc(time(gen))}</span>
       <span class="mast-links"><a href="${REPO}" rel="noopener" class="gh" aria-label="Frameflow on GitHub">${GH_ICON}<span>GitHub</span></a>${openMode ? "" : ` · <a href="#" id="lock-btn">Lock</a>`}</span>
     </div>
-    <a class="mast-title" href="#/today">The Daily Habit <span>Studio</span></a>
-    <nav aria-label="Studio sections">${TABS.map(([k, l]) =>
-      `<a href="#/${k}" ${k === active ? 'aria-current="page"' : ""}>${l}</a>`).join("")}</nav>
+    <a class="mast-title" href="#/lobby">The Daily Habit <span>HQ</span></a>
+    <nav class="lift" aria-label="Rooms of the HQ">${TABS.map(([k, f, l]) =>
+      `<a href="#/${k}" ${k === active ? 'aria-current="page"' : ""}><i aria-hidden="true">${f}</i>${l}</a>`).join("")}</nav>
   </header>
   <main class="page">${body}</main>
   <footer class="foot">The Daily Habit Studio · Thirdspace Productions · made by Frameflow · read-only · <a href="${REPO}" rel="noopener">source on GitHub</a> · <a href="${esc(data.channels.youtube)}" rel="noopener">YouTube</a> · <a href="${esc(data.channels.instagram)}" rel="noopener">Instagram</a></footer>`;
@@ -176,12 +181,13 @@ function today() {
   }).join("");
   const posted = data.videos.filter((v: Any) => v.status === "posted").length;
   const active = data.lessons.filter((x: Any) => x.status === "active").length;
-  shell("today", `
+  shell("lobby", `
     <section class="lead">
-      <p class="kicker">Thirdspace House · home of The Daily Habit Studio</p>
+      <p class="kicker">The Lobby · Thirdspace House, home of The Daily Habit Studio</p>
       <h1>Every desk, <em>at work</em>.</h1>
-      <p class="lede">Each floor is a desk of the board. Watch the last make climb the house from the newsroom to the roof, or tap a floor to go inside.</p>
+      <p class="lede">Each floor is a desk of the board, and every desk is a person. Watch the last make climb the house from the newsroom to the roof, or tap a floor to go inside.</p>
     </section>
+    ${reception()}
     <div id="house" class="house-wrap"></div>
     <section class="lead">
       <p class="kicker">Today's edition</p>
@@ -201,6 +207,83 @@ function today() {
     stats: [`${data.ideas} ideas collected so far.`, `${data.videos.length} Shorts made, ${posted} posted.`, `${active} lessons the desks read before each make.`],
     links: { library: "#/library", lessons: "#/lessons", videos: "#/videos" },
   });
+}
+
+// ---------- the HQ (P17.3) ----------
+const who = (desk: string) => PERSON[desk]?.name ?? DESK[desk]?.label ?? desk;
+
+function reception() {   // the lobby's letter board: today's make, where it is, who came in, who is on leave
+  const v = data.videos.find((x: Any) => x.board?.desks?.length && x.timeline?.events?.length);
+  if (!v) return "";
+  const ev: Any[] = v.timeline.events, lastDesk = ev[ev.length - 1].desk;
+  const inToday = new Set<string>([...v.board.desks.filter((d: Any) => d.steps > 0).map((d: Any) => d.desk),
+    ...ev.map((e: Any) => e.desk)].filter((d) => DESK[d]));
+  const leave = Object.keys(DESK).filter((d) => !inToday.has(d));
+  const score = v.review_total != null ? `${v.review_total}/${v.review_max ?? 22}` : "–";
+  return `<section class="reception" aria-label="Reception board">
+    <p class="rb-head">RECEPTION · ${esc(day(v.created))}</p>
+    <dl>
+      <div><dt>Today's make</dt><dd>${esc(v.yt_title || v.title)}</dd></div>
+      <div><dt>Last seen</dt><dd>${esc(FLOOR[DESK[lastDesk]?.floor]?.name ?? "")} · ${esc(who(lastDesk))}</dd></div>
+      <div><dt>Score</dt><dd>${esc(score)} · ${v.board.renders ?? 1} render · ${v.board.fix_rounds ?? 0} fix rounds</dd></div>
+      <div><dt>In today</dt><dd>${[...inToday].map((d) => esc(who(d))).join(", ")}</dd></div>
+      ${leave.length ? `<div><dt>On leave</dt><dd>${leave.map((d) => esc(who(d))).join(", ")}</dd></div>` : ""}
+    </dl>
+    <p class="rb-foot">${esc(PERSON.chaiwala.name)}: "${esc(PERSON.chaiwala.catchphrase)}" · <a href="#/cast">Meet the crew →</a></p>
+  </section>`;
+}
+
+function street() {   // the landing: the building at the door, "Enter the Daily Habit HQ"
+  house?.destroy(); house = null;
+  const posted = data.videos.filter((v: Any) => v.status === "posted").length;
+  app.innerHTML = `
+  <main class="street">
+    <section class="street-copy">
+      <p class="kicker">Thirdspace Productions presents</p>
+      <h1>The Daily Habit <em>HQ</em></h1>
+      <p class="lede">A production house where every desk is a person: ${CAST.length} characters, from ${esc(PERSON.researcher.name)} chasing rumours to ${esc(PERSON.factcheck.name)} stamping NOPE, all making one Short a day with ${esc(PERSON.narrator.name)}, ${esc(PERSON.narrator.title)}.</p>
+      <a class="door" href="#/lobby">Enter the Daily Habit HQ <span aria-hidden="true">→</span></a>
+      <p class="meta">${data.videos.length} Shorts made · ${posted} posted · <a href="#/cast">meet the crew</a> · <a href="${REPO}" rel="noopener">source on GitHub</a></p>
+    </section>
+    <div id="house" class="house-wrap street-house"></div>
+  </main>`;
+  const makes = data.videos.filter((v: Any) => v.timeline?.events?.length)
+    .map((v: Any) => ({ id: v.id, title: v.yt_title || v.title, timeline: v.timeline, href: `#/video/${encodeURIComponent(v.id)}` }));
+  house = mountHouse(document.getElementById("house")!, {
+    makes, stats: [`${data.ideas} ideas collected so far.`, `${data.videos.length} Shorts made, ${posted} posted.`],
+    links: { library: "#/library", lessons: "#/lessons", videos: "#/videos" },
+  });
+  window.scrollTo(0, 0);
+}
+
+function cast() {   // staff ID cards
+  const week = Date.now() - 7 * 864e5;
+  const recent = data.videos.filter((v: Any) => v.board?.desks && new Date(v.created).getTime() >= week);
+  const work = (id: string) => {
+    const rows = recent.flatMap((v: Any) => v.board.desks.filter((d: Any) => d.desk === id && d.steps > 0));
+    if (!rows.length) return "";
+    const steps = rows.reduce((n: number, d: Any) => n + d.steps, 0), secs = rows.reduce((n: number, d: Any) => n + d.seconds, 0);
+    const line = recent.flatMap((v: Any) => (v.timeline?.events ?? []).filter((e: Any) => e.desk === id && e.say)).map((e: Any) => e.say)[0];
+    return `<p class="id-work">This week: ${steps} job${steps === 1 ? "" : "s"} on ${rows.length} video${rows.length === 1 ? "" : "s"}, ${secs >= 60 ? Math.round(secs / 60) + " min" : Math.round(secs) + " s"}${line ? `<br/><q>${esc(String(line).slice(0, 110))}</q>` : ""}</p>`;
+  };
+  const rival = (r: string) => PERSON[r]?.name ?? r;
+  const place = (p: Any) => FLOOR[DESK[p.id]?.floor ?? p.floor]?.name ?? ({ street: "The street", awning: "The awning" } as Any)[p.floor] ?? "";
+  shell("cast", `
+    <section class="lead"><p class="kicker">The Crew · staff of Thirdspace House</p><h1>Every desk is <em>a person</em>.</h1>
+      <p class="lede">${CAST.length - 1} people and a cat make The Daily Habit. Each desk of the board has a name, a temper and a rival, and the rivals argue on every make.</p></section>
+    <ul class="idcards">${CAST.map((p) => `
+      <li class="idcard${p.id === "you" ? " owner" : ""}" id="crew-${esc(p.id)}">
+        <canvas data-portrait="${esc(p.id)}" width="80" height="96" role="img" aria-label="${esc(p.name)}, pixel portrait"></canvas>
+        <div>
+          <p class="id-title">${esc(p.title)}</p>
+          <h2>${esc(p.name)}</h2>
+          <p class="id-place">${esc(place(p))}${p.id === "you" ? " · the green phone" : DESK[p.id] ? ` · ${esc(DESK[p.id].label)} desk` : p.floor && !DESK[p.id] && ["2", "B", "G"].includes(p.floor) ? " · joining soon" : ""}</p>
+          <p class="id-line">“${esc(p.catchphrase)}”</p>
+          <p class="id-rival">Rival: ${esc(rival(p.rival))}</p>
+          ${work(p.id)}
+        </div>
+      </li>`).join("")}</ul>`);
+  document.querySelectorAll<HTMLCanvasElement>("canvas[data-portrait]").forEach((c) => drawPortrait(c, c.dataset.portrait!));
 }
 
 function videos() {
@@ -347,10 +430,10 @@ function build() {
 function route() {
   if (!data) return lock();
   const [, view, arg] = location.hash.split("/");
-  const views: Record<string, () => void> = { videos, board, cards, lessons, library, build };
+  const views: Record<string, () => void> = { lobby: today, today, cast, videos, board, cards, lessons, library, build };
   if (views[view]) views[view]();
   else if (view === "video") video(decodeURIComponent(arg ?? ""));
-  else today();
+  else street();
 }
 
 window.addEventListener("hashchange", route);

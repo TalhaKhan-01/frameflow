@@ -14,7 +14,7 @@ export interface Person {
 
 export const CAST: Person[] = [
   { id: "narrator", name: "Habit", title: "Bade Sahab ka Khaas", catchphrase: "Make learning a Habit.", rival: "everyone", cue: "chime", voice: "house" },
-  { id: "you", name: "Bade Sahab", title: "The Owner", catchphrase: "…", rival: "nobody dares", cue: "phone", voice: "muffled, through a phone" },
+  { id: "you", name: "Bade Sahab", title: "The Owner", catchphrase: "Theek hai. Post karo.", rival: "nobody dares", cue: "phone", voice: "muffled, through a phone" },
   { id: "showrunner", name: "Deadline Didi", title: "Showrunner", catchphrase: "11:30 matlab 11:30.", rival: "the clock", cue: "stopwatch", voice: "female, 30s, brisk, firm, Indian English" },
   { id: "researcher", name: "Googly", title: "Researcher", catchphrase: "Breaking! …probably.", rival: "factcheck", cue: "tab-pop", voice: "young male, fast, high energy, Hinglish" },
   { id: "factcheck", name: "Sach-in", title: "Fact-checker", catchphrase: "Source dikhao.", rival: "researcher", cue: "stamp", voice: "male, 40s, low, slow, dry" },
