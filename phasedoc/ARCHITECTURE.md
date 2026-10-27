@@ -2,7 +2,7 @@
 
 The top row is the groundwork. The two rows below are the daily pipeline, from an idea to a posted video and back into learning. Each box is coloured live from the task tree: grey = not started, amber = in progress, green = done and verified.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 700" width="980" height="700" font-family="system-ui, sans-serif" font-size="14">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 790" width="980" height="790" font-family="system-ui, sans-serif" font-size="14">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="currentColor" opacity="0.6"/>
@@ -88,6 +88,9 @@ The top row is the groundwork. The two rows below are the daily pipeline, from a
   <g id="comp-betadoc"><rect x="780" y="592" width="180" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
     <text x="870" y="620" text-anchor="middle" fill="currentColor" font-weight="600">Betadoc</text>
     <text x="870" y="640" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">story, docs, tour</text></g>
+  <g id="comp-house"><rect x="590" y="700" width="370" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="775" y="728" text-anchor="middle" fill="currentColor" font-weight="600">Thirdspace House</text>
+    <text x="775" y="748" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">pixel building: replay on Studio + betadoc, live on the panel</text></g>
 
   <g stroke="currentColor" stroke-opacity="0.55" stroke-width="1.6" fill="none" marker-end="url(#arrow)">
     <path d="M190,190 H208"/><path d="M380,190 H398"/><path d="M570,190 H588"/><path d="M760,190 H778"/>
