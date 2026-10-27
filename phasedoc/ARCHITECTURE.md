@@ -2,7 +2,7 @@
 
 The top row is the groundwork. The two rows below are the daily pipeline, from an idea to a posted video and back into learning. Each box is coloured live from the task tree: grey = not started, amber = in progress, green = done and verified.
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 470" width="980" height="470" font-family="system-ui, sans-serif" font-size="14">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 700" width="980" height="700" font-family="system-ui, sans-serif" font-size="14">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="currentColor" opacity="0.6"/>
@@ -54,6 +54,40 @@ The top row is the groundwork. The two rows below are the daily pipeline, from a
   <g id="comp-launch"><rect x="20" y="284" width="360" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
     <text x="200" y="312" text-anchor="middle" fill="currentColor" font-weight="600">Launch</text>
     <text x="200" y="332" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">3 pilots → 7-day cadence → retrospective</text></g>
+
+  <text x="20" y="462" fill="currentColor" opacity="0.7" font-size="12">QUALITY V2 AND THE STUDIO BOARD (P9, P15)</text>
+  <g id="comp-writer"><rect x="20" y="472" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="105" y="500" text-anchor="middle" fill="currentColor" font-weight="600">Writer</text>
+    <text x="105" y="520" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">Habit's voice, hooks, beats</text></g>
+  <g id="comp-director"><rect x="210" y="472" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="295" y="500" text-anchor="middle" fill="currentColor" font-weight="600">Director</text>
+    <text x="295" y="520" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">storyboard, metaphors, cues</text></g>
+  <g id="comp-sound"><rect x="400" y="472" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="485" y="500" text-anchor="middle" fill="currentColor" font-weight="600">Sound</text>
+    <text x="485" y="520" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">SFX cues, music beds</text></g>
+  <g id="comp-studio"><rect x="590" y="472" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="675" y="500" text-anchor="middle" fill="currentColor" font-weight="600">Studio board</text>
+    <text x="675" y="520" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">desks, animatic, 1 render</text></g>
+  <g id="comp-pilot"><rect x="780" y="472" width="180" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="870" y="500" text-anchor="middle" fill="currentColor" font-weight="600">Pilot video</text>
+    <text x="870" y="520" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">Black October</text></g>
+
+  <text x="20" y="582" fill="currentColor" opacity="0.7" font-size="12">RUNS BY ITSELF, WATCHED BY TALHA (P10-P14)</text>
+  <g id="comp-automation"><rect x="20" y="592" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="105" y="620" text-anchor="middle" fill="currentColor" font-weight="600">Daily automation</text>
+    <text x="105" y="640" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">Telegram, 14:00 → 11:30</text></g>
+  <g id="comp-learning"><rect x="210" y="592" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="295" y="620" text-anchor="middle" fill="currentColor" font-weight="600">Learning</text>
+    <text x="295" y="640" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">lessons ledger, house rules</text></g>
+  <g id="comp-control"><rect x="400" y="592" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="485" y="620" text-anchor="middle" fill="currentColor" font-weight="600">Control panel</text>
+    <text x="485" y="640" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">127.0.0.1:7310, Making view</text></g>
+  <g id="comp-web"><rect x="590" y="592" width="170" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="675" y="620" text-anchor="middle" fill="currentColor" font-weight="600">Studio web app</text>
+    <text x="675" y="640" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">Vercel snapshot</text></g>
+  <g id="comp-betadoc"><rect x="780" y="592" width="180" height="64" rx="10" stroke="currentColor" stroke-opacity="0.35"/>
+    <text x="870" y="620" text-anchor="middle" fill="currentColor" font-weight="600">Betadoc</text>
+    <text x="870" y="640" text-anchor="middle" fill="currentColor" font-size="11" opacity="0.75">story, docs, tour</text></g>
 
   <g stroke="currentColor" stroke-opacity="0.55" stroke-width="1.6" fill="none" marker-end="url(#arrow)">
     <path d="M190,190 H208"/><path d="M380,190 H398"/><path d="M570,190 H588"/><path d="M760,190 H778"/>

@@ -15,7 +15,7 @@ module.exports = {
         PD_HOST: "127.0.0.1",
         PD_DB: `${PD}/plan.db`,
         PD_TITLE: "Frameflow",
-        PD_SUBTITLE: "Automated Shorts for YouTube and Instagram: build arc P0–P13",
+        PD_SUBTITLE: "Automated Shorts for YouTube, Instagram and Facebook: build arc P0–P15",
         PD_PLAN: `${PD}/PLAN.md`,
         PD_ARCH: `${PD}/ARCHITECTURE.md`,
         PD_EXPLAINERS: `${PD}/explainers.json`,
