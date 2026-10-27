@@ -30,7 +30,7 @@ FPS = 30
 STING = 1.5
 GAP = 0.22          # breath between lines
 END_HOLD = 2.6      # end card hold after the outro line
-SETS, LOOKS = ["riso", "paper", "night"], ["pixel", "puppet", "low3d"]
+SETS, LOOKS = ["riso", "paper", "night"], ["pixel", "puppet"]
 
 EP = json.loads((HERE / "episode.json").read_text())
 BEATS = {b["id"]: b for b in EP["beats"]}
@@ -209,7 +209,6 @@ def project(name, spec):
     <script src="assets/vendor/rough.min.js"></script>
     <script>gsap.registerPlugin(DrawSVGPlugin, MotionPathPlugin);</script>
     <script src="assets/ff-kit.js"></script>
-    <script src="assets/vendor/three.min.js"></script>
     <script src="assets/show.js"></script>
     <style>#root {{ position: relative; width: 100%; height: 100%; overflow: hidden; }}</style>
   </head>

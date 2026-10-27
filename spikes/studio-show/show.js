@@ -1,5 +1,5 @@
 /* Studio-show spike (P24.1.2): The Daily Habit as a show. One composition draws a set (riso | paper | night),
-   a Habit look (pixel | puppet | low3d) and the four framings (wide | split | pip | full), plus the show package
+   a Habit look (pixel | puppet) and the four framings (wide | split | pip | full), plus the show package
    (sting, lane bug, lower-third, source chip, PiP frame, ticker, captions, end card).
 
    Determinism: the camera, the framing, Habit's pose, captions and the ticker are pure functions of time,
@@ -148,7 +148,7 @@
     return g;
   }
 
-  // ---------- Habit, three looks: one pose API (mouth 0-1, blink 0-1, lookX/lookY -1..1, bob px, brow 0-1) ----------
+  // ---------- Habit, two looks: one pose API (mouth 0-1, blink 0-1, lookX/lookY -1..1, bob px, brow 0-1) ----------
   const SKIN = "#F0B8A8", HAIR = "#1F3A93", PHONES = "#7F8CC0", SHIRT = "#D2392B", INK = "#1B1B1B", CREAM = "#F3EBDD";
 
   function rigPixel(parent) {
@@ -214,46 +214,7 @@
     } };
   }
 
-  function rigLow3d(parent) {
-    const CW = 480, CH = 640;
-    const canvas = document.createElement("canvas");
-    canvas.width = CW; canvas.height = CH;
-    canvas.style.cssText = `position:absolute;left:${FACE.x - 240}px;top:${FACE.y - 250}px;width:${CW}px;height:${CH}px`;
-    parent.appendChild(canvas);
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
-    renderer.setPixelRatio(1); renderer.setSize(CW, CH, false);
-    const scene = new THREE.Scene();
-    const cam = new THREE.OrthographicCamera(-2.4, 2.4, 2.5, -3.9, 0.1, 50);   // 1 unit = 100 px; head centre at canvas (240, 250)
-    cam.position.set(0, 0, 10);
-    scene.add(new THREE.AmbientLight(0xffffff, 1.4));
-    scene.add(new THREE.HemisphereLight(0xfff4e6, 0x8a7a90, 1.6));
-    const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(-3, 4, 6); scene.add(key);
-    const mat = (c) => new THREE.MeshStandardMaterial({ color: c, flatShading: true, roughness: 0.75, metalness: 0.0 });
-    const rig = new THREE.Group(); scene.add(rig);
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.35, 2.2, 7), mat(SHIRT)); body.position.set(0, -2.6, -0.3); rig.add(body);
-    const collar = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.5, 3), mat(CREAM)); collar.position.set(0, -1.55, 0.45); collar.rotation.x = Math.PI; rig.add(collar);
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.36, 0.6, 6), mat(SKIN)); neck.position.set(0, -1.25, -0.1); rig.add(neck);
-    const head = new THREE.Group(); rig.add(head);
-    const skull = new THREE.Mesh(new THREE.IcosahedronGeometry(1.12, 1), mat(SKIN)); skull.scale.set(0.95, 1.08, 0.95); head.add(skull);
-    const hair = new THREE.Mesh(new THREE.SphereGeometry(1.17, 9, 6, 0, Math.PI * 2, 0, Math.PI * 0.42), mat(HAIR)); hair.position.y = 0.1; head.add(hair);
-    const band = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.1, 5, 14, Math.PI), mat(PHONES)); band.rotation.z = 0; head.add(band);
-    for (const sx of [-1, 1]) {
-      const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.3, 8), mat(HAIR)); cup.rotation.z = Math.PI / 2; cup.position.set(sx * 1.15, -0.05, 0); head.add(cup);
-    }
-    for (const sx of [-1, 1]) { const w = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), mat("#ffffff")); w.scale.z = 0.4; w.position.set(sx * 0.4, 0.05, 0.98); head.add(w); }
-    const eyes = [-1, 1].map((sx) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.13, 6, 5), mat(INK)); e.position.set(sx * 0.4, 0.05, 1.07); head.add(e); return e; });
-    for (const sx of [-1, 1]) { const c = new THREE.Mesh(new THREE.SphereGeometry(0.14, 6, 5), mat("#FF8A7A")); c.scale.z = 0.3; c.position.set(sx * 0.62, -0.35, 0.92); head.add(c); }
-    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.1, 0.12), mat("#5B1D1D")); mouth.position.set(0, -0.6, 0.95); head.add(mouth);
-    return { el: canvas, pose(p) {
-      head.rotation.y = p.lookX * 0.35 + p.tilt * 0.02; head.rotation.x = -p.lookY * 0.18 + 0.04; head.rotation.z = p.tilt * 0.03;
-      head.position.y = p.bob * -0.006;
-      eyes.forEach((e) => (e.scale.y = 1 - 0.85 * p.blink));
-      mouth.scale.set(1 - 0.25 * p.mouth, 1 + 4.2 * p.mouth, 1); mouth.position.y = -0.6 - 0.16 * p.mouth;
-      rig.rotation.y = p.lookX * 0.08;
-      renderer.render(scene, cam);
-    } };
-  }
-  const RIGS = { pixel: rigPixel, puppet: rigPuppet, low3d: rigLow3d };
+  const RIGS = { pixel: rigPixel, puppet: rigPuppet };
 
   // ---------- framings: where the studio window is, and where the camera looks ----------
   const PIP = { x: 48, y: 1120, s: 320 };
