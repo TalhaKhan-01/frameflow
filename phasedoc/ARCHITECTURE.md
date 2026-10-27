@@ -137,4 +137,6 @@ A make (`videos.make2` → `board.make`, P15), every desk's gate before the next
 5. **Scenes** (HyperFrames, Paper Press) → **standards** (`standards.py`: labels, licences, on-screen numbers) → **animatic** (`animatic.py`, 12 fps draft) → **art director** (`artdirect.py`: empty, black, off-brand) → **screening** (shorts-screening on the draft's stills). Fails → one fix round (`animatic_fix_rounds`), back to step 4.
 6. **One delivery render** → technical QC (`qa.py` gates) → **final screening** (render vs animatic). No loop after the render: the honest numbers go to Talha, and his Revise is the fix path (showrunner change order → only its stages re-run).
 
-One bar for every desk: `research/quality-bar.json`. Progress per step: `logs/progress-<day>.jsonl` (control panel Making view, Studio Board tab).
+Models: the **lean** profile (Opus/high only for the draft, storyboard and animatic screening; Sonnet/medium for hooks and fixes; Haiku for small jobs), ~405k tokens a video with both fix rounds (vault Docs/Token Budget.md).
+
+One bar for every desk: `research/quality-bar.json`; one re-hook definition (`qa.is_rehook`) for QA, the narrator checks and the writer's lint. Progress per step: `logs/progress-<day>.jsonl` (control panel Making view, Studio Board tab).
