@@ -88,7 +88,7 @@ for (const width of [1440, 390]) {
   await page.keyboard.press("Enter");
   await page.waitForTimeout(300);
   if (await page.locator(".house-card").isHidden()) fail(`${width} house: the desk card did not open`);
-  else if (!(await page.locator(".house-card h3").textContent())?.includes("Writer")) fail(`${width} house: wrong desk card`);
+  else if (!(await page.locator(".house-card").textContent())?.includes("Kavi Kalam")) fail(`${width} house: the writer's card does not name Kavi Kalam`);
   await page.screenshot({ path: `walk/house-card-${width}.png` });
   await page.locator(".house-stage").focus();
   await page.keyboard.press("Escape");

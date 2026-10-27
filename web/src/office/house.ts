@@ -4,6 +4,7 @@ import "./house.css";
 import { PALETTES } from "./palettes";
 import { Painter } from "./sprites";
 import { DESK, DESKS, FLOOR, FLOORS } from "./desks";
+import { PERSON } from "./cast";
 import { Player, type Timeline, type Show } from "./player";
 import { EXT_W, EXT_H, BX, BW, FLOOR_RECT, CHAI_RECT, drawExterior, extStation, floorAt, liftYFor } from "./building";
 import { INT_W, INT_H, FloorScene, placeAt, seatCols, seatXY } from "./interior";
@@ -21,6 +22,7 @@ export interface HouseOpts {
 
 const pal = PALETTES.find((p) => p.id === "riso")!;
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+const nameOf = (d: string) => PERSON[d]?.name ?? DESK[d].label;   // the crew's names (P17.3.5)
 const ease = (u: number) => (u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2);
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 function istNight(): boolean {
@@ -191,7 +193,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
   function renderMirror() {
     const desks = view === "int" && floor ? FLOOR[floor].desks : DESKS.map((d) => d.id);
     const on = onSet();
-    const text = (d: string) => `${DESK[d].label}, ${FLOOR[DESK[d].floor].name}: ${on.has(d) ? "working" : "idle"}`;
+    const text = (d: string) => `${nameOf(d)} (${DESK[d].label}), ${FLOOR[DESK[d].floor].name}: ${on.has(d) ? "working" : "idle"}`;
     const have = [...mirror.querySelectorAll<HTMLButtonElement>("button[data-desk]")];
     const places = view === "int" && floor === "B";
     if (have.length === desks.length && have.every((b, i) => b.dataset.desk === desks[i]) && !!mirror.querySelector("[data-place]") === places) {
@@ -212,7 +214,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
         <span>${esc(s.label)}${s.fix ? ' <em>fix round</em>' : ""}</span>
         <b>${s.gate === true ? "pass" : s.gate === false ? "fix" : s.status === "failed" ? "failed" : "done"}${s.score ? ` · ${esc(s.score)}` : ""} · ${mmss(s.d)}</b>
         ${s.say ? `<q>${esc(s.say)}</q>` : ""}</li>`).join("");
-    openCard(`<p class="hc-floor">${esc(FLOOR[d.floor].name)}</p><h3>${esc(d.label)}</h3><p>${esc(d.about)}</p>
+    openCard(`<p class="hc-floor">${esc(FLOOR[d.floor].name)}</p><h3>${esc(nameOf(id))}</h3><p class="hc-role">${esc(d.label)}${PERSON[id] ? ` · “${esc(PERSON[id].catchphrase)}”` : ""}</p><p>${esc(d.about)}</p>
       ${make && steps.length ? `<h4>In “${esc(make.title)}”</h4><ul class="hc-steps">${rows}</ul>` : `<p class="hc-quiet">No steps for this desk in the replay.</p>`}
       ${make?.href ? `<a class="hc-link" href="${esc(make.href)}">See the video's board →</a>` : ""}`);
   }
@@ -223,7 +225,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
       ${href ? `<a class="hc-link" href="${esc(href)}">Open the ${place} →</a>` : ""}`);
   }
   function chaiCard() {
-    openCard(`<p class="hc-floor">The street</p><h3>Chai break</h3>${(opts.stats ?? ["The kettle is always on."]).map((s) => `<p>${esc(s)}</p>`).join("")}`);
+    openCard(`<p class="hc-floor">The street</p><h3>${esc(PERSON.chaiwala.name)}</h3><p class="hc-role">Chaiwala · “${esc(PERSON.chaiwala.catchphrase)}”</p>${(opts.stats ?? ["The kettle is always on."]).map((s) => `<p>${esc(s)}</p>`).join("")}`);
   }
 
   // ---------- input ----------
@@ -244,7 +246,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
       canvas.style.cursor = hover || chai ? "pointer" : "";
       if (hover) {
         const on = onSet(), busy = FLOOR[hover].desks.filter((d) => on.has(d));
-        tip.textContent = FLOOR[hover].name + (busy.length ? " · " + busy.map((d) => `${DESK[d].label} ${ACTING[DESK[d].action]}`).join(", ") : "");
+        tip.textContent = FLOOR[hover].name + (busy.length ? " · " + busy.map((d) => `${nameOf(d)} ${ACTING[DESK[d].action]}`).join(", ") : "");
         tip.hidden = false;
         const r = canvas.getBoundingClientRect();
         tip.style.left = `${Math.min(e.clientX - r.left + 14, r.width - 240)}px`;
@@ -399,7 +401,7 @@ export function mountHouse(root: HTMLElement, opts: HouseOpts) {
       else if (floor && DESK[cur.desk].floor === floor) { const h = scenes[floor].headOf(cur.desk); if (h) at = toScreen(h.x, h.y - 2, shown); }
       const text = cur.say ?? cur.label;
       if (at && !trans) {
-        const html = `<b>${esc(DESK[cur.desk].label)}</b> ${esc(text)}`;
+        const html = `<b>${esc(nameOf(cur.desk))}</b> ${esc(text)}`;
         if (bubble.innerHTML !== html) bubble.innerHTML = html;
         bubble.hidden = false;
         const w = bubble.offsetWidth, sw = stage.clientWidth;

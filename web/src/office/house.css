@@ -63,3 +63,6 @@
   .house-card { left: 0; right: 0; bottom: 0; width: auto; max-height: 60%; box-shadow: 0 -4px 0 var(--h-red); }
 }
 @media (prefers-reduced-motion: reduce) { .house-live { animation: none; } }
+
+/* P17.3.5 the crew's names on the desk cards */
+.house-card .hc-role { font: 600 .78rem var(--mono, monospace); color: #D2392B; margin: -.2em 0 .5em; }
