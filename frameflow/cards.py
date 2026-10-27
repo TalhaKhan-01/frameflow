@@ -358,7 +358,8 @@ def post(run):
     except Exception as e:
         errors["instagram"] = str(e)[-300:]
     if errors:   # dead Meta token: The Pilot posts what's missing through Business Suite (captions checked, links matched)
-        caps = [a for k, f in (("facebook", "fb.txt"), ("instagram", "ig.txt")) if k in errors for a in (f"--{k[:2]}-caption", str(out / f))]
+        flag = {"facebook": "--fb-caption", "instagram": "--ig-caption"}   # spelled out: k[:2] gave '--in-caption' for Instagram (27 Oct)
+        caps = [a for k, f in (("facebook", "fb.txt"), ("instagram", "ig.txt")) if k in errors for a in (flag[k], str(out / f))]
         try:
             p = subprocess.run(["uv", "run", "python", "-m", "frameflow.pilot", "photos", *paths, *caps],
                                capture_output=True, text=True, timeout=2400, cwd=ROOT)
@@ -370,7 +371,7 @@ def post(run):
                 errors.pop(k, None)
         except Exception as e2:
             errors = {k: f"API: {v[-150:]}; Pilot: {str(e2)[-150:]}" for k, v in errors.items()}
-    update(run, state="posted" if not errors else "failed", links=json.dumps(links), note=f"posted {links} errors {list(errors)}")
+    update(run, state="posted" if not errors else "failed", links=json.dumps(links), note=f"posted {links} errors " + ("; ".join(f"{k}: {v[-200:]}" for k, v in errors.items()) or "none"))   # the text, not just the names (27 Oct: the reason only reached Telegram)
     telegram.send("Card post live:\n" + "\n".join(f"{k.capitalize()}: {v}" for k, v in links.items())
                   + ("\nNot posted: " + "; ".join(f"{k}: {v[:150]}" for k, v in errors.items()) if errors else ""))
     from frameflow import webexport
