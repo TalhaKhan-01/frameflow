@@ -123,8 +123,6 @@ def scout(day):
     cands = candidates()
     ep = episode_number(day)
     deadline = daily.at((dt.date.fromisoformat(day) - dt.timedelta(days=1)).isoformat(), daily.cfg()["auto_pick_at"])
-    if deadline < daily.now() + dt.timedelta(hours=1):   # a card sent late (a test, a retry) still gets two hours
-        deadline = (daily.now() + dt.timedelta(hours=2)).replace(second=0)
     opts = {"show": True, "episode": ep, "list": cands, "ticked": [], "chosen": [], "pick_by": deadline.isoformat()}
     con = daily.db()
     con.execute("INSERT OR REPLACE INTO runs (day, lane, state, options, created_at, updated_at, log) VALUES (?,?,?,?,?,?,?)",

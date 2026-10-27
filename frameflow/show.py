@@ -640,6 +640,13 @@ def make_day(day):
     daily.update(day, video_id=result["video"], note=f"made {result['video']}: {result['status']}, review {result['review']}")
     with progress.step("send video card to Telegram"):
         daily.video_card(day)
+    try:   # the day's card post (carousel) from the episode's verified facts, approved separately, posted with the show
+        from frameflow import cards
+        with progress.step("make card post (carousel)"):
+            cards.make_for_day(day, ROOT / "briefs" / f"{slug}.json")
+        daily.update(day, note="card post made")
+    except Exception as e:
+        daily.update(day, note=f"card post failed: {str(e)[:200]}")
     return result
 
 
@@ -690,7 +697,13 @@ def produce(day, ep, slug, data, script, out):
             "scenes": [{"say": l["say"], "sources": sorted({f["source"] for f in stories[g["story"]]["facts"]}) if g else []}
                        for l, g in zip(lines_of(script), [None] + script["segments"] + [None])]}
     (out / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=1))
-    (ROOT / "briefs" / f"{slug}.json").write_text(json.dumps({"topic": f"The Daily Habit Ep {ep}", "facts": facts, "lane": "global-tech",
+    heads = "; ".join(f"{g['headline']}" for g in script["segments"])
+    (ROOT / "briefs" / f"{slug}.json").write_text(json.dumps({
+        "topic": f"The Daily Habit Ep {ep}: today's {len(script['segments'])} stories ({heads})",
+        "angle_hint": "An episode digest carousel: slide 1 a bold hook naming the biggest story and that there are "
+                      f"{len(script['segments'])} stories today; then one stat, compare or fact slide per story for the first five "
+                      "stories in the episode's order (each with its own source); a close slide inviting people to watch the full "
+                      "episode for all of them.", "facts": facts, "lane": "global-tech",
                                                               "cautions": [x for s in data["stories"] for x in s.get("cautions", [])][:12]},
                                                              ensure_ascii=False, indent=1))
     from frameflow import videos
@@ -751,12 +764,16 @@ def revise(day, notes):
 
 def main():
     ap = argparse.ArgumentParser(description="The Daily Habit show maker")
-    ap.add_argument("cmd", choices=["make", "render", "theme"])
+    ap.add_argument("cmd", choices=["make", "render", "theme", "cards"])
     ap.add_argument("arg")
     a = ap.parse_args()
     if a.cmd == "theme":
         music.write_wav(Path(a.arg), theme())
         return print(a.arg)
+    if a.cmd == "cards":   # the day's card post by hand (from the episode's brief)
+        from frameflow import cards
+        o = json.loads(daily.get(a.arg)["options"])
+        return print(cards.make_for_day(a.arg, ROOT / "briefs" / f"{slug_for(a.arg, o['episode'])}.json"))
     print(json.dumps(make_day(a.arg) if a.cmd == "make" else rerender(a.arg), indent=1))
 
 

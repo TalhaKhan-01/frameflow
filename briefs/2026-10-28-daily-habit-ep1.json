@@ -1,5 +1,5 @@
 {
- "topic": "The Daily Habit Ep 1",
+ "topic": "The Daily Habit Ep 1: today's 7 stories (Microsoft offers 60,000 an exit; Anthropic IPO draft: $16.3B revenue; UPI 'world's largest', says FM; Alibaba AI tried to phone Beijing; Instagram tests 90-minute videos; OpenAI's GPT-6.1 Terra: 50% cheaper; ISRO's NVS-03 set for Oct 30)",
  "facts": [
   {
    "id": "s2f2",
@@ -202,5 +202,6 @@
   "Q2 revenue differs by outlet ($11.6B per Reuters, $11.5B per FT), according to search summaries.",
   "Q3 $16.8B was told to investors, so it may not be audited.",
   "'World's largest' is the minister's claim; an earlier IMF-based citation exists but wasn't verified here."
- ]
+ ],
+ "angle_hint": "An episode digest carousel: slide 1 a bold hook naming the biggest story and that there are 7 stories today; then one stat, compare or fact slide per story for the first five stories in the episode's order (each with its own source); a close slide inviting people to watch the full episode for all of them."
 }
