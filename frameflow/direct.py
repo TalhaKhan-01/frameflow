@@ -28,7 +28,10 @@ def skill(args, timeout=3600, strict=False):
     (screening, producer, editor) exit 1 only on a real failure, which must not pass silently (26 Oct board test)."""
     r = subprocess.run(["python3", "-I", *map(str, args)], cwd=ROOT, capture_output=True, text=True, timeout=timeout,
                        env=dict(os.environ, CLAUDE_CONFIG_DIR=CONFIG_DIR))
-    if r.returncode not in ((0,) if strict else (0, 1)):
+    # exit 1 from the writer/director means "checks still fail"; a failed model call also exits 1 but says so (27 Oct:
+    # a scoped fix round whose calls failed went through as if the desks had worked)
+    called_off = re.search(r"model call failed|returned no JSON", r.stderr or "")
+    if r.returncode not in ((0,) if strict else (0, 1)) or called_off:
         raise RuntimeError(f"{Path(str(args[0])).name} failed:\n{(r.stderr or r.stdout)[-1500:]}")
     return r.stdout
 
