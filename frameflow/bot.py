@@ -141,6 +141,13 @@ def on_callback(cb):
     run = daily.get(day)
     if not run:
         return telegram.send(f"I have no run for {day} any more.")
+    if kind in ("stog", "stop", "smake") and run["state"] == "topic-sent":   # the show's topic card (frameflow.showdesk)
+        from frameflow import showdesk
+        if kind == "stog":
+            return showdesk.toggle(day, int(rest.split(":")[1]))
+        if kind == "stop":
+            return showdesk.toggle(day, top=True)
+        return showdesk.pick(day)
     if kind == "pick" and run["state"] == "topic-sent":
         daily.pick(day, int(rest.split(":")[1]))
     elif kind == "skip" and run["state"] == "topic-sent":

@@ -1,33 +1,33 @@
 {
- "_about": "Frameflow config for the shorts-writer skill (~/Talha_Khan/Claude/skills/shorts-writer).",
- "persona_file": "vault/Wiki/Concepts/Narrator Habit.md",
- "length": [
-  75,
-  90
- ],
- "_length": "75-90 s since 2026-10-27 (Talha: the daily Short becomes The Daily Habit show, P24); the pipeline adds the ~3-4 s end card",
- "words_per_second": 2.89,
- "humour": true,
- "writer_model": "opus",
- "judge_model": "sonnet",
- "house_rules": [
-  "Indian English for an Indian audience aged 18-30: curious, online, not necessarily developers",
-  "Mostly informative: 3-5 light comic beats (analogies, absurd-but-true comparisons), never jokes about victims or the facts themselves",
-  "Explain any technical word in the same breath with an everyday comparison (what PHP is, what 'run code on a server' means)",
-  "No fear-mongering: big numbers are attempts or exposure unless the brief says they are confirmed harm",
-  "Never say 'in this video', never greet, never end on 'follow for more' or 'thanks for watching': the pipeline adds Habit's own follow outro after your last line, so end on the story",
-  "Brand names are said plainly (Wikipedia, Cloudflare); no slogans or praise of companies",
-  "Spell numbers for the voice (twenty twelve, thirty-four million); digits are for the screen only"
- ],
- "lessons_file": "research/lessons-writer.txt",
- "hooks_model": "sonnet",
- "doctor_model": "sonnet",
- "doctor_rounds": 1,
- "_models": "2026-10-25: Opus only for the script draft / storyboard; Sonnet for hooks, judge and fix rounds; 1 fix round (vault Docs/Tokens Per Video.md)",
- "material_file": "research/material-writer.txt",
- "max_rehook_gap": 10.5,
- "hooks_effort": "medium",
- "doctor_effort": "medium",
- "flow": "beats",
- "_flow": "'story' is built and tested (shorts-writer craft.md 4b, P24.2) but held back from the daily make until Talha decides how re-hooks are counted in story beats (Review Queue item 4, 27 Oct); switch to 'story' here"
+  "_about": "Frameflow config for the shorts-writer skill (~/Talha_Khan/Claude/skills/shorts-writer).",
+  "persona_file": "vault/Wiki/Concepts/Narrator Habit.md",
+  "length": [
+    75,
+    90
+  ],
+  "_length": "75-90 s since 2026-10-27 (Talha: the daily Short becomes The Daily Habit show, P24); the pipeline adds the ~3-4 s end card",
+  "words_per_second": 2.89,
+  "humour": true,
+  "writer_model": "opus",
+  "judge_model": "sonnet",
+  "house_rules": [
+    "Indian English for an Indian audience aged 18-30: curious, online, not necessarily developers",
+    "Mostly informative: 3-5 light comic beats (analogies, absurd-but-true comparisons), never jokes about victims or the facts themselves",
+    "Explain any technical word in the same breath with an everyday comparison (what PHP is, what 'run code on a server' means)",
+    "No fear-mongering: big numbers are attempts or exposure unless the brief says they are confirmed harm",
+    "Never say 'in this video', never greet, never end on 'follow for more' or 'thanks for watching': the pipeline adds Habit's own follow outro after your last line, so end on the story",
+    "Brand names are said plainly (Wikipedia, Cloudflare); no slogans or praise of companies",
+    "Spell numbers for the voice (twenty twelve, thirty-four million); digits are for the screen only"
+  ],
+  "lessons_file": "research/lessons-writer.txt",
+  "hooks_model": "opus",
+  "doctor_model": "opus",
+  "doctor_rounds": 2,
+  "_models": "2026-10-25: Opus only for the script draft / storyboard; Sonnet for hooks, judge and fix rounds; 1 fix round (vault Docs/Tokens Per Video.md)",
+  "material_file": "research/material-writer.txt",
+  "max_rehook_gap": 10.5,
+  "hooks_effort": "high",
+  "doctor_effort": "high",
+  "flow": "beats",
+  "_flow": "'story' is built and tested (shorts-writer craft.md 4b, P24.2) but held back from the daily make until Talha decides how re-hooks are counted in story beats (Review Queue item 4, 27 Oct); switch to 'story' here"
 }

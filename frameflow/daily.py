@@ -147,6 +147,9 @@ def scout(day=None):
     day = day or (now().date() + dt.timedelta(days=1)).isoformat()
     if get(day) and get(day)["state"] not in ("failed", "scouting"):
         return get(day)
+    from frameflow import showdesk
+    if showdesk.enabled():   # The Daily Habit show: candidates ranked by virality, Talha ticks the episode's stories
+        return showdesk.scout(day)
     lane = lane_for(day)
     opts = options_for(lane, cfg()["options"])
     con = db()
@@ -188,14 +191,20 @@ def pick(day, n=None, url=None, auto=False):
 
 def chosen(run):
     o = json.loads(run["options"] or "{}")
+    if isinstance(o, dict) and o.get("show"):   # the show: several stories; the run reads as its episode
+        c = o.get("chosen") or []
+        return {"title": f"The Daily Habit Ep {o.get('episode')}: " + " · ".join(x["headline"] for x in c), "url": c[0]["url"]} if c else None
     return o.get("chosen") if isinstance(o, dict) else None
 
 
 # ---- make / revise: the video, then the approval card ----
 
 def make(day):
-    from frameflow import brief, videos
+    from frameflow import brief, showdesk, videos
     run = get(day)
+    if showdesk.is_show(run):   # the episode: research every story, rundown script, voice, sound, render, QA, card
+        from frameflow import show
+        return show.make_day(day)
     story = chosen(run)
     if run.get("brief") and Path(run["brief"]).exists():   # a retry reuses the research it already did
         path = Path(run["brief"])
@@ -408,10 +417,17 @@ def tick():
                 update(day, state="making" if m.group(2) != "post" else "posting", note=f"usage limit reset: re-running {m.group(2)}")
                 spawn(m.group(2), day)
             continue
+        from frameflow import showdesk
         if run["state"] == "topic-sent":
             deadline = at((dt.date.fromisoformat(day) - dt.timedelta(days=1)).isoformat(), c["auto_pick_at"])
-            if t >= deadline and json.loads(run["options"] or "[]"):
+            if showdesk.is_show(run):   # the card's own pick-by time (a late card gets a fair window)
+                deadline = dt.datetime.fromisoformat(json.loads(run["options"]).get("pick_by") or deadline.isoformat())
+            if t >= deadline and showdesk.is_show(run):
+                showdesk.pick(day, auto=True)
+            elif t >= deadline and json.loads(run["options"] or "[]"):
                 pick(day, 1, auto=True)
+        elif run["state"] == "picked" and not run.get("job_pid") and showdesk.is_show(run) and showdesk.cfg().get("make_ready"):
+            spawn("make", day)   # ticked while the show maker was still being finished
         elif run["state"] == "queued" and run["post_at"] and t >= dt.datetime.fromisoformat(run["post_at"]):
             spawn("post", day)
             update(day, state="posting")

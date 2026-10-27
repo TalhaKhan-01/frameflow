@@ -1,5 +1,5 @@
 {
-  "_about": "the original setup (until 2026-10-25): Opus everywhere, 2 fix rounds, 2 automatic revisions, dense keyframes; calm pace and 60-110 s scripts (Talha's feedback 2026-10-25)",
+  "_about": "the original setup (until 2026-10-25): Opus everywhere, 2 fix rounds, 2 automatic revisions, dense keyframes; calm pace and 60-110 s scripts (Talha's feedback 2026-10-25); length 75-90 s since 2026-10-27 (Talha's decision)",
   "pipeline": {
     "keyframe_every": 2.0,
     "keyframe_width": 240,
@@ -18,8 +18,8 @@
     "doctor_model": "opus",
     "doctor_rounds": 2,
     "length": [
-      60,
-      110
+      75,
+      90
     ],
     "hooks_effort": "high",
     "doctor_effort": "high"

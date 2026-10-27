@@ -1,0 +1,36 @@
+{
+ "_about": "The Daily Habit show (vault Decisions/Daily Habit Show.md, Docs/Show Bible.md). enabled: the daily run makes the show (8 topics x 8-10 s) instead of one single-story Short. The topic card offers `candidates` stories ranked by virality; Talha ticks min_pick..max_pick of them; no answer by auto_pick_at = the top `topics`. set/look pick the default assets (scenes/_shared/show/). The bar passes at pass_share of each maximum (80-85%, Talha 27 Oct).",
+ "enabled": true,
+ "make_ready": true,
+ "set": "paper",
+ "look": "puppet",
+ "topics": 8,
+ "candidates": 15,
+ "min_pick": 5,
+ "max_pick": 8,
+ "segment_words": [
+  20,
+  32
+ ],
+ "segment_seconds": [
+  7.5,
+  10.5
+ ],
+ "length": [
+  75,
+  100
+ ],
+ "pass_share": 0.8,
+ "research_parallel": 4,
+ "research_model": "sonnet",
+ "virality_model": "sonnet",
+ "writer_model": "opus",
+ "doctor_model": "opus",
+ "doctor_rounds": 2,
+ "judge_model": "opus",
+ "music": {
+  "bed_gain_db": -24,
+  "duck_db": -10,
+  "theme_gain_db": -8
+ }
+}

@@ -712,14 +712,16 @@
     - [ ] **P24.5.4** A music bed under every video, ducked under the voice  
       _Acceptance:_ the final mix has the music stem for the whole show; the bed sits at least 10 dB under the voice while Habit speaks (measured); Talha approves the balance
   - **P24.6 The 8-topic format: topics, a witty writer, the director, the bar** (0/4)
-    - [ ] **P24.6.1** Topic desk: 8 fact-checked topics from the last 24 h across the lanes for each episode  
+    - [~] **P24.6.1** Topic desk: 8 fact-checked topics from the last 24 h across the lanes for each episode  
       _Acceptance:_ the daily topic card lists 8 topics with sources and lanes; each passes the fact-check desk; Talha can swap any before the make
+      _Note 2026-10-27:_ 27 Oct: frameflow/showdesk.py: 15 candidates ranked by virality (one Sonnet call over the ranked ideas), tick card on Telegram (toggle buttons, Top 8, Make), auto-pick top 8 at pick_by; each picked story is researched and fact-checked (shorts-factcheck) in frameflow/show.py; the first card went out for 28 Oct Ep 1
     - [ ] **P24.6.2** Writer 'rundown' format: 8 segments of 8-10 s, each a hook, one fact, a witty line or pun, and a handoff to the next  
       _Acceptance:_ shorts-writer tests pass; a script for 8 real topics passes check (each segment 22-29 words, total 75-95 s with intro and end card, puns rule, no digits); the table read scores it
     - [ ] **P24.6.3** Director for the show: a framing per topic, topic cards and countdown cues, SFX cues  
       _Acceptance:_ the scene plan validator passes; every topic has a shot, a countdown cue and SFX cues; the animatic renders
-    - [ ] **P24.6.4** Quality bar: pass at 80-85% of the score; quality profile chosen by Talha for the first episode  
+    - [~] **P24.6.4** Quality bar: pass at 80-85% of the score; quality profile chosen by Talha for the first episode  
       _Acceptance:_ research/quality-bar.json pass totals set to at least 80% of each maximum (documented in the file); Talha's profile pick recorded (Review Queue item 4); uv run pytest passes
+      _Note 2026-10-27:_ 27 Oct: Talha picked the quality profile (Review Queue Decided); frameflow profile use quality. The show's bar: research/show.json pass_share 0.8 of each maximum (table read 14 + screening 14), every row at least 1; tests/test_show.py
   - **P24.7 The first show episode, made automatically by the HQ pipeline** (0/1)
     - [ ] **P24.7.1** One daily make produces The Daily Habit end to end (topic card, 8 topics, script, voice, render, QA, Telegram card)  
       _Acceptance:_ the make finishes unattended; QA and screening pass at the bar; Talha approves on Telegram; posted at 11:30 on YouTube, Instagram and Facebook

@@ -1,7 +1,7 @@
 {
   "_about": "Frameflow config for the shorts-screening skill (~/Talha_Khan/Claude/skills/shorts-screening). rows and pass_total are copied from research/quality-bar.json by frameflow.bar.sync().",
   "model": "opus",
-  "check_model": "sonnet",
+  "check_model": "opus",
   "rows": [
     "hook",
     "story",

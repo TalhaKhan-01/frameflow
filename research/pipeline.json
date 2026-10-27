@@ -1,12 +1,12 @@
 {
-  "keyframe_every": 3.0,
-  "keyframe_width": 200,
+  "keyframe_every": 2.0,
+  "keyframe_width": 240,
   "brief_model": "sonnet",
-  "cover_model": "haiku",
-  "lessons_model": "haiku",
-  "profile": "lean",
+  "cover_model": "sonnet",
+  "lessons_model": "sonnet",
+  "profile": "quality",
   "assets": true,
-  "timing_fix_rounds": 1,
-  "animatic_fix_rounds": 1,
-  "cards_model": "haiku"
+  "timing_fix_rounds": 2,
+  "animatic_fix_rounds": 2,
+  "cards_model": "sonnet"
 }
