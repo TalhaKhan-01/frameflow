@@ -25,5 +25,7 @@
   "doctor_rounds": 1,
   "_models": "2026-10-25: Opus only for the script draft / storyboard; Sonnet for hooks, judge and fix rounds; 1 fix round (vault Docs/Tokens Per Video.md)",
   "material_file": "research/material-writer.txt",
-  "max_rehook_gap": 10.5
+  "max_rehook_gap": 10.5,
+  "hooks_effort": "medium",
+  "doctor_effort": "medium"
 }

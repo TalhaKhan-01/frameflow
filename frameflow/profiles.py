@@ -27,7 +27,7 @@ FILES = {"pipeline": "pipeline.json", "shorts-writer": "shorts-writer.json", "sh
          "social-caption": "social-caption.json", "voice-pace": "voice-pace.json", "shorts-screening": "shorts-screening.json"}
 PIPELINE_DEFAULTS = {"profile": "diet", "keyframe_every": 3.0, "keyframe_width": 200,
                      "timing_fix_rounds": 1, "animatic_fix_rounds": 1, "brief_model": "sonnet", "cover_model": "haiku", "lessons_model": "haiku",
-                     "assets": True}   # length and every threshold live in research/quality-bar.json (frameflow.bar)
+                     "cards_model": "sonnet", "assets": True}   # length and every threshold live in research/quality-bar.json (frameflow.bar)
 
 
 def _read(name):

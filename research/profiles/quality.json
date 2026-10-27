@@ -8,7 +8,8 @@
     "lessons_model": "sonnet",
     "assets": true,
     "timing_fix_rounds": 2,
-    "animatic_fix_rounds": 2
+    "animatic_fix_rounds": 2,
+    "cards_model": "sonnet"
   },
   "shorts-writer": {
     "writer_model": "opus",
@@ -19,12 +20,15 @@
     "length": [
       60,
       110
-    ]
+    ],
+    "hooks_effort": "high",
+    "doctor_effort": "high"
   },
   "shorts-director": {
     "model": "opus",
     "doctor_model": "opus",
-    "doctor_rounds": 2
+    "doctor_rounds": 2,
+    "doctor_effort": "high"
   },
   "social-caption": {
     "model": "sonnet"

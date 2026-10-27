@@ -4,8 +4,9 @@
   "brief_model": "sonnet",
   "cover_model": "haiku",
   "lessons_model": "haiku",
-  "profile": "diet",
+  "profile": "lean",
   "assets": true,
   "timing_fix_rounds": 1,
-  "animatic_fix_rounds": 1
+  "animatic_fix_rounds": 1,
+  "cards_model": "haiku"
 }

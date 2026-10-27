@@ -1,0 +1,54 @@
+{
+  "_about": "lean (from 2026-10-27): diet plus lower reasoning effort where the work is a fix or a brainstorm. Opus at high effort only where quality is decided (script draft, storyboard, animatic screening); Sonnet at medium effort for hooks and every fix round (most of a fix's output was thinking: 60k tokens to change a few scenes); Haiku for ranking, cover, lessons and card text. Measured plan: vault Docs/Token Budget.md",
+  "pipeline": {
+    "keyframe_every": 3.0,
+    "keyframe_width": 200,
+    "brief_model": "sonnet",
+    "cover_model": "haiku",
+    "lessons_model": "haiku",
+    "assets": true,
+    "timing_fix_rounds": 1,
+    "animatic_fix_rounds": 1,
+    "cards_model": "haiku"
+  },
+  "shorts-writer": {
+    "writer_model": "opus",
+    "hooks_model": "sonnet",
+    "judge_model": "sonnet",
+    "doctor_model": "sonnet",
+    "doctor_rounds": 1,
+    "length": [
+      60,
+      110
+    ],
+    "hooks_effort": "medium",
+    "doctor_effort": "medium"
+  },
+  "shorts-director": {
+    "model": "opus",
+    "doctor_model": "sonnet",
+    "doctor_rounds": 1,
+    "doctor_effort": "medium"
+  },
+  "social-caption": {
+    "model": "sonnet"
+  },
+  "voice-pace": {
+    "default_wpm": 172,
+    "beats": {
+      "hook": 184,
+      "loop": 174,
+      "and": 170,
+      "but": 166,
+      "therefore": 170,
+      "twist": 162,
+      "payoff": 164,
+      "ending": 160,
+      "outro": 182
+    }
+  },
+  "shorts-screening": {
+    "model": "opus",
+    "check_model": "sonnet"
+  }
+}

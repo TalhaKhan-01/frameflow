@@ -15,5 +15,6 @@
   "doctor_model": "sonnet",
   "doctor_rounds": 1,
   "_models": "2026-10-25: Opus only for the script draft / storyboard; Sonnet for hooks, judge and fix rounds; 1 fix round (vault Docs/Tokens Per Video.md)",
-  "material_file": "research/material-director.txt"
+  "material_file": "research/material-director.txt",
+  "doctor_effort": "medium"
 }

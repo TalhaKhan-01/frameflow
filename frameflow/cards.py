@@ -15,7 +15,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from frameflow import llm, telegram
+from frameflow import profiles, llm, telegram
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "frameflow.db"
@@ -142,7 +142,7 @@ def write_slides(brief, notes=""):
     prompt = (f"TOPIC: {brief['topic']}\nANGLE: {brief.get('angle_hint', '')}\nFACTS:\n{facts}\nCAUTIONS:\n"
               + "\n".join(f"- {c}" for c in brief.get("cautions", []))
               + (f"\n\nTHE OWNER ASKS FOR THESE CHANGES:\n{notes}" if notes else "") + "\n\nDesign the carousel.")
-    return llm.call(prompt, SYSTEM, SCHEMA, model="sonnet", purpose="cards:slides", effort="medium", timeout=900)
+    return llm.call(prompt, SYSTEM, SCHEMA, model=profiles.pipeline()["cards_model"], purpose="cards:slides", effort="medium", timeout=900)
 
 
 # ---------- render (Paper Press, 1080x1350) ----------
