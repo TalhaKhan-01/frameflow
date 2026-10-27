@@ -73,13 +73,14 @@ def run(render_dir):
     def check(name, ok, detail, fix_row=None, fix=None):
         checks[name] = {"pass": bool(ok), "detail": detail, **({"row": fix_row, "fix": fix} if not ok else {})}
 
-    rg = qa.rehook_gaps(out)
-    _, frm, to, inside = qa.rehook_stretch(out)
-    check("rehooks", rg <= b["pacing"]["max_rehook_gap"], f"longest stretch without a re-hook {rg:.1f} s (max {b['pacing']['max_rehook_gap']})",
-          "story", f"on the real voice there are {rg:.1f} s without a re-hook, from {frm[0]:.1f} s ({frm[1]}) to {to[0]:.1f} s ({to[1]}), "
-                   f"covering {', '.join(inside) or 'one line'}. Put a re-hook (a 'but', a twist, a question or a reveal, marked as a beat or "
-                   f"the rehook device) in the middle of that stretch, around {(frm[0] + to[0]) / 2:.0f} s; cutting words elsewhere doesn't help. "
-                   f"Change only the lines in that stretch; keep every other line exactly as it is.")
+    rg, lim = qa.rehook_gaps(out), b["pacing"]["max_rehook_gap"]
+    over = qa.rehook_stretches(out, lim)
+    where = "; ".join(f"{g:.1f} s from {a[0]:.1f} s ({a[1]}) to {z[0]:.1f} s ({z[1]}), covering {', '.join(ins) or 'one line'}, "
+                      f"so add one around {(a[0] + z[0]) / 2:.0f} s" for g, a, z, ins in over)
+    check("rehooks", rg <= lim, f"longest stretch without a re-hook {rg:.1f} s (max {lim}); {len(over)} stretch(es) over",
+          "story", f"on the real voice {len(over)} stretch(es) run longer than {lim} s without a re-hook: {where}. A re-hook is a 'but', "
+                   f"a twist, a question to the viewer or a reveal, marked as a beat or the rehook device; cutting words elsewhere doesn't "
+                   f"help. Change only the lines in those stretches; keep every other line exactly as it is.")
     err = captions.wer(re.sub(r"\[(chuckle|laugh)\]", " ", " ".join(l["say"] for l in script["lines"])), " ".join(w["w"] for w in words))
     check("captions", err < b["captions"]["max_word_error"], f"word error rate {err:.1%} (max {b['captions']['max_word_error']:.0%})",
           "story", f"the voice is misheard on {err:.1%} of words: spell out numbers and names as they are said, avoid tongue-twisters and rare acronyms")

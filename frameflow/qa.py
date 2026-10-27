@@ -105,6 +105,14 @@ def blank_spans(path, fps=4, ink=0.025, min_len=0.75):
 REHOOK_BEATS = ("but", "twist", "loop", "payoff")   # the payoff is the reveal that answers the loop: a re-hook moment too
 
 
+def is_rehook(line):
+    """One definition for QA, the narrator checks and the writer's lint: a but/twist/loop/payoff beat, a line marked with the
+    rehook device, or a question to the viewer (the fix text always offered "a question"; until 27 Oct no code counted one,
+    and the writer's lint left out the payoff, so fix rounds chased gaps QA didn't see)."""
+    return (line.get("beat") in REHOOK_BEATS or "rehook" in line.get("devices", [])
+            or line.get("say", "").rstrip().rstrip("\"'”’").endswith("?"))
+
+
 def rehook_stretch(out):
     """The longest stretch between re-hook moments on the real voice: (seconds, (t, where it starts), (t, where it ends),
     scenes inside). It ends where the house end card starts: the follow line is fixed and owes the viewer no re-hook
@@ -119,13 +127,38 @@ def rehook_stretch(out):
     for i, s in enumerate(plan["scenes"]):
         for j, line in enumerate(s.get("lines", [])):
             t = starts.get(lid(i, s, j))
-            if t is not None and t < end and (line.get("beat") in REHOOK_BEATS or "rehook" in line.get("devices", [])):
+            if t is not None and t < end and is_rehook(line):
                 marks.append((t, f"scene {i}: \"{line.get('say', '')[:60]}\""))
     marks.append((end, "the end card" if end < dur["total"] else "the end"))
     gap, a, b = max(((y[0] - x[0], x, y) for x, y in zip(marks, marks[1:])), key=lambda g: g[0])
     inside = sorted({i for i, s in enumerate(plan["scenes"]) for j, _ in enumerate(s.get("lines", []))
                      if a[0] < starts.get(lid(i, s, j), -1) < b[0]})
     return gap, a, b, [f"scene {i}" for i in inside]
+
+
+def rehook_stretches(out, limit):
+    """Every stretch longer than `limit` (longest first), each as (seconds, start, end, scenes inside): a fix round sees all
+    of them at once instead of one per round (27 Oct test: a 14.9 s stretch hid behind the 15.6 s one)."""
+    plan = json.loads((out / "plan.json").read_text())
+    dur = json.loads((out / "voice" / "durations.json").read_text())
+    starts = {l["id"]: l["start"] for l in dur["lines"]}
+    lid = lambda i, s, j: f"s{i}" if len(s["lines"]) == 1 else f"s{i}.{j}"
+    end = next((starts.get(lid(i, s, 0)) for i, s in enumerate(plan["scenes"]) if s["type"] == "endcard" and s.get("lines")), None)
+    end = end if end is not None else dur["total"]
+    marks = [(0.0, "the start")]
+    for i, s in enumerate(plan["scenes"]):
+        for j, line in enumerate(s.get("lines", [])):
+            t = starts.get(lid(i, s, j))
+            if t is not None and t < end and is_rehook(line):
+                marks.append((t, f"scene {i}: \"{line.get('say', '')[:60]}\""))
+    marks.append((end, "the end card" if end < dur["total"] else "the end"))
+    out_ = []
+    for x, y in zip(marks, marks[1:]):
+        if y[0] - x[0] > limit:
+            inside = sorted({i for i, s in enumerate(plan["scenes"]) for j, _ in enumerate(s.get("lines", []))
+                             if x[0] < starts.get(lid(i, s, j), -1) < y[0]})
+            out_.append((y[0] - x[0], x, y, [f"scene {i}" for i in inside]))
+    return sorted(out_, key=lambda g: -g[0])
 
 
 def rehook_gaps(out):

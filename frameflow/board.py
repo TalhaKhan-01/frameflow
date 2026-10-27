@@ -169,6 +169,7 @@ def run(brief_path, plan_path, lane, quality="looks"):
         if not anim["pass"]:
             fixes.append({"row": "pacing", "fix": gap_fix(rout, anim)})
         fixes += standards.fixes(std) + artdirect.fixes(art)
+        fixes += precheck.fixes(pre) if not pre["pass"] else []   # still failing after the text round: the rewrite must keep them in view
         _revise(brief_path, plan_path, fixes, lane, f"animatic fix {rounds['animatic']}: rewrite from the screening", "director")
         table_done = False
     report = pipeline.deliver_stage(rout, quality)
