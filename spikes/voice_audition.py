@@ -18,18 +18,18 @@ from frameflow import voice
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out" / "voice-audition"
-LINES = {   # cast id: (name, VoiceStudio instruct, Kokoro voice, line)
+LINES = {   # cast id: (name, VoiceStudio instruct, Kokoro voice, line, seed)
     "factcheck": ("Sach-in", "male, middle-aged, low pitch, indian accent", "am_michael",
-                  "Source dikhao. Bina source ke yeh number aage nahi jaayega."),
+                  "Source dikhao. Bina source ke yeh number aage nahi jaayega.", 3),
     "writer": ("Kavi Kalam", "male, young adult, moderate pitch, indian accent", "am_puck",
-               "Yeh line dil se likhi hai, Kat. Isko kaatoge toh kahani ka dil toot jaayega."),
-    "editor": ("Kat", "female, young adult, low pitch, indian accent", "af_nicole",
-               "Kat. Dil ki baat saath second mein nahi aati."),
+               "Yeh line dil se likhi hai, Kat. Isko kaatoge toh kahani ka dil toot jaayega.", 7),
+    "editor": ("Kat", "female, young adult, indian accent", "af_nicole",
+               "Kat. Dil ki baat saath second mein nahi aati.", 1),
 }
 
 
 def generate(api, text, instruct, seed, out):
-    fields = {"text": text, "instruct": instruct, "seed": str(seed), "language": "en"}
+    fields = {"text": text, "instruct": instruct, "seed": str(seed), "language": "hi"}   # Hinglish: "en" gave near-silent takes
     boundary = uuid.uuid4().hex
     body = b"".join(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode()
                     for k, v in fields.items()) + f"--{boundary}--\r\n".encode()
@@ -50,17 +50,16 @@ def generate(api, text, instruct, seed, out):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--api", default="http://127.0.0.1:7311")
-    ap.add_argument("--seed", type=int, default=7)
     a = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     report = []
-    for pid, (name, instruct, kokoro_voice, line) in LINES.items():
-        row = {"id": pid, "name": name, "line": line, "instruct": instruct, "seed": a.seed, "kokoro_voice": kokoro_voice}
+    for pid, (name, instruct, kokoro_voice, line, seed) in LINES.items():
+        row = {"id": pid, "name": name, "line": line, "instruct": instruct, "seed": seed, "language": "hi", "kokoro_voice": kokoro_voice}
         for engine in ("voicestudio", "kokoro"):
             out = OUT / f"{pid}-{engine}.wav"
             t = time.time()
             if engine == "voicestudio":
-                generate(a.api, line, instruct, a.seed, out)
+                generate(a.api, line, instruct, seed, out)
             else:
                 voice.say(line, out, voice=kokoro_voice)
             made = time.time() - t
