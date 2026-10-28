@@ -23,10 +23,10 @@ for (const [name, width, reduced] of [["desktop", 1440, false], ["phone", 390, f
   const errors = [];
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(String(e)));
-  for (const path of ["/", "/documentation.html"]) {
+  for (const path of ["/", "/documentation.html", "/architecture.html"]) {
     await page.goto(base + path, { waitUntil: "load" });
     await page.waitForTimeout(2500);
-    const tag = `${name}${path === "/" ? "" : "-docs"}`;
+    const tag = `${name}${path === "/" ? "" : path === "/documentation.html" ? "-docs" : "-arch"}`;
     await page.screenshot({ path: `walk/${tag}-0.png` });
     if (path === "/") {
       const wire = await page.textContent("#wire-text");
@@ -64,6 +64,21 @@ for (const [name, width, reduced] of [["desktop", 1440, false], ["phone", 390, f
         try { await v.play(); } catch { return false; } await new Promise((r) => setTimeout(r, 1500)); const t = v.currentTime; v.pause(); return v.readyState >= 2 && t > 0; });
       if (!ok) fail(`${tag}: tour video did not play`);
       await page.screenshot({ path: `walk/${tag}-tour.png` });
+    }
+    if (path === "/architecture.html") {
+      // every diagram drawn, live numbers in, the packets moving; screenshots down the page
+      const st = await page.evaluate(() => ({ packets: document.querySelectorAll(".map .packets circle").length,
+        ticks: document.querySelectorAll(".dial .d-ticks line").length, bars: document.querySelectorAll(".funnel .f-bars rect").length,
+        strip: document.querySelectorAll("#strip img").length, ideas: document.querySelector('[data-live="ideas"]')?.textContent }));
+      if (st.packets < 20 || st.ticks !== 24 || st.bars !== 15 || st.strip !== 12) fail(`${tag}: diagrams not built ${JSON.stringify(st)}`);
+      if (!/\d/.test(st.ideas ?? "")) fail(`${tag}: live numbers not filled`);
+      for (const id of ["clock", "intake", "brief", "board", "show", "render", "gates", "publish", "learn", "models", "infra"]) {
+        await page.evaluate((i) => { const el = document.getElementById(i); window.scrollTo(0, el.getBoundingClientRect().top + scrollY + (i === "board" || i === "clock" || i === "render" ? innerHeight * 0.9 : 0)); }, id);
+        await page.waitForTimeout(1100);
+        await page.screenshot({ path: `walk/${tag}-${id}.png` });
+      }
+      const gantt = await page.evaluate(() => document.querySelectorAll("#gantt .g-row").length);
+      if (!gantt) fail(`${tag}: latest make timeline empty`);
     }
     const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     if (over > 1) fail(`${tag}: horizontal overflow ${over}px`);

@@ -7,7 +7,8 @@ export default defineConfig({
   server: { fs: { allow: [resolve(import.meta.dirname, "..")] } },
   build: {
     rollupOptions: {
-      input: { index: resolve(import.meta.dirname, "index.html"), documentation: resolve(import.meta.dirname, "documentation.html") },
+      input: { index: resolve(import.meta.dirname, "index.html"), documentation: resolve(import.meta.dirname, "documentation.html"),
+        architecture: resolve(import.meta.dirname, "architecture.html") },
     },
   },
 });
