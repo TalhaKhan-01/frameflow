@@ -303,12 +303,22 @@ def make_for_day(day, brief_path):
     return run
 
 
+def follow_time(r):
+    """When a daily card post goes out: with the day's Short (its post time, moved or not), else at its own post time.
+    A Short that is queued, posting or posted leads; a failed, rejected or missing Short leaves the card on its own time."""
+    from frameflow import daily
+    v = daily.get(r["day"]) if r.get("day") else None
+    if v and v["state"] in ("queued", "posting", "posted") and v.get("post_at"):
+        return v["post_at"]
+    return r.get("post_at")
+
+
 def queue_or_post(run):
     """Approve: a daily card post waits for the day's post time (like the Short); a one-off card posts at once."""
     from frameflow import daily
     r = get(run)
     if r.get("day"):
-        slot = daily.at(r["day"], daily.cfg()["post_at"])
+        slot = dt.datetime.fromisoformat(follow_time({**r, "post_at": daily.at(r["day"], daily.cfg()["post_at"]).isoformat()}))
         if dt.datetime.now() < slot:
             update(run, state="queued", post_at=slot.isoformat(), note=f"approved; post at {slot}")
             return f"Approved. The card post goes out with the Short at {slot.strftime('%H:%M on %a %d %b')}."

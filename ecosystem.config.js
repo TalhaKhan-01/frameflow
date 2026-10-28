@@ -33,7 +33,7 @@ module.exports = {
       // Talha's main Chrome (personal + office profiles) never needs remote debugging.
       name: "frameflow-chrome",
       cwd: ROOT,
-      script: "/usr/bin/google-chrome",
+      script: `${ROOT}/scripts/pilot-chrome.sh`,   // waits for the X display at boot, then execs Chrome
       interpreter: "none",
       args: ["--user-data-dir=/home/talha-khan/.cache/frameflow/pilot-chrome", "--remote-debugging-port=7307",
              "--remote-debugging-address=127.0.0.1", "--no-first-run", "--no-default-browser-check",

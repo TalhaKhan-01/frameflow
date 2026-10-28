@@ -401,10 +401,13 @@ def tick():
     tomorrow = (t.date() + dt.timedelta(days=1)).isoformat()
     if not c.get("paused") and t >= at(t.date().isoformat(), c["topic_card_at"]) and not get(tomorrow):
         spawn_scout(tomorrow)
-    try:   # card posts approved for today's slot
+    try:   # card posts approved for today's slot; a daily card follows its Short's post time when that moves
         from frameflow import cards
         for cr in [dict(x) for x in cards.db().execute("SELECT * FROM card_runs WHERE state='queued' AND post_at IS NOT NULL")]:
-            if t >= dt.datetime.fromisoformat(cr["post_at"]):
+            follow = cards.follow_time(cr)
+            if follow != cr["post_at"]:
+                cards.update(cr["id"], post_at=follow, note=f"post time follows the Short: {follow}")
+            if t >= dt.datetime.fromisoformat(follow):
                 cards.update(cr["id"], state="posting", note="post time")
                 cards.spawn("post", cr["id"])
     except Exception as e:
