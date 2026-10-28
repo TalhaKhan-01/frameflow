@@ -1,0 +1,424 @@
+<!-- The architecture page body, shared by the betadoc and the Studio (arch-include.js puts it in at build time). -->
+  <nav class="chapters" aria-label="Chapters">
+    <ol>
+      <li><a href="#map">00 Map</a></li>
+      <li><a href="#clock">01 Clock</a></li>
+      <li><a href="#intake">02 Intake</a></li>
+      <li><a href="#brief">03 Brief</a></li>
+      <li><a href="#board">04 Board</a></li>
+      <li><a href="#show">05 Show</a></li>
+      <li><a href="#render">06 Render</a></li>
+      <li><a href="#gates">07 Gates</a></li>
+      <li><a href="#publish">08 Publish</a></li>
+      <li><a href="#learn">09 Learn</a></li>
+      <li><a href="#models">10 Models</a></li>
+      <li><a href="#infra">11 Infra</a></li>
+      <li><a href="#repo">12 Code</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <!-- 00 MAP -->
+    <section class="a-hero" id="map" aria-labelledby="a-title">
+      <p class="eyebrow">Architecture · the complete technical flow</p>
+      <h1 id="a-title"><span class="line">The newsroom,</span><span class="line"><em>opened up</em>.</span></h1>
+      <p class="lede">Frameflow runs on one laptop. A Telegram bot ticks every 30 seconds and moves each posting day through a small state machine. Long steps run as their own processes. Every step is <b>a desk with a gate</b>, and the gates sit before the one expensive step, the render. The model calls go through Claude Code inside a subscription, so there is no API key and no API bill. This page follows one story from the wire to the feed, and then back into the next video as lessons.</p>
+      <dl class="a-stats">
+        <div><dt>Python modules</dt><dd>46</dd></div>
+        <div><dt>desks on the board</dt><dd>17</dd></div>
+        <div><dt>delivery renders per video</dt><dd>1</dd></div>
+        <div><dt>ideas collected</dt><dd data-live="ideas">–</dd></div>
+        <div><dt>lessons in the ledger</dt><dd data-live="lessons">–</dd></div>
+      </dl>
+
+      <div class="a-panel map-panel">
+        <p class="swipe" aria-hidden="true">swipe →</p>
+        <svg class="map" viewBox="0 0 1100 600" role="img" aria-labelledby="map-t">
+          <title id="map-t">System map. News sources feed the laptop. On the laptop the bot's tick drives the daily state machine, the studio board makes the video, and SQLite plus the research folder hold the state. Model calls go out to Claude through claude -p. Video cards go to the owner's Telegram; an approval sends the video to YouTube, Instagram and Facebook. A web export is pushed to GitHub, and Vercel builds the Studio and this site. Stats come back from the platforms after 48 hours and become lessons.</title>
+          <defs>
+            <marker id="m-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+            <linearGradient id="g-lap" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="oklch(0.27 0.026 275)"/><stop offset="1" stop-color="oklch(0.2 0.024 275)"/></linearGradient>
+          </defs>
+          <!-- zones -->
+          <g class="zone"><rect x="18" y="40" width="200" height="300" rx="16"/><text x="118" y="70" class="z-t">The world</text></g>
+          <g class="zone lap"><rect x="270" y="40" width="520" height="420" rx="22" fill="url(#g-lap)"/><text x="530" y="70" class="z-t">The laptop · 10:00–17:00</text></g>
+          <g class="zone"><rect x="840" y="40" width="242" height="140" rx="16"/><text x="961" y="70" class="z-t">Models</text></g>
+          <g class="zone"><rect x="840" y="206" width="242" height="120" rx="16"/><text x="961" y="236" class="z-t">The owner</text></g>
+          <g class="zone"><rect x="840" y="352" width="242" height="228" rx="16"/><text x="961" y="382" class="z-t">Platforms</text></g>
+          <g class="zone"><rect x="18" y="380" width="200" height="200" rx="16"/><text x="118" y="410" class="z-t">The web</text></g>
+
+          <!-- nodes -->
+          <g class="mn" id="n-src"><rect x="38" y="92" width="160" height="56" rx="10"/><text x="118" y="116">RSS + Google News</text><text x="118" y="135" class="s">HN · GitHub · YouTube</text></g>
+          <g class="mn" id="n-web"><rect x="38" y="170" width="160" height="56" rx="10"/><text x="118" y="194">Source pages</text><text x="118" y="213" class="s">re-fetched for facts</text></g>
+          <g class="mn" id="n-stock"><rect x="38" y="248" width="160" height="56" rx="10"/><text x="118" y="272">Free media</text><text x="118" y="291" class="s">CC0 · PD · CC BY</text></g>
+
+          <g class="mn hot" id="n-bot"><rect x="300" y="92" width="200" height="64" rx="10"/><text x="400" y="118">frameflow-bot</text><text x="400" y="138" class="s">long poll · tick 30 s</text></g>
+          <g class="mn" id="n-daily"><rect x="560" y="92" width="200" height="64" rx="10"/><text x="660" y="118">daily state machine</text><text x="660" y="138" class="s">daily.py · show.py</text></g>
+          <g class="mn hot" id="n-board"><rect x="300" y="190" width="460" height="86" rx="12"/><text x="530" y="222">The studio board</text><text x="530" y="244" class="s">17 desks · gates before the render · fix loops on text</text><text x="530" y="262" class="s">board.py · 7 craft skills</text></g>
+          <g class="mn" id="n-render"><rect x="300" y="306" width="220" height="64" rx="10"/><text x="410" y="332">HyperFrames render</text><text x="410" y="352" class="s">deterministic · 1080×1920</text></g>
+          <g class="mn" id="n-voice"><rect x="540" y="306" width="220" height="64" rx="10"/><text x="650" y="332">Voice + captions</text><text x="650" y="352" class="s">Chatterbox · Whisper</text></g>
+          <g class="mn lamp" id="n-db"><rect x="300" y="392" width="220" height="50" rx="10"/><text x="410" y="414">SQLite + research/</text><text x="410" y="431" class="s">runs · ideas · lessons</text></g>
+          <g class="mn" id="n-pilot"><rect x="540" y="392" width="220" height="50" rx="10"/><text x="650" y="414">The Pilot's Chrome</text><text x="650" y="431" class="s">signed-in uploads</text></g>
+
+          <g class="mn" id="n-claude"><rect x="860" y="92" width="202" height="68" rx="10"/><text x="961" y="118">claude -p</text><text x="961" y="138" class="s">Opus · Sonnet · Haiku</text><text x="961" y="153" class="s">JSON out · usage logged</text></g>
+          <g class="mn lamp" id="n-tg"><rect x="860" y="256" width="202" height="56" rx="10"/><text x="961" y="280">Telegram</text><text x="961" y="299" class="s">one chat · buttons</text></g>
+          <g class="mn" id="n-yt"><rect x="860" y="402" width="202" height="46" rx="10"/><text x="961" y="431">YouTube Shorts</text></g>
+          <g class="mn" id="n-ig"><rect x="860" y="458" width="202" height="46" rx="10"/><text x="961" y="487">Instagram Reels</text></g>
+          <g class="mn" id="n-fb"><rect x="860" y="514" width="202" height="46" rx="10"/><text x="961" y="543">Facebook Page</text></g>
+          <g class="mn" id="n-gh"><rect x="38" y="430" width="160" height="56" rx="10"/><text x="118" y="454">GitHub</text><text x="118" y="473" class="s">web/public · betadoc/public</text></g>
+          <g class="mn" id="n-vc"><rect x="38" y="506" width="160" height="56" rx="10"/><text x="118" y="530">Vercel × 2</text><text x="118" y="549" class="s">Studio · this site</text></g>
+
+          <!-- wires: the packets ride these -->
+          <g class="wires">
+            <path id="w1" d="M198 120 C 250 120, 250 124, 300 124"/>
+            <path id="w2" d="M500 124 L560 124"/>
+            <path id="w3" d="M660 156 C 660 172, 600 176, 600 190"/>
+            <path id="w4" d="M198 198 C 250 198, 260 230, 300 232"/>
+            <path id="w5" d="M760 210 C 810 210, 820 126, 860 126"/>
+            <path id="w6" class="back" d="M860 140 C 820 140, 810 250, 760 250"/>
+            <path id="w7" d="M410 276 L410 306"/>
+            <path id="w8" d="M650 276 L650 306"/>
+            <path id="w9" d="M760 338 C 810 338, 820 284, 860 284"/>
+            <path id="w10" class="back" d="M860 300 C 800 300, 790 140, 760 140"/>
+            <path id="w11" d="M760 418 C 810 418, 820 425, 860 425"/>
+            <path id="w12" d="M760 420 C 815 420, 820 481, 860 481"/>
+            <path id="w13" d="M760 422 C 820 422, 825 537, 860 537"/>
+            <path id="w14" class="back" d="M300 418 C 250 418, 250 458, 198 458"/>
+            <path id="w15" d="M118 486 L118 506"/>
+            <path id="w16" class="back loop" d="M1062 560 C 1090 600, 560 600, 520 442"/>
+            <path id="w17" d="M198 276 C 250 276, 260 330, 300 338"/>
+          </g>
+          <g class="packets" aria-hidden="true"></g>
+          <g class="legend" transform="translate(300 488)">
+            <circle cx="6" cy="0" r="5" class="p-fwd"/><text x="18" y="4">a story moving forward</text>
+            <circle cx="206" cy="0" r="5" class="p-back"/><text x="218" y="4">a result or decision coming back</text>
+          </g>
+        </svg>
+      </div>
+      <p class="note">Read it left to right: the world comes in, the laptop works, the models think, the owner decides and the platforms publish. The dashed line along the bottom is the loop that makes the next video better than this one.</p>
+    </section>
+
+    <!-- 01 CLOCK -->
+    <section class="clock-sec" id="clock" aria-labelledby="clock-t">
+      <div class="clock-pin">
+        <div class="clock-copy">
+          <p class="eyebrow">01 · The clock</p>
+          <h2 id="clock-t">A posting day is a <em>state machine</em>.</h2>
+          <p class="lede small">One row per posting day in SQLite holds its state. The bot runs <code>daily tick</code> every 30 s: at 14:00 it scouts tomorrow, at 15:00 it auto-picks if nobody tapped, at 11:30 it posts what was approved, and 48 h later it collects stats. Every long step is spawned as its own process with its own log, so the bot keeps answering while a video renders, and a restart resumes from the stored state.</p>
+          <ol class="states" id="states">
+            <li data-s="0"><b>topic-sent</b><span>14:00 · 15 candidates on the topic card</span></li>
+            <li data-s="1"><b>picked</b><span>owner ticks 5–8, or the top 8 at 15:00</span></li>
+            <li data-s="2"><b>making</b><span><code>daily make</code> spawned: brief → board → render</span></li>
+            <li data-s="3"><b>video-sent</b><span>video card: Approve · Revise · Reject</span></li>
+            <li data-s="4"><b>queued</b><span>approved; waits for the 11:30 slot</span></li>
+            <li data-s="5"><b>posting</b><span>pack → YouTube, Instagram, Facebook</span></li>
+            <li data-s="6"><b>posted</b><span>links back to Telegram, Studio refreshed</span></li>
+            <li data-s="7"><b>+48 h stats</b><span>stats → lessons → library → cleanup</span></li>
+          </ol>
+          <p class="side-states"><span>side exits:</span> <i>revising → making</i> (at most 2) · <i>skipped</i> · <i>rejected</i> (reason kept as a lesson) · <i>failed</i> (<code>/retry</code> re-runs the step)</p>
+        </div>
+        <div class="dial-wrap">
+          <svg class="dial" viewBox="0 0 400 400" role="img" aria-labelledby="dial-t">
+            <title id="dial-t">A 24-hour dial. The laptop is on from 10:00 to 17:00. The hand moves from the 14:00 topic card through the 15:00 auto-pick and the make, to the next day's 11:30 post and the stats two days later.</title>
+            <circle cx="200" cy="200" r="170" class="d-face"/>
+            <path class="d-on" d=""/>
+            <g class="d-ticks"></g>
+            <g class="d-marks"></g>
+            <g class="d-hand"><line x1="200" y1="200" x2="200" y2="58"/><circle cx="200" cy="58" r="7"/></g>
+            <circle cx="200" cy="200" r="6" class="d-hub"/>
+            <text x="200" y="250" class="d-day" id="d-day">day 0</text>
+            <text x="200" y="274" class="d-time" id="d-time">14:00</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 INTAKE -->
+    <section class="intake" id="intake" aria-labelledby="intake-t">
+      <p class="eyebrow">02 · Intake</p>
+      <h2 id="intake-t">Hundreds of headlines, <em>one ranked card</em>.</h2>
+      <p class="lede small"><code>ideas collect</code> pulls five kinds of sources (<code>research/sources.json</code>) into <code>data/frameflow.db</code>, deduplicated by URL. <code>ideas rank</code> scores every fresh, unranked idea in <b>one batched model call</b> (score, lane, angle, hook), so ranking a day's wire costs about as much as one paragraph. The show's topic desk then ranks the day's candidates by virality and sends 15 to Telegram as toggles.</p>
+      <div class="a-panel">
+        <p class="swipe" aria-hidden="true">swipe →</p>
+        <svg class="funnel" viewBox="0 0 1000 380" role="img" aria-labelledby="fun-t">
+          <title id="fun-t">Five source kinds stream items into a funnel, into SQLite, through one ranking call, and out as fifteen ranked candidates on the topic card.</title>
+          <g class="f-src">
+            <text x="20" y="62">RSS feeds</text><text x="20" y="122">Google News</text><text x="20" y="182">Hacker News top</text><text x="20" y="242">GitHub trending</text><text x="20" y="302">YouTube most popular</text>
+          </g>
+          <g class="f-lanes">
+            <path id="fl0" d="M190 58 C 280 58, 300 170, 380 182"/>
+            <path id="fl1" d="M190 118 C 270 118, 300 176, 380 186"/>
+            <path id="fl2" d="M190 178 L380 190"/>
+            <path id="fl3" d="M190 238 C 270 238, 300 200, 380 194"/>
+            <path id="fl4" d="M190 298 C 280 298, 300 210, 380 198"/>
+          </g>
+          <path class="f-cone" d="M380 120 L470 168 L470 212 L380 260 Z"/>
+          <g class="f-db"><ellipse cx="530" cy="160" rx="46" ry="14"/><path d="M484 160 v62 a46 14 0 0 0 92 0 v-62"/><ellipse cx="530" cy="222" rx="46" ry="14" class="f-db-b"/><text x="530" y="198">SQLite</text></g>
+          <g class="f-rank"><rect x="608" y="160" width="120" height="60" rx="30"/><text x="668" y="186">1 call</text><text x="668" y="204" class="s">rank all</text></g>
+          <path class="f-pipe" d="M470 190 L484 190 M576 190 L608 190 M728 190 L770 190"/>
+          <g class="f-bars"></g>
+          <text x="860" y="356" class="s mid">topic card · tick 5–8</text>
+          <g class="f-dots" aria-hidden="true"></g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 03 BRIEF -->
+    <section class="brief" id="brief" aria-labelledby="brief-t">
+      <p class="eyebrow">03 · Research and fact-check</p>
+      <h2 id="brief-t">Nothing unsourced <em>reaches the script</em>.</h2>
+      <div class="brief-grid">
+        <div>
+          <p class="lede small">The researcher (<code>brief.py</code>) works with web search and fetch and returns facts that each carry the URL that supports them. Then code takes over, because a model can be confidently wrong:</p>
+          <ol class="checks">
+            <li><b>Re-fetch.</b> Every source is loaded again. A fact whose page doesn't load is dropped.</li>
+            <li><b>Floor.</b> A brief with fewer than 8 sourced facts is refused.</li>
+            <li><b>Independent check.</b> The <code>shorts-factcheck</code> skill re-reads each page as text and rules on each fact from that text alone: <i class="ok">supported</i>, <i class="part">partly</i> (with corrected wording), <i class="no">unsupported</i> (dropped) or <i class="no">unreachable</i>.</li>
+            <li><b>Numbers in code.</b> Later, every number the script says, in digits or in words, must be in the verified facts.</li>
+          </ol>
+        </div>
+        <div class="facts" aria-label="An example of facts being checked">
+          <div class="fact" data-v="ok"><span class="fx">Fact</span>Stated figure, quoted from the source<span class="url">source ↗ · loaded</span><b class="stamp">supported</b></div>
+          <div class="fact" data-v="part"><span class="fx">Fact</span>"Will cut costs by 40%"<span class="url">source ↗ · loaded</span><b class="stamp">partly · "up to 40%"</b></div>
+          <div class="fact" data-v="no"><span class="fx">Fact</span>A claim the page never makes<span class="url">source ↗ · loaded</span><b class="stamp">unsupported · dropped</b></div>
+          <div class="fact" data-v="no"><span class="fx">Fact</span>A detail from a page that 404s<span class="url">source ↗ · 404</span><b class="stamp">unreachable · dropped</b></div>
+          <div class="fact" data-v="ok"><span class="fx">Fact</span>Date and company, from the press release<span class="url">source ↗ · loaded</span><b class="stamp">supported</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 BOARD -->
+    <section class="board-sec" id="board" aria-labelledby="board-t">
+      <div class="board-pin">
+        <div class="board-head">
+          <p class="eyebrow">04 · The studio board</p>
+          <h2 id="board-t">Seventeen desks, <em>one render</em>.</h2>
+          <p class="lede small">A make goes desk by desk, and each desk's gate must pass before the next desk starts. Fix loops are allowed only while a fix is still a text edit. After the delivery render nothing loops: the result goes to the owner with its honest numbers.</p>
+          <div class="cost" aria-live="off"><span>cost of a fix here</span><div class="cost-bar"><i id="cost-fill"></i></div><b id="cost-label">a text edit</b></div>
+        </div>
+        <div class="belt-view">
+          <ol class="belt" id="belt">
+            <li><small>01 · producer.py</small><b>Showrunner</b><span>Writes the run sheet. On Revise, turns the owner's own words into a change order (Go / Change it / Cancel) that re-runs only the stages it needs.</span></li>
+            <li><small>02 · brief.py</small><b>Researcher</b><span>Web search and fetch; at least 8 facts, each with a URL that is loaded again in code.</span></li>
+            <li><small>03 · shorts-factcheck</small><b>Fact-checker</b><span>Re-reads every source as text; supported, partly, unsupported or unreachable.</span></li>
+            <li><small>04 · social-caption</small><b>Packaging</b><span>Decides the promise first: title, cover line and a hook that names one stake. The script must deliver it.</span></li>
+            <li><small>05 · shorts-writer</small><b>Writer</b><span>A 20-hook room across 10 families, a judge keeps 3; an And-But-Therefore story with a re-hook every 10 s, in Habit's voice; an AI-slop linter.</span></li>
+            <li><small>06 · shorts-director</small><b>Director</b><span>One visual metaphor per idea, motion timed to the spoken words, something new every 2.5 s, transitions by meaning, the SFX cue sheet.</span></li>
+            <li class="loop"><small>07 · voice.py + precheck.py</small><b>Narrator</b><span>Records the real voice, times every word, then checks re-hook gaps, caption accuracy, length and voice start on it.</span><em>↺ fails → one writer/director fix, re-voice (local, free)</em></li>
+            <li><small>08 · shorts-editor</small><b>Script editor</b><span>An independent table read: hook, story, flow, voice, sound, sources, honesty, ending, 0–2 each.</span></li>
+            <li><small>09 · standards.py</small><b>Standards</b><span>In code: invented replies carry a "re-enactment" label, every image is licensed, every number on screen is said or sourced.</span></li>
+            <li><small>10 · animatic.py</small><b>Animatic</b><span>A 12 fps draft of the whole video. On a test video: 58 s instead of 148 s, and 138 drawn events against the final's 140.</span></li>
+            <li><small>11 · artdirect.py</small><b>Art director</b><span>Measures the draft: no empty paper for a second, no black stretches, every still on the house palette.</span></li>
+            <li class="loop"><small>12 · shorts-screening</small><b>Screening</b><span>A strict first viewer scores a contact sheet of the draft, row by row, and names where a viewer would swipe away.</span><em>↺ below the bar → fix → back through the narrator</em></li>
+            <li class="hot"><small>13 · build.py + pipeline.py</small><b>Render, once</b><span>The delivery render: HyperFrames frames, the voice, captions, music ducked under the voice, loudness to −14 LUFS.</span></li>
+            <li><small>14 · qa.py</small><b>QC</b><span>The measurable rows of the Quality Bar as pass/fail gates on the file itself.</span></li>
+            <li class="lamp"><small>15 · bot.py</small><b>Owner</b><span>The video card on Telegram. Nothing is published without the owner's tap.</span></li>
+            <li><small>16 · publish.py + pilot.py</small><b>Publisher</b><span>Captions per platform; Meta Graph API and The Pilot; links back to the card.</span></li>
+            <li><small>17 · analyst.py</small><b>Analyst</b><span>48 h later, ties every result to the decision that caused it: hook family, ending, length, package.</span></li>
+          </ol>
+        </div>
+        <p class="note board-note">Why one render: before 26 Oct the pipeline rendered, reviewed, rewrote and rendered again. The second render cost as much as the first and scored worse (14/22 → 13/22). Fix rounds are bounded by the active profile (<code>timing_fix_rounds</code>, <code>animatic_fix_rounds</code>, 1 each on <code>lean</code>).</p>
+      </div>
+    </section>
+
+    <!-- 05 SHOW -->
+    <section class="show" id="show" aria-labelledby="show-t">
+      <p class="eyebrow">05 · The Daily Habit show mode</p>
+      <h2 id="show-t">Eight stories, <em>one episode</em>.</h2>
+      <p class="lede small">With <code>research/show.json</code> <code>enabled: true</code>, the daily make runs <code>show.py</code> instead of one single-story Short. It uses the same desks in a rundown shape: one researcher per story (4 in parallel), a fact-checker per story, a writer for the open, one 20–32 word segment per story with a witty line, and the outro. Then come lints in code and an independent table read, with up to 2 doctor rounds. A director in code picks a framing pattern per topic and adds the countdown, graphics and Habit's emotions. One render follows.</p>
+      <div class="rundown" aria-label="Episode rundown: open, eight 7.5 to 10.5 second segments, outro; 75 to 100 seconds in all">
+        <div class="rd open"><b>Open</b><span>stamp + theme</span></div>
+        <div class="rd seg"><b>1</b><span>wide</span></div><div class="rd seg"><b>2</b><span>split</span></div><div class="rd seg"><b>3</b><span>PiP</span></div><div class="rd seg"><b>4</b><span>close</span></div>
+        <div class="rd seg"><b>5</b><span>wide</span></div><div class="rd seg"><b>6</b><span>split</span></div><div class="rd seg"><b>7</b><span>PiP</span></div><div class="rd seg"><b>8</b><span>close</span></div>
+        <div class="rd outro"><b>Outro</b><span>end card</span></div>
+        <i class="rd-head" aria-hidden="true"></i>
+      </div>
+      <p class="rd-scale"><span>0 s</span><span>segments 7.5–10.5 s · countdown on screen</span><span>75–100 s</span></p>
+      <h3 class="gantt-h">The latest make, timed <small id="gantt-sum">(live from the last export)</small></h3>
+      <div class="gantt" id="gantt"><p class="note">The desk-by-desk timings appear here after the next export.</p></div>
+    </section>
+
+    <!-- 06 RENDER -->
+    <section class="render" id="render" aria-labelledby="render-t">
+      <div class="render-pin">
+        <div>
+          <p class="eyebrow">06 · The render engine</p>
+          <h2 id="render-t">Six layers <em>become one frame</em>.</h2>
+          <p class="lede small">A video is a <b>scene plan</b>: JSON naming a template from 18 scene types for every line, the data it shows and the sources behind it. <code>build.py</code> turns the plan into a HyperFrames project (a root composition at 1080×1920 with one sub-composition per scene), and the renderer steps it frame by frame. Nothing depends on the wall clock, so the same plan gives the same file.</p>
+          <ol class="layers-key" id="layers-key">
+            <li><b>Scene plan</b><span><code>scene_plan.py</code> validates the contract; errors go back to the director's doctor once.</span></li>
+            <li><b>Compositions</b><span><code>index.html</code> + <code>compositions/s&lt;N&gt;.html</code>, GSAP, bundled OFL fonts, the house theme.</span></li>
+            <li><b>Voice</b><span>Chatterbox "lively" on the GPU (seeded, so it can be repeated); Kokoro as the fallback. Each line's energy sets its expression.</span></li>
+            <li><b>Captions</b><span>Local Whisper word timestamps → chunks of up to 3 words, each word lit as it is spoken.</span></li>
+            <li><b>Sound</b><span>A fixed SFX vocabulary on the cue sheet, a music bed ducked 7 dB under the voice.</span></li>
+            <li><b>Master</b><span>Loudness to −14 LUFS, true peak under −1 dBTP; an asset ledger row per file.</span></li>
+          </ol>
+        </div>
+        <div class="stack-wrap">
+          <div class="stack" id="stack" aria-hidden="true">
+            <div class="ly l1"><pre>{ "type": "stat-counter",
+  "say": "…",
+  "data": { "to": 40 },
+  "sources": ["https://…"] }</pre></div>
+            <div class="ly l2"><span class="g"></span><span class="g"></span><span class="g"></span><span class="g wide"></span></div>
+            <div class="ly l3"><svg viewBox="0 0 200 60" class="wave v"></svg></div>
+            <div class="ly l4"><span class="cap">explains <b>how</b> it</span></div>
+            <div class="ly l5"><svg viewBox="0 0 200 60" class="wave m"></svg></div>
+            <div class="ly l6"><img src="/frames/f36.webp" alt="" loading="lazy" /></div>
+          </div>
+          <p class="stack-label" id="stack-label">final.mp4 · 1080×1920</p>
+        </div>
+      </div>
+      <div class="a-panel duck-panel">
+        <svg class="duck" viewBox="0 0 1000 200" role="img" aria-labelledby="duck-t">
+          <title id="duck-t">Two audio tracks over time: the voice in bursts, and the music bed dipping by 7 dB whenever the voice speaks.</title>
+          <text x="10" y="40" class="s">voice</text><text x="10" y="140" class="s">music bed</text>
+          <g class="v-bars"></g><path class="bed" d=""/><line class="ph" x1="100" y1="10" x2="100" y2="190"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 07 GATES -->
+    <section class="gates-sec" id="gates" aria-labelledby="gates-t">
+      <p class="eyebrow">07 · Quality gates</p>
+      <h2 id="gates-t">The file is <em>measured</em>, not admired.</h2>
+      <p class="lede small">One file, <code>research/quality-bar.json</code>, holds every number, and every desk reads it, so no two desks aim at different targets. <code>bar calibrate</code> re-measures the voice's real speed (2.89 words a second today) after each video and copies it to the writer and director. Below, a scanner passes over 12 real frames of the latest Short while the gates resolve.</p>
+      <div class="scan">
+        <div class="strip" id="strip"></div>
+        <i class="scanner" id="scanner" aria-hidden="true"></i>
+      </div>
+      <ul class="gate-grid" id="gate-grid">
+        <li><b>Length</b><span>≤ 95 s · target 75–90</span></li>
+        <li><b>Size</b><span>1080 × 1920</span></li>
+        <li><b>Loudness</b><span>−15 to −13 LUFS</span></li>
+        <li><b>True peak</b><span>≤ −1.0 dBTP</span></li>
+        <li><b>Black</b><span>no stretch &gt; 0.5 s</span></li>
+        <li><b>Blank</b><span>no near-empty frame ≥ 1 s</span></li>
+        <li><b>Events</b><span>something new every ≤ 2.5 s</span></li>
+        <li><b>Re-hooks</b><span>every ≤ 10.5 s</span></li>
+        <li><b>Captions</b><span>word error &lt; 10%</span></li>
+        <li><b>Voice start</b><span>first word by 0.3 s</span></li>
+        <li><b>Licences</b><span>a ledger row for every asset</span></li>
+        <li><b>Cover</b><span>only numbers the script says</span></li>
+      </ul>
+      <p class="note">Then the judgement rows: hook, story, flow, persona and humour, visual storytelling, pacing, sound, captions, sources, honesty and ending, 0–2 each, by a model that sees stills and the script but never wrote them. The show passes at 80% of each maximum. A miss is not hidden: the card says what failed, and "Approve anyway" turns the failures into lessons.</p>
+    </section>
+
+    <!-- 08 PUBLISH -->
+    <section class="publish" id="publish" aria-labelledby="pub-t">
+      <p class="eyebrow">08 · Approval and publishing</p>
+      <h2 id="pub-t">One tap, <em>three feeds</em>.</h2>
+      <div class="pub-grid">
+        <div class="tg-phone" aria-label="The Telegram video card">
+          <div class="tg-msg m1"><b>Video ready</b><p id="tg-title">the latest episode, with its checks and scores</p></div>
+          <div class="tg-msg m2"><div class="keys"><i class="press">Approve</i><i>Revise</i><i>Reject</i></div></div>
+          <div class="tg-msg m3 me">Approve</div>
+          <div class="tg-msg m4"><b>Queued for 11:30</b><p>card post follows the Short</p></div>
+          <div class="tg-msg m5"><b>Posted</b><p>YouTube ↗ · Instagram ↗ · Facebook ↗</p></div>
+        </div>
+        <svg class="fan" viewBox="0 0 300 360" aria-hidden="true">
+          <path id="fan0" d="M0 180 C 120 180, 160 60, 300 60"/>
+          <path id="fan1" d="M0 180 L300 180"/>
+          <path id="fan2" d="M0 180 C 120 180, 160 300, 300 300"/>
+          <g class="fan-dots"></g>
+        </svg>
+        <ul class="plats">
+          <li><b>YouTube Shorts</b><span>Uploaded by <b>The Pilot</b> (agent-browser) in a dedicated, signed-in Chrome under the process manager, until the YouTube API audit passes.</span></li>
+          <li><b>Instagram Reels</b><span>Meta Graph API. If the token is dead, The Pilot posts it through the app instead.</span></li>
+          <li><b>Facebook Page</b><span>Meta Graph API as the Page, with the same fallback. Carousels go the same way.</span></li>
+        </ul>
+      </div>
+      <p class="note">Every platform gets its own text from the <code>social-caption</code> skill: a title that holds the stake, a first line that stops the scroll, an honest comment question and a tag set per platform (Instagram's cap of 5 is respected). Code checks that no number goes beyond the script. Taps made while the laptop is off wait in Telegram and are handled at 10:00. On <b>Revise</b>, the owner writes in their own words; the showrunner turns them into a change order, and the order re-runs only the stages it touches, so a remark about the music never re-renders the video.</p>
+    </section>
+
+    <!-- 09 LEARN -->
+    <section class="learn" id="learn" aria-labelledby="learn-t">
+      <p class="eyebrow">09 · The learning loop</p>
+      <h2 id="learn-t">Every video <em>teaches the next</em>.</h2>
+      <div class="learn-grid">
+        <svg class="orbit" viewBox="0 0 600 600" role="img" aria-labelledby="orbit-t">
+          <title id="orbit-t">A loop: the posted video, 48-hour stats, the analyst, the lessons ledger, and the prompts of the next make. In the centre, the asset library feeds the researcher and writer.</title>
+          <circle id="orbit-path" cx="300" cy="300" r="210" class="o-ring"/>
+          <g class="o-node" transform="translate(300 90)"><circle r="64"/><text y="-4">Posted</text><text y="18" class="s">3 platforms</text></g>
+          <g class="o-node" transform="translate(500 235)"><circle r="64"/><text y="-4">+48 h</text><text y="18" class="s">stats48.py</text></g>
+          <g class="o-node" transform="translate(423 470)"><circle r="64"/><text y="-4">Analyst</text><text y="18" class="s">decision → result</text></g>
+          <g class="o-node hot" transform="translate(177 470)"><circle r="64"/><text y="-4">Lessons</text><text y="18" class="s">lessons.jsonl</text></g>
+          <g class="o-node" transform="translate(100 235)"><circle r="64"/><text y="-4">Next make</text><text y="18" class="s">top 8 per area</text></g>
+          <g class="o-core"><circle cx="300" cy="300" r="78"/><text x="300" y="292">Library</text><text x="300" y="314" class="s">hooks · facts</text><text x="300" y="332" class="s">analogies · scenes</text></g>
+          <circle class="o-dot" r="10" cx="300" cy="90"/>
+        </svg>
+        <div>
+          <ul class="learn-list">
+            <li><b>Sources of lessons.</b> Review rows, failed gates, the owner's <code>/feedback</code> and Reject reasons, and the 48 h stats.</li>
+            <li><b>The ledger.</b> <code>research/lessons.jsonl</code>: one general lesson per line, with area (writer or director), evidence, and the counts seen, helped and hurt. Status is active, promoted or retired.</li>
+            <li><b>Into the prompts.</b> The top 8 active lessons per area are written to <code>lessons-writer.txt</code> and <code>lessons-director.txt</code>, which the skills read as house rules.</li>
+            <li><b>Promotion.</b> On Sunday, lessons that helped three or more videos are offered as permanent house rules.</li>
+            <li><b>The library.</b> After the stats, <code>library.py</code> keeps what a video made but didn't use (spare hooks with scores, sourced facts, analogies, scene ideas). The researcher starts from it and re-checks every fact. Then <code>cleanup.py</code> frees the bulky files.</li>
+            <li><b>The analyst.</b> One row per video in <code>data/analyst.jsonl</code>, grouped by decision (hook family, ending, lane, length, package), so the next make can see what actually worked.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 MODELS -->
+    <section class="models" id="models" aria-labelledby="models-t">
+      <p class="eyebrow">10 · Model routing</p>
+      <h2 id="models-t">The big model only <em>where quality is decided</em>.</h2>
+      <p class="lede small">Every call goes through <code>llm.py</code>: <code>claude -p</code> with no tools unless asked, no project settings, a short system prompt and structured JSON out. Token usage is appended to <code>data/llm-usage.jsonl</code>, so the cost of every video can be measured. Presets live in <code>research/profiles/</code> (<code>diet</code>, <code>lean</code>, <code>quality</code>); <code>frameflow profile use</code> switches them and can be undone. This is <code>lean</code>, the one in use:</p>
+      <div class="route" id="route">
+        <div class="col opus"><h3>Opus <small>high effort</small></h3><ul><li>script draft</li><li>storyboard</li><li>animatic screening</li><li>show writer + judge</li></ul></div>
+        <div class="col sonnet"><h3>Sonnet <small>medium effort</small></h3><ul><li>research brief</li><li>hook room + judge</li><li>every fix round</li><li>post captions</li><li>show research + virality</li></ul></div>
+        <div class="col haiku"><h3>Haiku <small>small jobs</small></h3><ul><li>idea ranking</li><li>cover title</li><li>lesson distilling</li><li>card post text</li></ul></div>
+      </div>
+      <p class="note">Measured, not guessed: most of a fix round's output was the model thinking (60k tokens to change a few scenes), so fixes moved to Sonnet at medium effort. A usage limit pauses the step and re-runs it after the reset.</p>
+    </section>
+
+    <!-- 11 INFRA -->
+    <section class="infra" id="infra" aria-labelledby="infra-t">
+      <p class="eyebrow">11 · Infrastructure</p>
+      <h2 id="infra-t">Four processes, <em>two static sites</em>.</h2>
+      <div class="procs">
+        <article><i class="beat"></i><b>frameflow-bot</b><span>Telegram long polling (no webhook, so no public URL) and the 30 s daily tick. Spawns every long step as its own process.</span></article>
+        <article><i class="beat"></i><b>frameflow-chrome</b><span>The Pilot's dedicated Chrome, signed in to the platforms, DevTools on localhost only; waits for the display at boot.</span></article>
+        <article><i class="beat"></i><b>frameflow-control</b><span>A local control panel with the same functions as the bot, plus a live Making panel fed by <code>progress.py</code>.</span></article>
+        <article><i class="beat"></i><b>phasedoc-frameflow</b><span>The build cockpit: every task in the plan with an acceptance test that has actually run.</span></article>
+      </div>
+      <p class="note">All four run under a process manager that restores them at boot and restarts them after a crash. Python runs in one <code>uv</code> environment; Chatterbox runs in a throwaway environment of its own because PyTorch is too heavy for the project. Secrets live in one mode-600 file outside the repository.</p>
+
+      <h3 class="deploy-h">From the laptop to the web</h3>
+      <ol class="chain" id="chain">
+        <li><b>web export</b><span>snapshot of runs, videos, lessons, library, build</span></li>
+        <li><b>open | lock</b><span>plain <code>studio.json</code>, or AES-GCM <code>studio.enc</code> (PBKDF2-SHA256, 600,000 rounds)</span></li>
+        <li><b>git push</b><span>only <code>web/public</code> and <code>betadoc/public</code></span></li>
+        <li><b>Vercel × 2</b><span>Studio + this betadoc, built on every push</span></li>
+        <li><b>browser</b><span>locked mode: the PIN derives the key and decrypts in the page</span></li>
+      </ol>
+      <p class="note">Only media that is already public is copied. Paths, tokens and chat ids never leave the machine. <code>scripts/deploy-check.sh</code> waits for the Vercel build of HEAD and probes the live site.</p>
+    </section>
+
+    <!-- 12 REPO -->
+    <section class="repo" id="repo" aria-labelledby="repo-t">
+      <p class="eyebrow">12 · Where it lives in the code</p>
+      <h2 id="repo-t">A module <em>per desk</em>.</h2>
+      <p class="lede small">Each step also runs on its own (<code>python -m frameflow.&lt;module&gt;</code>), so any desk can be tested or re-run alone.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Layer</th><th scope="col">Modules</th><th scope="col">Job</th></tr></thead>
+          <tbody>
+            <tr><td>Schedule</td><td><code>bot</code> <code>daily</code> <code>telegram</code> <code>showdesk</code> <code>show</code></td><td>The tick, the state machine, the cards, the show maker</td></tr>
+            <tr><td>Intake</td><td><code>ideas</code> <code>brief</code> <code>assets</code> <code>capture</code></td><td>Sources, ranking, sourced briefs, licensed media, page snapshots</td></tr>
+            <tr><td>Board</td><td><code>board</code> <code>boardview</code> <code>direct</code> <code>precheck</code> <code>standards</code> <code>animatic</code> <code>artdirect</code> <code>review</code> <code>producer</code></td><td>The desks, their gates and the fix loops</td></tr>
+            <tr><td>Render</td><td><code>scene_plan</code> <code>build</code> <code>pipeline</code> <code>voice</code> <code>chatterbox_worker</code> <code>captions</code> <code>music</code> <code>sound</code> <code>cover</code> <code>media</code></td><td>Plan → project → frames → voice, captions, sound → master</td></tr>
+            <tr><td>Checks</td><td><code>bar</code> <code>qa</code> <code>profiles</code></td><td>The one Quality Bar, the gates, the presets</td></tr>
+            <tr><td>Out</td><td><code>publish</code> <code>pilot</code> <code>cards</code> <code>videos</code></td><td>Approval register, platform posts, carousels</td></tr>
+            <tr><td>Learning</td><td><code>stats48</code> <code>analyst</code> <code>lessons</code> <code>library</code> <code>cleanup</code> <code>vaultnote</code></td><td>Results, lessons, reuse, disk</td></tr>
+            <tr><td>Glue</td><td><code>llm</code> <code>progress</code> <code>secrets</code> <code>webexport</code> <code>cli</code></td><td>Model calls, progress events, secrets, the web snapshot</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="ctas center">
+        <a class="btn" href="https://github.com/TalhaKhan-01/frameflow/tree/main/frameflow" rel="noopener">Read the modules on GitHub</a>
+        <a class="btn ghost" href="/documentation.html">How to drive it</a>
+      </div>
+    </section>
+  </main>

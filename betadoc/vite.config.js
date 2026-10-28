@@ -1,7 +1,9 @@
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
+import { archInclude } from "./arch-include.js";
 
 export default defineConfig({
+  plugins: [archInclude()],
   // Thirdspace House is one engine shared with the Studio web app (web/src/office)
   resolve: { alias: { "@office": resolve(import.meta.dirname, "../web/src/office") } },
   server: { fs: { allow: [resolve(import.meta.dirname, "..")] } },

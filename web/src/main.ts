@@ -124,7 +124,7 @@ function shell(active: string, body: string) {
     </div>
     <a class="mast-title" href="#/lobby">The Daily Habit <span>HQ</span></a>
     <nav class="lift" aria-label="Rooms of the HQ">${TABS.map(([k, f, l]) =>
-      `<a href="#/${k}" ${k === active ? 'aria-current="page"' : ""}><i aria-hidden="true">${f}</i>${l}</a>`).join("")}</nav>
+      `<a href="#/${k}" ${k === active ? 'aria-current="page"' : ""}><i aria-hidden="true">${f}</i>${l}</a>`).join("")}<a href="/architecture.html"><i aria-hidden="true">A</i>Architecture</a></nav>
   </header>
   <main class="page">${body}</main>
   <footer class="foot">The Daily Habit Studio · Thirdspace Productions · made by Frameflow · read-only · <a href="${REPO}" rel="noopener">source on GitHub</a> · <a href="${esc(data.channels.youtube)}" rel="noopener">YouTube</a> · <a href="${esc(data.channels.instagram)}" rel="noopener">Instagram</a></footer>`;

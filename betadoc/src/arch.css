@@ -83,7 +83,7 @@ svg .s { fill: var(--muted); font: 11.5px var(--mono); }
 .checks b { color: var(--paper); }
 .checks i { font-style: normal; font: 600 .8em var(--mono); padding: .05em .4em; border-radius: 5px; }
 .checks i.ok { color: var(--good); } .checks i.part { color: var(--lamp); } .checks i.no { color: var(--red); }
-.facts { display: grid; gap: 10px; }
+.facts { display: grid; gap: 10px; overflow-x: clip; }   /* the stamps start large before they land */
 .fact { position: relative; background: var(--night-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 12px 16px;
   font-size: .95rem; transition: opacity .5s var(--ease), border-color .4s; }
 .fact .fx { display: block; font: 600 .66rem var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }

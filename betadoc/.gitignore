@@ -5,3 +5,4 @@ video/frames/
 video/build/cache/
 video/samples/*.wav
 video/record.log
+dist-standalone/

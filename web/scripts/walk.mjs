@@ -115,6 +115,19 @@ for (const width of [1440, 390]) {
   if (!r || ![200, 206].includes(r.status())) fail(`${width} cues: no cue played after sound on (${r ? r.status() : "none"})`);
   else console.log(`${width} cues: ${r.url().split("/").pop()} played`);
 
+  // the architecture page (shared with the betadoc): reached from the lift panel, diagrams built, live numbers in
+  await page.goto(`${base}/#/lobby`);
+  await page.waitForSelector('.lift a[href="/architecture.html"]', { timeout: 15000 }).catch(() => fail(`${width} arch: no link in the lift panel`));
+  await page.goto(`${base}/architecture.html`);
+  await page.waitForTimeout(2500);
+  const arch = await page.evaluate(() => ({ packets: document.querySelectorAll(".map .packets circle").length, strip: document.querySelectorAll("#strip img").length,
+    ideas: document.querySelector('[data-live="ideas"]')?.textContent, gantt: document.querySelectorAll("#gantt .g-row").length,
+    over: document.documentElement.scrollWidth - innerWidth }));
+  if (arch.packets < 20 || arch.strip !== 12 || !/\d/.test(arch.ideas ?? "") || !arch.gantt) fail(`${width} arch: ${JSON.stringify(arch)}`);
+  if (arch.over > 1) fail(`${width} arch: horizontal overflow ${arch.over}px`);
+  await page.screenshot({ path: `walk/architecture-${width}.png` });
+  console.log(`${width} arch: ok`);
+
   if (await page.locator("video").count() === 0) {
     await page.goto(`${base}/#/video/2026-10-25-black-october`);
   }

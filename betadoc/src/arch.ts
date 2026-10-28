@@ -20,11 +20,13 @@ const svgEl = (tag: string, attrs: Record<string, string | number>, parent?: Ele
   return el;
 };
 const escH = (x: unknown) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-const mobile = () => matchMedia("(max-width: 820px)").matches;
+// The shareable single file (scripts/standalone.mjs) bakes live.json and the frames in; the sites fetch and serve them.
+const baked = (window as unknown as { ARCH_BAKED?: { live: unknown; frames: Record<string, string> } }).ARCH_BAKED;
+const frameUrl = (n: number) => { const f = `f${String(n).padStart(2, "0")}.webp`; return baked?.frames[f] ?? `/frames/${f}`; };
 
 // ---------- live numbers (betadoc/public/live.json, written by `frameflow web export`) ----------
 type Ev = { t: number; d: number; desk: string; label: string; status: string };
-fetch("/live.json", { cache: "no-store" }).then((r) => r.json()).then((d) => {
+(baked ? Promise.resolve(baked.live as any) : fetch("/live.json", { cache: "no-store" }).then((r) => r.json())).then((d) => {
   $$("[data-live]").forEach((el) => {
     const v = Number(d[el.dataset.live!] ?? 0);
     if (reduced) { el.textContent = v.toLocaleString("en-IN"); return; }
@@ -154,7 +156,7 @@ $$<SVGSVGElement>(".wave").forEach((w) => {
 
 // ---------- 07 gates: twelve real frames of the latest Short under a scanner ----------
 const strip = $("#strip");
-strip.innerHTML = Array.from({ length: 12 }, (_, i) => `<img src="/frames/f${String(1 + i * 6).padStart(2, "0")}.webp" alt="" loading="lazy" />`).join("");
+strip.innerHTML = Array.from({ length: 12 }, (_, i) => `<img src="${frameUrl(1 + i * 6)}" alt="" loading="lazy" />`).join("");
 const gateItems = $$("#gate-grid li");
 const setGates = (p: number) => gateItems.forEach((g, i) => g.classList.toggle("on", p > (i + 0.5) / gateItems.length * 0.95));
 
@@ -210,7 +212,7 @@ if (reduced) {
 
   // facts arrive, then the checker rules on each
   const ft = gsap.timeline({ scrollTrigger: { trigger: ".facts", start: "top 70%", once: true } });
-  ft.from(".fact", { x: 40, opacity: 0, duration: 0.6, ease: "power3.out", stagger: 0.12 });
+  ft.from(".fact", { y: 24, opacity: 0, duration: 0.6, ease: "power3.out", stagger: 0.12 });
   $$(".fact").forEach((f, i) => ft.add(() => f.classList.add("ruled"), 0.9 + i * 0.35));
 
   const mm = gsap.matchMedia();
