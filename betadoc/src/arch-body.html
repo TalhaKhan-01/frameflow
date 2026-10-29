@@ -234,6 +234,14 @@
         <i class="rd-head" aria-hidden="true"></i>
       </div>
       <p class="rd-scale"><span>0 s</span><span>segments 7.5–10.5 s · countdown on screen</span><span>75–100 s</span></p>
+      <h3 class="p25-h">New in P25 (29 Oct): the desks become skills</h3>
+      <ul class="p25">
+        <li><b>Topic memory.</b> Before the card, the showrunner (<code>shorts-producer</code> <code>topics.py</code>) compares every candidate with what aired in the last 14 days, by meaning and not by link, so the same story from another outlet is dropped and a real follow-up comes back marked <i>Update</i>.</li>
+        <li><b>Hook card.</b> After the script, ten ranked opens go to Telegram. The owner taps one, improves one in their own words, or writes their own; the make waits on <code>hooks.json</code> for 20 minutes, then takes hook 1.</li>
+        <li><b>Real visuals.</b> The <code>visual-sourcing</code> skill finds each story's logo, a photo of its subject and the source's headline (a Playwright capture cropped to the masthead). A vision judge rejects the wrong <i>Free Fire</i> or <i>Genie</i>; every file has a licence tier and a credit; approved pictures are kept in a library, so a subject always gets the same picture. On screen: logo badge, photo with a slow push-in, the headline zooming in under a highlighter, then the data graphic.</li>
+        <li><b>Analogy gags.</b> The writer may add up to three from a fixed catalogue: <i>compare</i> (a chip the size of a rice grain), <i>scale</i> (one picture twelve times with the multiplier), <i>photo</i> with a punchline, or a <i>stamp</i>. Each has one recipe and one sound, so the same choice always looks the same, timed to the witty line.</li>
+        <li><b>The plan.</b> Seventeen desks become twelve reusable skills: showrunner, researcher, packaging, script writer, director, narrator, motion designer, sound director, video editor, critic, integrity gate, publisher + analyst; the owner card stays in Frameflow.</li>
+      </ul>
       <h3 class="gantt-h">The latest make, timed <small id="gantt-sum">(live from the last export)</small></h3>
       <div class="gantt" id="gantt"><p class="note">The desk-by-desk timings appear here after the next export.</p></div>
     </section>
@@ -405,7 +413,7 @@
         <table>
           <thead><tr><th scope="col">Layer</th><th scope="col">Modules</th><th scope="col">Job</th></tr></thead>
           <tbody>
-            <tr><td>Schedule</td><td><code>bot</code> <code>daily</code> <code>telegram</code> <code>showdesk</code> <code>show</code></td><td>The tick, the state machine, the cards, the show maker</td></tr>
+            <tr><td>Schedule</td><td><code>bot</code> <code>daily</code> <code>telegram</code> <code>showdesk</code> <code>show</code> <code>hookpick</code></td><td>The tick, the state machine, the cards, the show maker, the hook card</td></tr>
             <tr><td>Intake</td><td><code>ideas</code> <code>brief</code> <code>assets</code> <code>capture</code></td><td>Sources, ranking, sourced briefs, licensed media, page snapshots</td></tr>
             <tr><td>Board</td><td><code>board</code> <code>boardview</code> <code>direct</code> <code>precheck</code> <code>standards</code> <code>animatic</code> <code>artdirect</code> <code>review</code> <code>producer</code></td><td>The desks, their gates and the fix loops</td></tr>
             <tr><td>Render</td><td><code>scene_plan</code> <code>build</code> <code>pipeline</code> <code>voice</code> <code>chatterbox_worker</code> <code>captions</code> <code>music</code> <code>sound</code> <code>cover</code> <code>media</code></td><td>Plan → project → frames → voice, captions, sound → master</td></tr>

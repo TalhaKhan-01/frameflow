@@ -266,3 +266,8 @@ svg .s { fill: var(--muted); font: 11.5px var(--mono); }
   .fact .stamp { transform: translateY(-50%) rotate(-6deg); }
   .beat { animation: none; }
 }
+
+/* P25 summary under the show rundown */
+.p25 { max-width: 72ch; margin: 14px 0 28px; padding-left: 1.1em; display: grid; gap: 10px; line-height: 1.55; }
+.p25 code { font-size: .9em; }
+.p25-h { margin-top: 40px; }

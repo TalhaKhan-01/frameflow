@@ -1,8 +1,8 @@
 # Frameflow
 
-An automated daily newsroom for one narrator, **Habit**: every day it picks a story, writes it, storyboards it, renders a 60–110 s vertical Short, checks it, and posts it to YouTube Shorts, Instagram Reels and a Facebook Page at 11:30, plus a carousel card post from the same brief. The owner approves on Telegram; nothing posts without that tap.
+An automated daily newsroom for one narrator, **Habit**. Since 28 Oct 2026 it makes **The Daily Habit**, a 75–100 s news show of 5–8 stories: every afternoon it ranks the day's stories, the owner ticks the ones for tomorrow's episode, and it researches, fact-checks, writes, voices, illustrates (real logos, photos and headline screenshots), renders and checks the episode, then posts it to YouTube Shorts, Instagram Reels and a Facebook Page at 11:30, plus a carousel card post. The owner approves on Telegram (topics, the hook, the video, the post text, the carousel); nothing posts without that tap.
 
-**Status:** running daily since 25 Oct 2026 (first fully automatic post 26 Oct). Build tracked in the phasedoc (`phasedoc/BUILDPLAN.md`, cockpit http://127.0.0.1:7300).
+**Status:** running daily since 25 Oct 2026 (first fully automatic post 26 Oct; the show since Ep 1 on 28 Oct). Now rebuilding the desks as reusable skills (phasedoc arc P25). Build tracked in the phasedoc (`phasedoc/BUILDPLAN.md`, cockpit http://127.0.0.1:7300).
 
 **Live:**
 - Betadoc (story + docs): https://frameflow-betadoc.vercel.app
@@ -12,7 +12,7 @@ An automated daily newsroom for one narrator, **Habit**: every day it picks a st
 ## Layout
 | Path | Holds |
 |---|---|
-| `frameflow/` | Pipeline (Python): `daily.py` + `bot.py` (schedule, Telegram), `brief.py` → `board.py` (the studio board: `direct.py`, `precheck.py`, `standards.py`, `animatic.py`, `artdirect.py`, `review.py`, `pipeline.py`, `qa.py`), `producer.py` (Revise change orders), `analyst.py`, `bar.py` (the one quality bar), `progress.py`, `cards.py`, `publish.py`, `lessons.py`, `library.py`, `stats48.py`, `cleanup.py`, `webexport.py` |
+| `frameflow/` | Pipeline (Python): `daily.py` + `bot.py` (schedule, Telegram), the show: `showdesk.py` (topic card, topic memory), `show.py` (research → rundown writer → visuals → voice → director → sound → render → QA), `hookpick.py` (the 10-hook card); the single-story Short: `brief.py` → `board.py` (the studio board: `direct.py`, `precheck.py`, `standards.py`, `animatic.py`, `artdirect.py`, `review.py`, `pipeline.py`, `qa.py`), `producer.py` (Revise change orders), `analyst.py`, `bar.py` (the one quality bar), `progress.py`, `cards.py`, `publish.py`, `lessons.py`, `library.py`, `stats48.py`, `cleanup.py`, `webexport.py` |
 | `scenes/` | HyperFrames scene templates and the shared theme (fonts bundled, OFL) |
 | `research/` | Niche config, lessons ledger, asset library, house rules |
 | `briefs/`, `plans/` | Sourced briefs and scene plans |
@@ -33,14 +33,25 @@ PM2_HOME=~/.pm2-personal pm2 start ecosystem.config.js && pm2 save
 ```
 The daily run needs no command: `frameflow-bot` ticks every 30 s and follows the schedule in `research/automation.json`.
 
-## How a video is made (studio board, since 26 Oct 2026)
+## How an episode is made (The Daily Habit, since 28 Oct 2026; P25 from 29 Oct)
+1. **14:00 topic card:** the day's stories ranked by virality; the showrunner's **topic memory** drops anything aired in the last 14 days (any outlet) and labels real follow-ups "Update:". The owner ticks 5–8; no answer by 15:00 = the top 8.
+2. **Research + fact-check** per story (Sonnet + web, `shorts-factcheck`); a story without two verified facts drops.
+3. **Rundown writer** (Opus): an open, one 20–32 word segment per story, at most 3 natural jokes and 3 **analogy gags** from `research/analogies.json` (compare / scale / photo / stamp); lints in code + an independent table read.
+4. **Hook card:** 10 ranked opens on Telegram; tap one, Improve it in your words, or write your own; 20 min → hook 1.
+5. **Visuals** (`visual-sourcing` skill): per story a logo, a photo checked by a vision judge, and the source's headline as a Playwright screenshot; licence tiers and credits in a ledger; approved pictures are reused from a library.
+6. **Voice** (Chatterbox) → **director** in code (framings, media first, then the data graphic, gags at the witty line) → **sound** (theme, CC BY bed, ducking, SFX) → **one render** (HyperFrames, `scenes/_shared/show/show.js`) → **QA** gates + a screening of the frames.
+7. **Approval:** the video card, the post text (`social-caption`) and the carousel go to Telegram; approved before 11:30 → posted at 11:30.
+
+The single-story Short still exists (`research/show.json` `"enabled": false`) and runs through the studio board below.
+
+## How a single-story Short is made (studio board, since 26 Oct 2026)
 Desk by desk, each with a gate, then one delivery render: showrunner (run sheet) → researcher → fact-checker → packaging
 (title, cover, hook promise) → writer → director → narrator (voice, timing checks) → script editor (table read) → standards →
 animatic (12 fps draft) → art director → screening on the animatic → **one delivery render** → QC → final check → Talha →
 publisher → analyst (48 h results). Fix loops run only before the delivery render, bounded by the profile. Thresholds:
 `research/quality-bar.json`. Revise on Telegram: known issues as toggles or your own words → a change order with Go / Change
 it / Cancel → only the stages it needs. Craft desks are skills in `~/Talha_Khan/Claude/skills` (`shorts-producer`,
-`shorts-factcheck`, `shorts-editor`, `shorts-screening`, `shorts-writer`, `shorts-director`, `social-caption`). Details:
+`shorts-factcheck`, `shorts-editor`, `shorts-screening`, `shorts-writer`, `shorts-director`, `social-caption`, `visual-sourcing`). Details:
 vault `Docs/Frameflow Studio Board.md`; live progress in the control panel (`Code/frameflow-control`, Making panel).
 
 ## Studio and betadoc

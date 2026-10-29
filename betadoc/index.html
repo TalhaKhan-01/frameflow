@@ -33,7 +33,7 @@
       <div class="hero-copy">
         <p class="eyebrow">Night edition · an automated newsroom</p>
         <h1 id="hero-title"><span class="line">One story a day.</span><span class="line">Written, drawn, voiced,</span><span class="line">checked and <em>posted</em></span><span class="line">on its own.</span></h1>
-        <p class="lede">Frameflow is the engine behind <b>The Daily Habit Studio</b>, a Thirdspace Production. It makes a daily 60–110 second Short for <b>Habit</b>, a narrator who explains tech, AI and money. It posts to YouTube, Instagram and Facebook at 11:30. The owner's whole job is one tap on Telegram.</p>
+        <p class="lede">Frameflow is the engine behind <b>The Daily Habit Studio</b>, a Thirdspace Production. Every day it makes <b>The Daily Habit</b>, a 75–100 second news show where <b>Habit</b> covers 5–8 stories about tech, AI and money, with the real logos, photos and headlines on screen. It posts to YouTube, Instagram and Facebook at 11:30. The owner ticks the stories, picks the hook and taps Approve on Telegram.</p>
         <div class="ctas">
           <a class="btn" href="https://frameflow-studio-tau.vercel.app" rel="noopener">Open the live Studio</a>
           <a class="btn ghost" href="#tour"><span aria-hidden="true">▶</span> Watch the 1-minute tour</a>
@@ -125,11 +125,12 @@
     <!-- DAILY CLOCK -->
     <section class="clock" aria-labelledby="clock-title">
       <p class="eyebrow">A day in the newsroom</p>
-      <h2 id="clock-title">The owner taps twice. <em>Frameflow does the rest.</em></h2>
+      <h2 id="clock-title">The owner taps three times. <em>Frameflow does the rest.</em></h2>
       <ol class="timeline">
-        <li><time>14:00</time><div class="tg"><b>Topic card</b><p>Three stories for tomorrow, with why-now and sources. Tap 1, 2 or 3, or paste a link.</p><span class="keys"><i>1</i><i>2</i><i>3</i><i>Skip</i></span></div></li>
-        <li><time>15:00</time><div class="tg"><b>Auto-pick</b><p>No tap by 15:00? Story #1 is picked and the Short starts on its own.</p></div></li>
-        <li><time>by 17:00</time><div class="tg"><b>Video card</b><p>A preview, the cover, the review score and what any failed check found.</p><span class="keys"><i>Approve</i><i>Revise</i><i>Reject</i></span></div></li>
+        <li><time>14:00</time><div class="tg"><b>Topic card</b><p>Fifteen stories ranked by virality. Topic memory has already removed anything aired in the last 14 days. Tick 5–8 for tomorrow's episode.</p><span class="keys"><i>☐ 1</i><i>☐ 2</i><i>⭐ Top 8</i><i>▶ Make</i></span></div></li>
+        <li><time>15:00</time><div class="tg"><b>Auto-pick</b><p>No tap by 15:00? The top 8 are picked and the episode starts on its own.</p></div></li>
+        <li><time>~15:30</time><div class="tg"><b>Hook card</b><p>Ten ranked opens for the episode. Tap one, improve one in your own words, or write your own. No answer in 20 minutes: hook 1.</p><span class="keys"><i>1</i><i>…</i><i>10</i><i>✏️ Improve</i><i>📝 Mine</i></span></div></li>
+        <li><time>by 17:00</time><div class="tg"><b>Video card</b><p>A preview, the cover, the review score, what any failed check found, then the post text and the carousel.</p><span class="keys"><i>Approve</i><i>Revise</i><i>Reject</i></span></div></li>
         <li><time>11:30</time><div class="tg"><b>Posted</b><p>YouTube Shorts, Instagram Reels and the Facebook Page, each with its own captions and tags. A carousel card post goes out with it.</p></div></li>
         <li><time>+48 h</time><div class="tg"><b>Stats and lessons</b><p>Views and watch-through come back. What helped or hurt becomes a lesson for the next scripts.</p></div></li>
       </ol>
@@ -147,7 +148,7 @@
           <g class="node"><rect x="215" y="40" width="150" height="70" rx="10"/><text x="290" y="72">Checked brief</text><text x="290" y="92" class="sub">every source re-read</text></g>
           <g class="node hot"><rect x="410" y="40" width="170" height="70" rx="10"/><text x="495" y="72">Writer + Director</text><text x="495" y="92" class="sub">package first, lints</text></g>
           <g class="node"><rect x="625" y="40" width="150" height="70" rx="10"/><text x="700" y="72">Animatic → render</text><text x="700" y="92" class="sub">draft screened, one render</text></g>
-          <g class="node hot"><rect x="820" y="40" width="160" height="70" rx="10"/><text x="900" y="72">Desk gates</text><text x="900" y="92" class="sub">17 desks, one bar</text></g>
+          <g class="node hot"><rect x="820" y="40" width="160" height="70" rx="10"/><text x="900" y="72">Desk gates</text><text x="900" y="92" class="sub">17 desks → 12 skills</text></g>
           <g class="node lamp"><rect x="820" y="180" width="160" height="70" rx="10"/><text x="900" y="212">Telegram</text><text x="900" y="232" class="sub">owner approves</text></g>
           <g class="node"><rect x="600" y="180" width="175" height="70" rx="10"/><text x="687" y="212">Post at 11:30</text><text x="687" y="232" class="sub">YouTube · Instagram · FB</text></g>
           <g class="node"><rect x="400" y="180" width="155" height="70" rx="10"/><text x="477" y="212">48 h stats</text><text x="477" y="232" class="sub">views, watch-through</text></g>
@@ -194,6 +195,11 @@
             <tr><td>Animatic screened before one delivery render</td><td><span class="st partial">partial</span></td><td>a 12 fps draft matches the render's frames and motion; no second render</td></tr>
             <tr><td>Independent fact-checker and table read</td><td><span class="st partial">partial</span></td><td>every source re-read; numbers said must be in the verified facts</td></tr>
             <tr><td>Revise in the owner's own words</td><td><span class="st partial">partial</span></td><td>known issues as buttons, a change order with Go / Change it / Cancel</td></tr>
+            <tr><td>The Daily Habit show: topic card, 5–8 stories, rundown writer</td><td><span class="st built">built</span></td><td>daily since Ep 1 on 28 Oct</td></tr>
+            <tr><td>Topic memory: no story twice</td><td><span class="st built">built</span></td><td>the last 14 days compared by meaning, any outlet; follow-ups marked Update</td></tr>
+            <tr><td>Hook card: 10 opens, the owner picks</td><td><span class="st partial">partial</span></td><td>tap, improve in your words, or write your own; first live run 29 Oct</td></tr>
+            <tr><td>Real visuals: logos, photos, headline screenshots</td><td><span class="st partial">partial</span></td><td>visual-sourcing skill with a vision judge and licence tiers; first live run 29 Oct</td></tr>
+            <tr><td>Analogy gags from a fixed catalogue</td><td><span class="st partial">partial</span></td><td>compare, scale, photo, stamp; same choice, same look</td></tr>
             <tr><td>Asset library and disk cleanup</td><td><span class="st built">built</span></td><td>facts, spare hooks, analogies and scene ideas reused</td></tr>
             <tr><td>Narrated 1-minute tour</td><td><span class="st built">built</span></td><td>a walk through the live Studio, recorded frame by frame, with captions</td></tr>
             <tr><td>Studio web app (this demo)</td><td><span class="st built">built</span></td><td>Open to view, refreshes itself after each post</td></tr>
