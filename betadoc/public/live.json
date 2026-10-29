@@ -1,8 +1,8 @@
 {
- "generated": "2026-10-29T11:31:49",
+ "generated": "2026-10-29T11:37:32",
  "ideas": 1440,
  "videos_made": 8,
- "videos_posted": 4,
+ "videos_posted": 5,
  "card_posts": 5,
  "lessons": 40,
  "library": 99,
@@ -12,18 +12,18 @@
  "today": {
   "day": "2026-10-29",
   "lane": "show",
-  "state": "posting"
+  "state": "posted"
  },
  "latest": {
-  "title": "Microsoft offers 60,000 workers an exit | The Daily Habit",
+  "title": "Anthropic files for IPO; Free Fire India launches",
   "lane": "Tech",
   "seconds": null,
   "lufs": null,
   "wpm": null,
   "review_total": 18,
   "links": {
-   "youtube": "https://youtube.com/shorts/oImJ63XXT-I",
-   "instagram": "https://www.instagram.com/reel/DfBpGnLhX6O/"
+   "youtube": "https://youtube.com/shorts/-tx3o2r-baw",
+   "instagram": "https://www.instagram.com/reel/DfEUxZoNzrM/"
   },
   "gates": {},
   "media": {}
@@ -76,7 +76,7 @@
     }
    ],
    "timeline": {
-    "seconds": 75889.0,
+    "seconds": 76300.0,
     "events": [
      {
       "t": 0.0,
@@ -143,10 +143,24 @@
      },
      {
       "t": 75889.0,
-      "d": 0.0,
+      "d": 178.0,
       "desk": "publisher",
       "label": "post to facebook",
-      "status": "running"
+      "status": "done"
+     },
+     {
+      "t": 76067.0,
+      "d": 137.0,
+      "desk": "publisher",
+      "label": "post to youtube",
+      "status": "done"
+     },
+     {
+      "t": 76204.0,
+      "d": 96.0,
+      "desk": "publisher",
+      "label": "post to instagram",
+      "status": "done"
      }
     ]
    }
