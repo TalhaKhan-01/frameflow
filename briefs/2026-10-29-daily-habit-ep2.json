@@ -1,0 +1,201 @@
+{
+ "topic": "The Daily Habit Ep 2: today's 7 stories (Anthropic files for IPO; Free Fire India is live; Indians pile into SpaceX shares; SK hynix: 80% operating margin; Trump wants to rename AI; Google's Genie 4 adds sound; Infrared: up to 100x cheaper?)",
+ "angle_hint": "An episode digest carousel: slide 1 a bold hook naming the biggest story and that there are 7 stories today; then one stat, compare or fact slide per story for the first five stories in the episode's order (each with its own source); a close slide inviting people to watch the full episode for all of them.",
+ "facts": [
+  {
+   "id": "s1f1",
+   "text": "Anthropic filed for an IPO ahead of the opening bell on Monday (the article is dated Oct 27, 2026), after confidentially filing with the SEC in June.",
+   "source": "https://finance.yahoo.com/markets/stocks/articles/anthropic-officially-files-ipo-know-134742406.html",
+   "story": 1
+  },
+  {
+   "id": "s1f2",
+   "text": "The filing lists the ticker 'ANT'. It gives no target valuation or share count.",
+   "source": "https://finance.yahoo.com/markets/stocks/articles/anthropic-officially-files-ipo-know-134742406.html",
+   "story": 1
+  },
+  {
+   "id": "s1f3",
+   "text": "Revenue was about $16.3 billion in the first half of 2026, up from $1.2 billion a year earlier. Net loss for the half was $80.7 billion.",
+   "source": "https://finance.yahoo.com/markets/stocks/articles/anthropic-officially-files-ipo-know-134742406.html",
+   "story": 1
+  },
+  {
+   "id": "s2f1",
+   "text": "Free Fire India launches 28 October 2026 as a standalone app, free to download on the Google Play Store and Apple App Store.",
+   "source": "https://www.pcquest.com/gaming/free-fire-india-launches-october-28-2026-with-free-download-links-for-android-and-ios-whats-new-12756712",
+   "story": 2
+  },
+  {
+   "id": "s2f2",
+   "text": "A special Diwali campaign in the game runs until 15 November.",
+   "source": "https://www.pcquest.com/gaming/free-fire-india-launches-october-28-2026-with-free-download-links-for-android-and-ios-whats-new-12756712",
+   "story": 2
+  },
+  {
+   "id": "s2f3",
+   "text": "Safety features listed: parental consent for users under 18, regular break reminders, playtime limits and spending caps.",
+   "source": "https://www.pcquest.com/gaming/free-fire-india-launches-october-28-2026-with-free-download-links-for-android-and-ios-whats-new-12756712",
+   "story": 2
+  },
+  {
+   "id": "s2f4",
+   "text": "Game data is hosted on servers located in India, and Garena says the game is optimised for a wide range of smartphones.",
+   "source": "https://www.pcquest.com/gaming/free-fire-india-launches-october-28-2026-with-free-download-links-for-android-and-ios-whats-new-12756712",
+   "story": 2
+  },
+  {
+   "id": "s3f1",
+   "text": "SpaceX raised $75 billion in its IPO, valuing it at more than $1.7 trillion; it debuted at $150 per share.",
+   "source": "https://www.businesstoday.in/amp/markets/stocks/story/from-dalal-street-to-wall-street-indian-investors-chase-us-stocks-post-spacexs-stellar-listing-536856-2026-06-15",
+   "story": 3
+  },
+  {
+   "id": "s3f2",
+   "text": "On IndMoney, nearly one-fifth of first-day trading volume was in SpaceX shares.",
+   "source": "https://www.businesstoday.in/amp/markets/stocks/story/from-dalal-street-to-wall-street-indian-investors-chase-us-stocks-post-spacexs-stellar-listing-536856-2026-06-15",
+   "story": 3
+  },
+  {
+   "id": "s3f3",
+   "text": "On Vested Finance, about a quarter of users trading international stocks since the listing bought SpaceX; it was about 15% of turnover and overall volumes rose 22%.",
+   "source": "https://www.businesstoday.in/amp/markets/stocks/story/from-dalal-street-to-wall-street-indian-investors-chase-us-stocks-post-spacexs-stellar-listing-536856-2026-06-15",
+   "story": 3
+  },
+  {
+   "id": "s3f4",
+   "text": "Under the Liberalised Remittance Scheme, resident Indians can invest up to $200,000 overseas per financial year.",
+   "source": "https://www.businesstoday.in/amp/markets/stocks/story/from-dalal-street-to-wall-street-indian-investors-chase-us-stocks-post-spacexs-stellar-listing-536856-2026-06-15",
+   "story": 3
+  },
+  {
+   "id": "s4f1",
+   "text": "SK hynix's 3Q26 operating profit was 83.3338 trillion won, up 38% from the previous quarter.",
+   "source": "https://news.skhynix.com/en/q3-2026-business-results/",
+   "story": 4
+  },
+  {
+   "id": "s4f2",
+   "text": "3Q26 revenue was a record 104.6155 trillion won, up 32% from the previous quarter (79.3187 trillion won in Q2 2026).",
+   "source": "https://news.skhynix.com/en/q3-2026-business-results/",
+   "story": 4
+  },
+  {
+   "id": "s4f3",
+   "text": "The operating margin was 80%.",
+   "source": "https://news.skhynix.com/en/q3-2026-business-results/",
+   "story": 4
+  },
+  {
+   "id": "s4f5",
+   "text": "SK hynix plans about 100 trillion won in shareholder returns for 2026.",
+   "source": "https://www.stocktitan.net/news/SKHY/sk-hynix-announces-3q26-financial-fcr2bh8ikc0x.html",
+   "story": 4
+  },
+  {
+   "id": "s5f1",
+   "text": "On Tuesday, September 22, 2026, at the UN General Assembly, Trump said AI should be renamed \"super intelligence\", and that U.S. documents, ideally the world's, should use \"super\" instead of \"artificial\".",
+   "source": "https://katv.com/news/nation-world/trump-tells-world-leaders-ai-should-be-called-something-else-he-wont-rein-it-in-united-states-open-ai-claude-marco-rubio",
+   "story": 5
+  },
+  {
+   "id": "s5f2",
+   "text": "Trump said he won't curb AI development, only encourage it, and called warnings about humans losing control of AI a \"hoax\".",
+   "source": "https://katv.com/news/nation-world/trump-tells-world-leaders-ai-should-be-called-something-else-he-wont-rein-it-in-united-states-open-ai-claude-marco-rubio",
+   "story": 5
+  },
+  {
+   "id": "s5f3",
+   "text": "He said the U.S. would reject any \"globalist scheme\" to control AI and that it leads China and others in the field.",
+   "source": "https://katv.com/news/nation-world/trump-tells-world-leaders-ai-should-be-called-something-else-he-wont-rein-it-in-united-states-open-ai-claude-marco-rubio",
+   "story": 5
+  },
+  {
+   "id": "s5f4",
+   "text": "\"Superintelligence\" already means a hypothetical AI that exceeds human cognition, so the rename could confuse people.",
+   "source": "https://katv.com/news/nation-world/trump-tells-world-leaders-ai-should-be-called-something-else-he-wont-rein-it-in-united-states-open-ai-claude-marco-rubio",
+   "story": 5
+  },
+  {
+   "id": "s5f5",
+   "text": "Sen. Bernie Sanders proposed a bill to ban the development and deployment of superintelligence.",
+   "source": "https://katv.com/news/nation-world/trump-tells-world-leaders-ai-should-be-called-something-else-he-wont-rein-it-in-united-states-open-ai-claude-marco-rubio",
+   "story": 5
+  },
+  {
+   "id": "s6f1",
+   "text": "Genie 4 can maintain a consistent scene for up to two minutes, double the limit of Genie 3.",
+   "source": "https://techcrunch.com/2026/10/27/googles-genie-4-world-model-adds-audio-more-realistic-worlds-and-real-time-steering/",
+   "story": 6
+  },
+  {
+   "id": "s6f2",
+   "text": "It adds real-time audio matched to the scene, including music, ambient noise and interactive dialogue.",
+   "source": "https://techcrunch.com/2026/10/27/googles-genie-4-world-model-adds-audio-more-realistic-worlds-and-real-time-steering/",
+   "story": 6
+  },
+  {
+   "id": "s6f3",
+   "text": "Users can edit worlds mid-simulation by typing prompts, for example changing the weather or camera angle, or adding people or objects. Physics and characters are also more humanlike.",
+   "source": "https://techcrunch.com/2026/10/27/googles-genie-4-world-model-adds-audio-more-realistic-worlds-and-real-time-steering/",
+   "story": 6
+  },
+  {
+   "id": "s6f4",
+   "text": "It is currently a research preview for trusted testers. In the coming weeks it will roll out to Google AI Ultra subscribers in Project Genie and to early-access partners of the Gemini API and Google AI Studio.",
+   "source": "https://techcrunch.com/2026/10/27/googles-genie-4-world-model-adds-audio-more-realistic-worlds-and-real-time-steering/",
+   "story": 6
+  },
+  {
+   "id": "s6f5",
+   "text": "Known limitations: details and objects can drift the longer a simulation runs, and audio accuracy and legibility of in-world text remain unresolved.",
+   "source": "https://techcrunch.com/2026/10/27/googles-genie-4-world-model-adds-audio-more-realistic-worlds-and-real-time-steering/",
+   "story": 6
+  },
+  {
+   "id": "s8f1",
+   "text": "Nova Spectral AI raised Rs 21.15 crore (about $2.25 million) in a seed round led by Shastra VC, with Equirus InnovateX Fund and angel investors participating.",
+   "source": "https://indianstartupnews.com/funding/5-month-old-nova-spectral-ai-raises-rs-21-crore-to-build-indias-own-infrared-vision-chip-12758162",
+   "story": 8
+  },
+  {
+   "id": "s8f2",
+   "text": "The startup aims to bring SWIR sensor costs down by up to 100 times compared with InGaAs technology, because its process is compatible with CMOS manufacturing.",
+   "source": "https://indianstartupnews.com/funding/5-month-old-nova-spectral-ai-raises-rs-21-crore-to-build-indias-own-infrared-vision-chip-12758162",
+   "story": 8
+  },
+  {
+   "id": "s8f3",
+   "text": "It is building the sensor from lead-free indium arsenide colloidal quantum dots deposited on standard silicon CMOS chips.",
+   "source": "https://indianstartupnews.com/funding/5-month-old-nova-spectral-ai-raises-rs-21-crore-to-build-indias-own-infrared-vision-chip-12758162",
+   "story": 8
+  },
+  {
+   "id": "s8f4",
+   "text": "The funding will be used to build a team and develop a field-ready prototype within 18 months. According to the startup, its first market is defence (ISR platforms and drones); it is also targeting smartphones, wearables, robots and automobiles.",
+   "source": "https://indianstartupnews.com/funding/5-month-old-nova-spectral-ai-raises-rs-21-crore-to-build-indias-own-infrared-vision-chip-12758162",
+   "story": 8
+  },
+  {
+   "id": "s8f5",
+   "text": "Cofounder and CEO Anish Priyadarshi is an IIT Kanpur alum. The target use is imaging in low light or through smoke, haze and dust. Conventional infrared sensors are largely imported and rely on expensive InGaAs.",
+   "source": "https://inc42.com/buzz/nova-spectral-ai-raises-%E2%82%B921-2-cr-to-build-indigenous-infrared-sensor-chips/",
+   "story": 8
+  }
+ ],
+ "lane": "global-tech",
+ "cautions": [
+  "I could not open the ET article (fetch blocked) or the inkl and NewsBytes copies (403). The Walmart/Flipkart half of the story is unverified, so no facts are given for it.",
+  "The Indian IT stock drop (TCS, Infosys, Wipro, HCLTech and Tech Mahindra down 'as much as 3%' on Tuesday) appears only in a search-result summary. I did not read the page. Check it before use.",
+  "No source says the IPO filing itself caused the IT selloff. Do not state a cause.",
+  "Anthropic's net loss is reported as mostly an accounting charge on convertible notes, again only from a search summary. Do not present it as an operating loss.",
+  "The Yahoo article does not name the exchange. The listing date and price range are not disclosed.",
+  "I couldn't open the Mint original (fetch was blocked). Facts come from PCQuest's page, which I read in full. Mint's wording is unverified.",
+  "I couldn't open the Business Standard page (403). A search snippet said ratings of 16+ on Google Play and 17+ on the App Store. I did not read it, so don't use it.",
+  "Free Fire was banned in India in February 2022, and the earlier September 2023 relaunch plan was delayed. I got this only from search summaries, not from a page I read.",
+  "No device list, minimum specs, player counts or download figures were given. Don't claim specific phones are supported.",
+  "The Diwali event's start date wasn't stated; only the 15 November end date is.",
+  "Could not open the CNBC article itself; facts are from Business Today's June coverage.",
+  "Angel One/Zerodha rollout and Nvidia-most-bought claims came only from search summaries (YourStory returned 403, Free Press Journal not opened), so they are unverified here."
+ ]
+}
