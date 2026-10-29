@@ -35,16 +35,22 @@ def _scrub(text):
     return re.sub(r"bot\d+:[A-Za-z0-9_-]+", "bot***", text)
 
 
-def api(method, timeout=60, **params):
+def api(method, timeout=60, retries=1, **params):
+    """One Bot API call. A slow network shows up as a read timeout (TimeoutError, not URLError): it is retried once and
+    then raised as TelegramError like every other failure, so a caller's try/except always holds (29 Oct: topic-card
+    ticks were lost when a timeout escaped the bot's handler)."""
     data = json.dumps({k: v for k, v in params.items() if v is not None}).encode()
     req = urllib.request.Request(_url(method), data=data, headers={"Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            d = json.loads(r.read())
-    except urllib.error.HTTPError as e:
-        raise TelegramError(f"{method}: {e.code} {_scrub(e.read().decode('utf-8', 'replace'))[:300]}") from None
-    except urllib.error.URLError as e:
-        raise TelegramError(f"{method}: {e.reason}") from None
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                d = json.loads(r.read())
+            break
+        except urllib.error.HTTPError as e:
+            raise TelegramError(f"{method}: {e.code} {_scrub(e.read().decode('utf-8', 'replace'))[:300]}") from None
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            if attempt == retries:
+                raise TelegramError(f"{method}: {getattr(e, 'reason', e)}") from None
     if not d.get("ok"):
         raise TelegramError(f"{method}: {_scrub(str(d))[:300]}")
     return d["result"]
@@ -84,14 +90,16 @@ def clear_buttons(message_id, note=None):
 def edit_buttons(message_id, buttons):
     """Replace a message's buttons in place (the Revise issue toggles)."""
     try:
-        api("editMessageReplyMarkup", chat_id=chat_id(), message_id=message_id, reply_markup=keyboard(buttons) or {"inline_keyboard": []})
+        api("editMessageReplyMarkup", chat_id=chat_id(), message_id=message_id, reply_markup=keyboard(buttons) or {"inline_keyboard": []},
+            timeout=20, retries=2)
     except TelegramError:
         pass
 
 
 def answer(callback_id, text=None):
+    """Stops the button's spinner. Best effort and quick: the tap itself is handled whether or not this gets through."""
     try:
-        api("answerCallbackQuery", callback_query_id=callback_id, text=text)
+        api("answerCallbackQuery", callback_query_id=callback_id, text=text, timeout=8, retries=0)
     except TelegramError:
         pass
 

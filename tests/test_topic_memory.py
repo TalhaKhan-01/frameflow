@@ -50,3 +50,35 @@ def test_failed_memory_still_gives_a_card(monkeypatch):
     setup(monkeypatch, RuntimeError("model call failed"))
     cands, removed = showdesk.candidates(n=4, day="2026-10-30")
     assert removed is None and len(cands) == 4
+
+
+def test_auto_pick_keeps_few_ticks_and_fills_to_the_top(monkeypatch):
+    import json as _json
+    run = {"state": "topic-sent", "options": _json.dumps({"show": True, "episode": 3, "list": [{"url": f"u{i}", "headline": f"H{i}"} for i in range(15)],
+                                                           "ticked": [2], "chosen": []}), "topic_msg": None}
+    saved = {}
+    monkeypatch.setattr(daily, "get", lambda day: run)
+    monkeypatch.setattr(daily, "update", lambda day, **k: saved.update(k))
+    monkeypatch.setattr(showdesk, "record", lambda *a, **k: None)
+    monkeypatch.setattr(showdesk.telegram, "send", lambda *a, **k: 1)
+    monkeypatch.setattr(showdesk, "cfg", lambda: {"topics": 8, "min_pick": 5, "max_pick": 8, "make_ready": False})
+    showdesk.pick("d", auto=True)
+    o = _json.loads(saved["options"])
+    assert saved["state"] == "picked" and o["ticked"] == [1, 2, 3, 4, 5, 6, 7, 8]
+
+
+def test_telegram_read_timeout_becomes_telegram_error(monkeypatch):
+    import pytest
+    from frameflow import telegram
+    calls = []
+
+    def slow(req, timeout):
+        calls.append(timeout)
+        raise TimeoutError("The read operation timed out")
+    monkeypatch.setattr(telegram.urllib.request, "urlopen", slow)
+    monkeypatch.setattr(telegram, "_url", lambda m: "https://example.invalid/" + m)
+    with pytest.raises(telegram.TelegramError):
+        telegram.api("getMe")
+    assert len(calls) == 2   # one retry
+    telegram.answer("x")      # never raises
+    assert calls[-1] == 8

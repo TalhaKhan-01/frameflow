@@ -203,8 +203,13 @@ def pick(day, ticked=None, auto=False):
     o = json.loads(run["options"])
     c = cfg()
     ticked = sorted(ticked if ticked is not None else o["ticked"])
-    if auto and not ticked:
-        ticked = list(range(1, min(c["topics"], len(o["list"])) + 1))
+    if auto and len(ticked) < c["min_pick"]:   # too few ticks by the deadline: keep them, fill up with the top stories
+        for i in range(1, len(o["list"]) + 1):
+            if len(ticked) >= c["topics"]:
+                break
+            if i not in ticked:
+                ticked.append(i)
+        ticked = sorted(ticked)
     if len(ticked) < c["min_pick"]:
         return telegram.send(f"Tick at least {c['min_pick']} stories (you have {len(ticked)}), or tap ⭐ for my top {c['topics']}.")
     o["ticked"], o["chosen"] = ticked, [o["list"][i - 1] for i in ticked]
