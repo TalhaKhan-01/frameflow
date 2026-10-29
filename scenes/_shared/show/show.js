@@ -345,6 +345,79 @@
     };
   }
 
+  // ---------- media (P25.2.2): what the story is about, on screen while it is said; inside the graphics box ----------
+  // m = {dur, photo: {src, w, h, credit}, shot: {src, w, h, head: [x,y,w,h], credit}, logo: {src, name}}
+  // order: the photo (Ken Burns) or the headline screenshot, then the screenshot zooming to its headline with a
+  // highlighter; the logo badge pops in on top; the whole layer lifts away to the data graphic at t0 + dur.
+  function mediaBuilder(S) {
+    const BX = 60, BY = 300, BW = 960, BH = 680;
+    let n = 0;
+    return function media(g, tl, t0, m, si) {
+      const id = `mclip${si}-${n++}`;
+      const cp = el("clipPath", { id }, el("defs", {}, g));
+      el("rect", { x: BX, y: BY, width: BW, height: BH, rx: 22 }, cp);
+      const frame = el("g", {}, g);
+      el("rect", { x: BX - 6, y: BY - 6, width: BW + 12, height: BH + 12, rx: 26, fill: S.ink }, frame);
+      el("rect", { x: BX, y: BY, width: BW, height: BH, rx: 22, fill: "#ffffff" }, frame);
+      const inner = el("g", { "clip-path": `url(#${id})` }, frame);
+      const credit = (layer, text) => {
+        if (!text) return;
+        const bar = el("g", {}, layer);
+        el("rect", { x: BX, y: BY + BH - 44, width: BW, height: 44, fill: "rgba(20,18,26,0.72)" }, bar);
+        const c = txt(bar, BX + BW - 18, BY + BH - 21, text, { size: 20, font: S.body, fill: "#f3eee4", weight: 600, anchor: "end" });
+        fit(c, BW - 36, 20);
+      };
+      const layers = [];
+      const ph = m.photo, sh = m.shot;
+      if (ph) {   // photo: cover the box, slow push in
+        const L = el("g", {}, inner);
+        const im = el("image", { href: ph.src, x: BX, y: BY, width: BW, height: BH, preserveAspectRatio: "xMidYMid slice" }, L);
+        gsap.set(im, { svgOrigin: `${BX + BW / 2} ${BY + BH / 2}` });
+        credit(L, ph.credit);
+        layers.push({ L, run: (a, b) => tl.fromTo(im, { scale: 1.0 }, { scale: 1.12, duration: b - a, ease: "none" }, a) });
+      }
+      if (sh) {   // screenshot: fit the width, then zoom to the headline and sweep a highlighter over it
+        const L = el("g", {}, inner);
+        el("rect", { x: BX, y: BY, width: BW, height: BH, fill: "#ffffff" }, L);
+        const f = Math.min(BW / sh.w, BH / sh.h), w = sh.w * f, h = sh.h * f, x = BX + (BW - w) / 2, y = BY + (BH - h) / 2;
+        const zoom = el("g", {}, L);
+        el("image", { href: sh.src, x, y, width: w, height: h, preserveAspectRatio: "xMidYMid meet" }, zoom);
+        let hl = null, cx = BX + BW / 2, cy = BY + BH / 2, k = 1.0;
+        if (sh.head) {
+          const [hx, hy, hw, hh] = sh.head.map((v) => v * f);
+          cx = x + hx + hw / 2; cy = y + hy + hh / 2;
+          k = clamp(Math.min((BW - 40) / Math.max(hw, 1), 130 / Math.max(hh, 1)), 1, 2.6);   // as big as fits the box, never cut
+          hl = el("rect", { x: x + hx - 8, y: y + hy - 4, width: hw + 16, height: hh + 8, fill: "#ffe14d", opacity: 0.5,
+                            style: "mix-blend-mode:multiply" }, zoom);   // over the headline, multiplied so the text stays black
+          gsap.set(hl, { svgOrigin: `${x + hx - 8} ${cy}` });
+        }
+        gsap.set(zoom, { svgOrigin: `${cx} ${cy}` });
+        credit(L, sh.credit);
+        layers.push({ L, run: (a, b) => {
+          tl.fromTo(zoom, { scale: 1, x: 0, y: 0 }, { scale: k, x: BX + BW / 2 - cx, y: BY + BH / 2 - cy, duration: Math.min(1.2, (b - a) * 0.6), ease: "power2.inOut" }, a + 0.1);
+          if (hl) tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, a + 0.5);
+        } });
+      }
+      // timing: one layer = the whole window; two = split it; each layer fades in over the one before
+      const span = m.dur - 0.25;
+      layers.forEach(({ L, run }, i) => {
+        const a = t0 + (span * i) / layers.length, b = t0 + (span * (i + 1)) / layers.length;
+        if (i) tl.fromTo(L, { opacity: 0 }, { opacity: 1, duration: 0.25 }, a); else gsap.set(L, { opacity: 1 });
+        run(a, b);
+      });
+      if (m.logo) {   // logo badge, top left of the box, pops in after the first beat
+        const lg = el("g", {}, frame);
+        el("rect", { x: BX + 24, y: BY + 24, width: 250, height: 150, rx: 18, fill: "#ffffff", stroke: S.ink, "stroke-width": 5 }, lg);
+        el("image", { href: m.logo.src, x: BX + 44, y: BY + 44, width: 210, height: 110, preserveAspectRatio: "xMidYMid meet" }, lg);
+        gsap.set(lg, { svgOrigin: `${BX + 149} ${BY + 99}` });
+        tl.fromTo(lg, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2.2)" }, t0 + 0.35);
+      }
+      gsap.set(frame, { svgOrigin: `${BX + BW / 2} ${BY + BH / 2}` });
+      tl.fromTo(frame, { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "power3.out" }, t0);
+      tl.to(frame, { opacity: 0, y: -40, duration: 0.3, ease: "power2.in" }, t0 + m.dur - 0.25);
+    };
+  }
+
   window.SHOW = { build(cfg) {
     const S = SETS[cfg.set];
     const q = (f) => f.replace(/"/g, "'");   // font names inside an innerHTML style="..." attribute
@@ -363,10 +436,14 @@
     if (cfg.set === "paper") el("rect", { x: 0, y: 0, width: W, height: H, fill: "#efe7d8" }, visSvg);
     if (cfg.set === "night") { for (let x = 0; x < W; x += 60) el("rect", { x, y: 0, width: 1, height: H, fill: "#151b36" }, visSvg); for (let y = 0; y < H; y += 60) el("rect", { x: 0, y, width: W, height: 1, fill: "#151b36" }, visSvg); }
     const G = graphics(S, cfg);
-    const groups = cfg.segments.map((seg) => {
-      if (!seg.g || !G[seg.g.type]) return null;
-      const g = el("g", { filter: look(S) }, visSvg);
-      G[seg.g.type](g, tl, seg.start + 0.15, seg.g);
+    const media = mediaBuilder(S);
+    const groups = cfg.segments.map((seg, si) => {
+      const hasG = seg.g && G[seg.g.type];
+      if (!hasG && !seg.media) return null;
+      const g = el("g", {}, visSvg);
+      const m = seg.media ? seg.media.dur : 0;   // real visuals first (P25.2.2), then the data graphic
+      if (hasG) G[seg.g.type](el("g", { filter: look(S) }, g), tl, seg.start + 0.15 + m, seg.g);
+      if (seg.media) media(el("g", {}, g), tl, seg.start + 0.15, seg.media, si);
       return g;
     });
 

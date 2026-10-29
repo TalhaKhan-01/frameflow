@@ -12,3 +12,4 @@ spikes/**/render*.log
 data/measure-*.log
 out/
 vault/
+research/assets/visuals/

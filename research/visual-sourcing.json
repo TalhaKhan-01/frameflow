@@ -1,0 +1,5 @@
+{
+  "_about": "Frameflow config for the visual-sourcing skill (P25.2): approved logos and photos are kept in the library and reused for the same subject.",
+  "library": "research/assets/visuals",
+  "judge": {"enabled": true, "model": "sonnet", "candidates": 3}
+}

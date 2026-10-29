@@ -307,6 +307,68 @@ def write(data, out, ep, date):
     return script
 
 
+# ---------- visuals (P25.2): logos, photos and the source's headline for every story (visual-sourcing skill) ----------
+VISUALS = Path.home() / "Talha_Khan" / "Claude" / "skills" / "visual-sourcing" / "scripts" / "visuals.py"
+CUE_SYSTEM = """You pick the real visuals for a fast news Short. For each story, name what the viewer should SEE while
+it is said: main = the one person, product, place or thing the story is about (kind person | product | place | thing),
+or kind none when it is only a company or an abstract idea; wiki = that subject's exact English Wikipedia page title,
+or "" if unsure; logo = the company or brand whose logo belongs on screen ("" if none). Prefer the subject a viewer
+would recognise (Sam Altman, iPhone, Dalal Street), never a generic word. Return JSON only."""
+CUE_SCHEMA = {"type": "object", "required": ["stories"], "properties": {"stories": {"type": "array", "items": {
+    "type": "object", "required": ["story", "kind", "name", "wiki", "logo"], "properties": {
+        "story": {"type": "integer"}, "kind": {"type": "string", "enum": ["person", "product", "place", "thing", "none"]},
+        "name": {"type": "string"}, "wiki": {"type": "string"}, "logo": {"type": "string"}}}}}}
+
+
+def page_for(s):
+    """The article to screenshot: the story's own link unless it is an aggregator redirect, else the first fact's source."""
+    for u in [s.get("url", "")] + [f["source"] for f in s["facts"]]:
+        if u and "news.google.com" not in u:
+            return u
+    return ""
+
+
+def visuals(script, data, out):
+    vdir = out / "visuals"
+    led_path = vdir / "ledger.json"
+    if not led_path.exists():
+        stories = {s["story"]: s for s in data["stories"]}
+        ask = "\n".join(f"STORY {g['story']}: {stories[g['story']]['headline']} | {g['say']}" for g in script["segments"])
+        picks = llm.call(ask, CUE_SYSTEM, CUE_SCHEMA, model=cfg().get("visuals", {}).get("model", "haiku"), purpose="show.visual-cues", timeout=600)
+        cues = []
+        for p in picks["stories"]:
+            s = stories.get(p["story"])
+            if not s:
+                continue
+            if p["kind"] != "none" and p["name"]:
+                cues.append({"id": f"s{p['story']}-photo", "kind": "photo", "name": p["name"], "wiki": p["wiki"] or None,
+                             "context": s["headline"]})
+            if p["logo"]:
+                cues.append({"id": f"s{p['story']}-logo", "kind": "logo", "name": p["logo"]})
+            if page_for(s):
+                cues.append({"id": f"s{p['story']}-shot", "kind": "screenshot", "url": page_for(s)})
+        vdir.mkdir(parents=True, exist_ok=True)
+        (vdir / "cues.json").write_text(json.dumps(cues, ensure_ascii=False, indent=1))
+        from frameflow import direct as directmod
+        directmod.skill([VISUALS, "--project", ROOT, "find", vdir / "cues.json", "--out", vdir], timeout=1800, strict=True)
+    ledger = json.loads(led_path.read_text())
+    by = {}
+    for r in ledger:
+        if r.get("missing"):
+            continue
+        story, kind = int(r["id"].split("-")[0][1:]), r["kind"]
+        src = f"assets/media/{r['file']}"
+        if kind == "photo":
+            by.setdefault(story, {})["photo"] = {"src": src, "w": r["width"], "h": r["height"],
+                                                "credit": f"Photo: {r['author'][:40]} · {r['licence']} · {r['source']}"}
+        elif kind == "screenshot":
+            by.setdefault(story, {})["shot"] = {"src": src, "w": r["width"], "h": r["height"], "head": r.get("headline"),
+                                               "credit": f"Source: {r['source'].removeprefix('www.')}"}
+        elif kind == "logo":
+            by.setdefault(story, {})["logo"] = {"src": src, "name": r["name"]}
+    return by, ledger
+
+
 # ---------- narrator ----------
 ENERGY = {"neutral": 0.55, "excited": 0.75, "surprised": 0.7, "doubtful": 0.5, "smug": 0.6, "worried": 0.5, "laughing": 0.75, "serious": 0.45}
 
@@ -344,7 +406,7 @@ def envelope(wav):
 
 
 # ---------- director (code): timeline, framings, package ----------
-def direct(script, data, vd, ep, day):
+def direct(script, data, vd, ep, day, media_by=None):
     D = {l["id"]: l for l in json.loads((vd / "durations.json").read_text())["lines"]}
     heard = json.loads((vd / "words.json").read_text())
     lines = lines_of(script)
@@ -390,6 +452,9 @@ def direct(script, data, vd, ep, day):
                "emotion": g["emotion"], "wall": g["wall"].upper(), "wallSub": s["lane"].upper(), "g": g["graphic"]}
         place(f"t{k}", seg, lo)
         seg["shots"] = [[round(seg["dur"] * f, 2), shot] for f, shot in pat]
+        m = (media_by or {}).get(g["story"])
+        if m and (m.get("photo") or m.get("shot")):   # real visuals for the first ~45% of the story, then the graphic
+            seg["media"] = {**m, "dur": round(min(max(seg["dur"] * 0.45, 3.0), 5.0), 2)}
     c["tickerAt"] = round(t + 0.2, 3)
     place("outro", {"shot": "wide", "emotion": script["outro"]["emotion"], "wall": "SEE YOU", "wallSub": "TOMORROW"})
     c["endAt"] = round(segs[-1]["start"] + D["outro"]["seconds"] - 0.2, 3)
@@ -511,6 +576,11 @@ def project(c, audio, out):
     with open(pd / "assets" / "theme.css", "a") as f:
         f.write("\n" + (build.SHARED / "themes" / "paper-press.css").read_text())
     shutil.copy(audio, pd / "assets" / "mix.wav")
+    if (out / "visuals").exists():   # the visual-sourcing files the segments point at (assets/media/...)
+        (pd / "assets" / "media").mkdir(exist_ok=True)
+        for f in (out / "visuals").iterdir():
+            if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg", ".webp", ".gif"):
+                shutil.copy(f, pd / "assets" / "media" / f.name)
     fonts = "\n    ".join(f'<link rel="preload" href="assets/vendor/fonts/{f.name}" as="font" type="font/woff2" crossorigin />'
                           for f in sorted((build.SHARED / "vendor" / "fonts").glob("*.woff2")))
     warm = ('<div aria-hidden="true" style="position:absolute;opacity:0">' + "".join(
@@ -655,10 +725,19 @@ def make_day(day):
 
 
 def produce(day, ep, slug, data, script, out):
+    media_by, vis_ledger = {}, []
+    if cfg().get("visuals", {}).get("enabled", True):
+        with progress.step("visuals: logos, photos, headline screenshots", desk="visuals") as info:
+            try:
+                media_by, vis_ledger = visuals(script, data, out)
+            except Exception as e:   # no visuals is a weaker video, not a failed one: the graphics still carry it
+                info["error"] = str(e)[:200]
+                daily.update(day, note=f"visuals failed, graphics only: {str(e)[:150]}")
+            info["stories_with_media"] = sum(1 for m in media_by.values() if m.get("photo") or m.get("shot"))
     with progress.step("voice (narrator)", desk="narrator"):
         vd = narrate(script, out)
     with progress.step("direct (framings, package, emotions)", desk="director"):
-        c, voice_at = direct(script, data, vd, ep, day)
+        c, voice_at = direct(script, data, vd, ep, day, media_by)
     with progress.step("sound (stamp, theme, bed, SFX)", desk="sound") as info:
         audio, sheet = mix(c, voice_at, out)
         info["cues"] = len(sheet)
@@ -694,6 +773,8 @@ def produce(day, ep, slug, data, script, out):
     track = cfg().get("music", {}).get("track", "")
     if track and not track.startswith("synth:"):
         assets.append(led.get(f"music-cc/{sound.TRACKS[track][0]}", {"file": track}))
+    assets += [{"file": f"visuals/{r['file']}", "source": r["source"], "licence": r["licence"], "tier": r["tier"],
+                "url": r.get("page"), "author": r["author"]} for r in vis_ledger if not r.get("missing")]
     (out / "assets.json").write_text(json.dumps(assets, indent=1))
     facts = [dict(f, story=s["story"]) for s in data["stories"] for f in s["facts"]]
     stories = {s["story"]: s for s in data["stories"]}
