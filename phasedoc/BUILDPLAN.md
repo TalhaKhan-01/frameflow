@@ -743,8 +743,9 @@
   - **P25.1 Quick wins: topic memory and the hook pick** (1/2)
     - [x] **P25.1.1** Showrunner topic memory: shorts-producer topics.py (record/filter), ledger research/assets/topics.jsonl, wired into the 14:00 card  
       _Acceptance:_ skill tests pass; replaying 29 Oct's 15 candidates against Ep 1 drops the Anthropic IPO, UPI and NVS-03 repeats; the card says how many repeats were removed
-    - [ ] **P25.1.2** 10-hook card on Telegram: ranked opens, pick 1-10, Improve #n in Talha's words, Write my own; 20 min then hook 1  
+    - [~] **P25.1.2** 10-hook card on Telegram: ranked opens, pick 1-10, Improve #n in Talha's words, Write my own; 20 min then hook 1  
       _Acceptance:_ a make sends the hook card; a tap, an Improve and a timeout each lead to the chosen open in script.json; tests cover all three
+      _Note 2026-10-29:_ Built + 4 tests (tap, improve, own, closed card); real options run on Ep 2 gave 10 valid opens. Tick after the 29 Oct 14:00 card's make sends the card for real.
   - **P25.2 Real visuals in every video: visual-sourcing + motion-designer** (0/3)
     - [ ] **P25.2.1** visual-sourcing skill: logos, products, people, places, B-roll, Playwright proof screenshots; licence tiers in a ledger  
       _Acceptance:_ skill tests pass; for 8 stories of a real episode it returns at least one tier A/B asset per story with a ledger row; works from a scratch folder

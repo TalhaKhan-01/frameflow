@@ -35,5 +35,12 @@
   "theme_gain_db": -8,
   "_about": "a real music bed under the whole show, like the single-story Shorts (energy gain about -12 dB, 7 dB dip under the voice); Talha 27 Oct: 'no bg music while the show runs'. track = a sound.TRACKS name (CC BY: credited in the post text) or 'synth:<mood>' for an original frameflow.music bed"
  },
- "max_jokes": 3
+ "max_jokes": 3,
+ "hook_pick": {
+  "_about": "P25.1.2: after the writer, Talha picks the open from `count` ranked hooks on Telegram (tap, Improve in his words, or his own); no answer in wait_minutes = hook 1.",
+  "enabled": true,
+  "count": 10,
+  "wait_minutes": 20,
+  "model": "sonnet"
+ }
 }

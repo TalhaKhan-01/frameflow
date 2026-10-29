@@ -636,6 +636,10 @@ def make_day(day):
     with progress.step("write the rundown (writer, lints, table read)", desk="writer") as info:
         script = write(data, out, ep, dt.date.fromisoformat(day).strftime("%d %b %Y"))
         info.update({"table_read": f"{script['table_read']['total']}/{script['table_read']['max']}"})
+    from frameflow import hookpick
+    if hookpick.cfg()["enabled"] and not script.get("hook_pick"):   # Talha picks the open from 10 hooks (P25.1.2)
+        script = hookpick.pick(script, data, out, day)
+        daily.update(day, note=f"open chosen ({script['hook_pick']['by']}): {script['open']['say'][:80]}")
     result = produce(day, ep, slug, data, script, out)
     daily.update(day, video_id=result["video"], note=f"made {result['video']}: {result['status']}, review {result['review']}")
     with progress.step("send video card to Telegram"):

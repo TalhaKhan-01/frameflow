@@ -124,6 +124,10 @@ def on_callback(cb):
             cards.update(run_id, state="rejected", note="rejected")
             return telegram.clear_buttons(cr["preview_msg"], "Rejected, nothing posted.")
         return telegram.send(f"That button is from an older step (the card post is now '{cr['state']}').")
+    if kind in ("hk", "hkimp", "hkown"):   # the hook card (frameflow.hookpick): the make waits on hooks.json
+        from frameflow import hookpick
+        day, _, n = rest.partition(":")
+        return hookpick.on_tap(kind, day, n or None)
     if kind == "ab":   # ab:<video>:<version shown as A>:<tap>
         video, first, tap = rest.split(":")
         chosen_v = first if tap == "A" else ("v2" if first == "v1" else "v1")
@@ -263,6 +267,10 @@ def on_text(text):
             lines = [l for l in logs[-1].read_text(errors="replace").splitlines() if l.strip() and "token" not in l.lower()][-6:]
             tail = f"\n\nLast lines of {logs[-1].name}:\n" + "\n".join(l[:160] for l in lines)
         return telegram.send(f"{run['day']} · {run['state']}\n{steps}{tail}")
+    from frameflow import hookpick
+    hook_day = hookpick.waiting_text()
+    if hook_day:
+        return hookpick.on_text(hook_day, t)
     from frameflow import cards
     card_wait = cards.latest(("card-notes",))
     if card_wait:
