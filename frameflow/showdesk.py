@@ -10,12 +10,14 @@ import argparse
 import datetime as dt
 import json
 import sys
+import tempfile
 from pathlib import Path
 
-from frameflow import daily, ideas, llm, telegram
+from frameflow import daily, direct, ideas, llm, telegram
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = ROOT / "research" / "show.json"
+TOPICS = Path.home() / "Talha_Khan" / "Claude" / "skills" / "shorts-producer" / "scripts" / "topics.py"
 
 
 def cfg():
@@ -40,7 +42,8 @@ stop a scroll and get shared. Weigh: surprise or shock, a concrete number or sta
 and whether it can be shown with simple graphics (a number, a comparison, a headline, a logo-free icon).
 Rules: one entry per real-world story (merge duplicates from different outlets, keep the most original source);
 mix lanes (no more than 4 from one lane); drop gossip, deals, coupons, stock tips, tragedies, politics-only fights,
-anything that can't be sourced. headline: at most 8 words, punchy, true. why: one short line on why it will travel.
+anything that can't be sourced. A candidate marked UPDATE continues a story the show already aired: rank it only on
+its new development, and its headline must lead with that development. headline: at most 8 words, punchy, true. why: one short line on why it will travel.
 pun: a first idea for the witty line (can be improved later). Return JSON only."""
 
 VIRAL_SCHEMA = {"type": "object", "required": ["stories"], "properties": {"stories": {"type": "array", "items": {
@@ -61,8 +64,24 @@ def used_urls():
     return out
 
 
-def candidates(n=None, hours=36):
-    """Fresh ranked ideas -> one model call that merges duplicates and ranks by virality -> the best n."""
+def memory(rows, day):
+    """The showrunner's topic memory (shorts-producer topics.py): each row -> new / repeat / update vs the last 14 days."""
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+        json.dump([{"id": r["id"], "title": r["title"], "summary": (r["summary"] or "")[:300], "url": r["url"]} for r in rows], f)
+    return json.loads(direct.skill([TOPICS, "--project", ROOT, "filter", f.name, "--day", day], timeout=600, strict=True))
+
+
+def record(day, episode, stories):
+    """Aired (picked) stories go into the covered-topics ledger, so later cards don't offer them again."""
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+        json.dump([{"day": day, "episode": episode, "headline": s.get("headline", ""), "title": s.get("title", ""),
+                    "summary": (s.get("summary") or "")[:300], "url": s["url"]} for s in stories], f, ensure_ascii=False)
+    return json.loads(direct.skill([TOPICS, "--project", ROOT, "record", f.name], timeout=60, strict=True))
+
+
+def candidates(n=None, hours=36, day=None):
+    """Fresh ranked ideas -> topic memory drops repeats -> one model call that merges duplicates and ranks by virality
+    -> the best n. Returns (stories, repeats removed)."""
     c = cfg()
     n = n or c["candidates"]
     try:
@@ -75,11 +94,20 @@ def candidates(n=None, hours=36):
     rows = [dict(r) for r in ideas.db().execute(
         "SELECT id, source, title, url, summary, angle, hook, score, lane, published FROM ideas WHERE status='new' AND score > 0 "
         "AND fetched_at >= ? ORDER BY score DESC LIMIT 80", ((daily.now() - dt.timedelta(days=2)).isoformat(),))]
-    rows = [r for r in rows if r["url"] not in used and (ideas.published_at(r["published"]) or cutoff) >= cutoff][:45]
+    rows = [r for r in rows if r["url"] not in used and (ideas.published_at(r["published"]) or cutoff) >= cutoff][:60]
+    try:
+        verdicts = memory(rows, day or (daily.now().date() + dt.timedelta(days=1)).isoformat())
+    except Exception as e:   # a failed memory call shouldn't cost the day's card: the card says it wasn't checked
+        print(f"topic memory: {e}", file=sys.stderr)
+        verdicts = None
+    removed = [r for r in rows if (verdicts or {}).get(str(r["id"]), {}).get("verdict") == "repeat"]
+    rows = [r for r in rows if r not in removed][:45]
     if len(rows) < n:
-        raise RuntimeError(f"only {len(rows)} fresh ranked stories (need {n})")
+        raise RuntimeError(f"only {len(rows)} fresh ranked stories after {len(removed)} repeats (need {n})")
+    upd = {str(r["id"]): verdicts[str(r["id"])] for r in rows if (verdicts or {}).get(str(r["id"]), {}).get("verdict") == "update"}
     listing = "\n".join(f"{r['id']} | {r['lane']} | {r['source']} | {r['title']} | {(r['summary'] or '')[:160]} | angle: {r['angle'] or '-'}"
-                        for r in rows)
+                        + (f" | UPDATE of '{upd[str(r['id'])]['covered']['headline']}' (aired {upd[str(r['id'])]['covered']['day']}): new = {upd[str(r['id'])]['new_info']}"
+                           if str(r["id"]) in upd else "") for r in rows)
     out = llm.call(f"Today is {dt.date.today().isoformat()}. {len(rows)} candidate stories (id | lane | source | title | summary | angle).\n"
                    f"Return the best {n}, most viral first.\n{listing}",
                    VIRAL_SYSTEM, VIRAL_SCHEMA, model=c.get("virality_model", "sonnet"), purpose="show.virality", effort="medium")
@@ -94,7 +122,11 @@ def candidates(n=None, hours=36):
         picked.append({"idea": r["id"], "title": title or r["title"], "url": r["url"], "summary": r["summary"] or "",
                        "outlet": outlet or daily.source_of(r["url"]), "virality": s["virality"], "headline": s["headline"],
                        "why": s["why"], "pun": s["pun"], "lane": s["lane"], "angle": r["angle"] or ""})
-    return picked[:n]
+        if str(r["id"]) in upd:
+            picked[-1]["update"] = upd[str(r["id"])]
+            if not picked[-1]["headline"].lower().startswith("update"):
+                picked[-1]["headline"] = "Update: " + picked[-1]["headline"]
+    return picked[:n], (len(removed) if verdicts is not None else None)
 
 
 def episode_number(day):
@@ -120,7 +152,7 @@ def buttons(day, n, ticked):
 def scout(day):
     """The show's topic card for a posting day: `candidates` stories, most viral first, tick boxes, Make."""
     c = cfg()
-    cands = candidates()
+    cands, removed = candidates(day=day)
     ep = episode_number(day)
     deadline = daily.at((dt.date.fromisoformat(day) - dt.timedelta(days=1)).isoformat(), daily.cfg()["auto_pick_at"])
     opts = {"show": True, "episode": ep, "list": cands, "ticked": [], "chosen": [], "pick_by": deadline.isoformat()}
@@ -131,13 +163,19 @@ def scout(day):
     when = dt.date.fromisoformat(day).strftime("%A %d %b")
     lines = [f"🗞 The Daily Habit · Ep {ep} · {when}",
              f"{len(cands)} stories, most viral first. Tick {c['min_pick']}-{c['max_pick']} for the episode, then tap Make "
-             f"(or ⭐ for my top {c['topics']}).", ""]
+             f"(or ⭐ for my top {c['topics']}).",
+             "⚠️ Topic memory couldn't run today: check for repeats yourself." if removed is None else
+             f"🧠 Topic memory: {removed} repeat{'' if removed == 1 else 's'} of the last 14 days removed." if removed else
+             "🧠 Topic memory: no repeats of the last 14 days in today's news.", ""]
     for i, s in enumerate(cands, 1):
         lines += [f"{i}. {s['headline']}  · {s['lane']} · 🔥{s['virality']}",
-                  f"   {s['why'][:130]} ({s['outlet'][:30]})", ""]
+                  f"   {s['why'][:130]} ({s['outlet'][:30]})"]
+        if s.get("update"):
+            lines.append(f"   ↪ follows Ep {s['update']['covered']['episode']} ({s['update']['covered']['day']}): {s['update']['new_info'][:110]}")
+        lines.append("")
     lines.append(f"No answer by {deadline.strftime('%H:%M %a')} and I'll make my top {c['topics']}.")
     msg = telegram.send("\n".join(lines), buttons(day, len(cands), []))
-    daily.update(day, topic_msg=msg, note=f"show topic card sent (Ep {ep}, {len(cands)} candidates)")
+    daily.update(day, topic_msg=msg, note=f"show topic card sent (Ep {ep}, {len(cands)} candidates, {removed} repeats removed)")
     return daily.get(day)
 
 
@@ -172,6 +210,10 @@ def pick(day, ticked=None, auto=False):
     o["ticked"], o["chosen"] = ticked, [o["list"][i - 1] for i in ticked]
     daily.update(day, state="picked", story=o["chosen"][0]["url"], options=json.dumps(o, ensure_ascii=False),
                  note=f"picked {len(ticked)} stories {ticked}{' (auto)' if auto else ''}")
+    try:
+        record(day, o["episode"], o["chosen"])
+    except Exception as e:   # the ledger is a memory, not a gate: a failed write must not stop the episode
+        daily.update(day, note=f"topic memory not recorded: {str(e)[:150]}")
     if run.get("topic_msg"):
         telegram.clear_buttons(run["topic_msg"])
     names = "\n".join(f"{k}. {s['headline']}" for k, s in enumerate(o["chosen"], 1))
@@ -186,9 +228,13 @@ def main():
     ap = argparse.ArgumentParser(description="The Daily Habit topic desk")
     ap.add_argument("cmd", choices=["candidates"])
     ap.add_argument("--n", type=int)
+    ap.add_argument("--day", help="the posting day the card is for (default tomorrow)")
     a = ap.parse_args()
-    for i, s in enumerate(candidates(a.n), 1):
-        print(f"{i:2}. [{s['virality']}] {s['lane']:8} {s['headline']} | {s['title'][:90]} ({s['outlet']})")
+    cands, removed = candidates(a.n, day=a.day)
+    print(f"{removed} repeats removed by topic memory")
+    for i, s in enumerate(cands, 1):
+        print(f"{i:2}. [{s['virality']}] {s['lane']:8} {s['headline']} | {s['title'][:90]} ({s['outlet']})"
+              + (f"  <- UPDATE of {s['update']['covered']['day']}: {s['update']['new_info']}" if s.get("update") else ""))
 
 
 if __name__ == "__main__":

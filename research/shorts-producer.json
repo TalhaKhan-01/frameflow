@@ -92,5 +92,11 @@
       "minutes": 1
     }
   },
-  "usage_log": "data/llm-usage.jsonl"
+  "usage_log": "data/llm-usage.jsonl",
+  "topics": {
+    "_about": "Topic memory (topics.py): aired stories, compared by meaning with each day's candidates; a repeat is dropped, an update is kept with its new development.",
+    "ledger": "research/assets/topics.jsonl",
+    "days": 14,
+    "model": "haiku"
+  }
 }
