@@ -1,18 +1,18 @@
 {
- "generated": "2026-10-28T10:39:05",
- "ideas": 1264,
- "videos_made": 7,
+ "generated": "2026-10-29T11:31:49",
+ "ideas": 1440,
+ "videos_made": 8,
  "videos_posted": 4,
- "card_posts": 4,
- "lessons": 37,
+ "card_posts": 5,
+ "lessons": 40,
  "library": 99,
- "leaves_done": 133,
- "leaves_partial": 40,
- "leaves_total": 206,
+ "leaves_done": 135,
+ "leaves_partial": 41,
+ "leaves_total": 221,
  "today": {
-  "day": "2026-10-28",
+  "day": "2026-10-29",
   "lane": "show",
-  "state": "posted"
+  "state": "posting"
  },
  "latest": {
   "title": "Microsoft offers 60,000 workers an exit | The Daily Habit",
@@ -33,21 +33,25 @@
   "instagram": "https://www.instagram.com/madebythirdspace/"
  },
  "board": {
-  "videos": 1,
+  "videos": 2,
   "one_render": 0,
   "first_render_passed": 0,
   "animatic_within_1": 0,
   "latest": {
-   "title": "Microsoft offers 60,000 workers an exit | The Daily Habit",
+   "title": "Anthropic files for IPO; Free Fire India launches",
    "renders": 0,
    "fix_rounds": 0,
-   "minutes": 13.3,
+   "minutes": 15.0,
    "animatic": null,
    "final": 18,
    "max": null,
    "desks": [
     {
      "label": "Fact-checker",
+     "gate": null
+    },
+    {
+     "label": "Packaging",
      "gate": null
     },
     {
@@ -72,84 +76,77 @@
     }
    ],
    "timeline": {
-    "seconds": 47326.0,
+    "seconds": 75889.0,
     "events": [
      {
       "t": 0.0,
-      "d": 66.0,
+      "d": 135.0,
       "desk": "factcheck",
       "label": "research + fact-check every story",
       "status": "done"
      },
      {
-      "t": 66.0,
-      "d": 412.0,
+      "t": 135.0,
+      "d": 420.0,
       "desk": "writer",
       "label": "write the rundown (writer, lints, table read)",
       "status": "done"
      },
      {
-      "t": 478.0,
-      "d": 104.0,
+      "t": 555.0,
+      "d": 113.0,
       "desk": "narrator",
       "label": "voice (narrator)",
       "status": "done"
      },
      {
-      "t": 582.0,
+      "t": 668.0,
       "d": 1.0,
       "desk": "director",
       "label": "direct (framings, package, emotions)",
       "status": "done"
      },
      {
-      "t": 583.0,
-      "d": 12.0,
+      "t": 669.0,
+      "d": 8.0,
       "desk": "sound",
       "label": "sound (stamp, theme, bed, SFX)",
       "status": "done"
      },
      {
-      "t": 595.0,
-      "d": 118.0,
+      "t": 677.0,
+      "d": 113.0,
       "desk": "render",
       "label": "render",
       "status": "done"
      },
      {
-      "t": 713.0,
-      "d": 51.0,
+      "t": 790.0,
+      "d": 61.0,
       "desk": "qc",
       "label": "QA + screening",
       "status": "done"
      },
      {
-      "t": 764.0,
-      "d": 36.0,
+      "t": 852.0,
+      "d": 14.0,
       "desk": "you",
       "label": "send video card to Telegram",
       "status": "done"
      },
      {
-      "t": 46991.0,
-      "d": 115.0,
+      "t": 866.0,
+      "d": 33.0,
+      "desk": "packaging",
+      "label": "make card post (carousel)",
+      "status": "done"
+     },
+     {
+      "t": 75889.0,
+      "d": 0.0,
       "desk": "publisher",
       "label": "post to facebook",
-      "status": "done"
-     },
-     {
-      "t": 47106.0,
-      "d": 99.0,
-      "desk": "publisher",
-      "label": "post to youtube",
-      "status": "done"
-     },
-     {
-      "t": 47205.0,
-      "d": 121.0,
-      "desk": "publisher",
-      "label": "post to instagram",
-      "status": "done"
+      "status": "running"
      }
     ]
    }
