@@ -164,6 +164,17 @@ def analogies():
     return json.loads(ANALOGIES.read_text())
 
 
+def analogy_images():
+    """The catalogue's pictures that the visual library already holds (judged once): the writer is offered only
+    these, so a chosen gag always has its picture and always looks the same. No library yet = the whole catalogue."""
+    a = analogies()
+    idx_path = ROOT / json.loads((ROOT / "research" / "visual-sourcing.json").read_text())["library"] / "index.json"
+    if not idx_path.exists():
+        return list(a["images"])
+    idx = json.loads(idx_path.read_text())
+    return [k for k, name in a["images"].items() if "photo-" + re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") in idx]
+
+
 def analogy_rules():
     a = analogies()
     tr = "\n".join(f"  {k}: {v['when']}. Fields: {v['fields']}." for k, v in a["treatments"].items())
@@ -171,7 +182,7 @@ def analogy_rules():
   truly helps (most segments: treatment "none"). It appears on screen while the witty line (or the end of the segment)
   is said, so pair it with the segment's witty line when there is one. Pick the treatment by what the line needs:
 {tr}
-  image, left, right: only these image ids: {', '.join(a['images'])}. A number in big/labels must be in the verified facts.""")
+  image, left, right: only these image ids: {', '.join(analogy_images())}. A number in big/labels must be in the verified facts.""")
 
 
 def writer_system():
@@ -281,7 +292,7 @@ def lint_analogies(script):
     for g in used:
         an, t = g["analogy"], g["analogy"]["treatment"]
         for k in a["treatments"][t]["needs"]:
-            if an.get(k) not in a["images"]:
+            if an.get(k) not in analogy_images():
                 errs.append(f"segment {g['story']}: analogy {t} needs {k} from the image list (got {an.get(k)!r})")
         if t == "stamp" and not 1 <= len(an.get("word", "")) <= 14:
             errs.append(f"segment {g['story']}: stamp word must be 1-14 characters")
@@ -829,6 +840,7 @@ def make_day(day):
 
 
 def produce(day, ep, slug, data, script, out):
+    (out / "publish.json").unlink(missing_ok=True)   # a new render gets new post text (written with its video card)
     media_by, vis_ledger = {}, []
     if cfg().get("visuals", {}).get("enabled", True):
         with progress.step("visuals: logos, photos, headline screenshots", desk="visuals") as info:

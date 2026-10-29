@@ -278,7 +278,25 @@ def video_card(day):
                              extra={"supports_streaming": "true", "width": 720, "height": 1280})
     if len(text) > 1024:
         telegram.send(text)
+    post_text_card(day, row)
     update(day, state="video-sent", video_msg=msg, note=f"video card sent (approvable: {approvable})")
+
+
+def post_text_card(day, row):
+    """The post text goes for approval with the video (P25, Talha 29 Oct): the social-caption pack is written now, not
+    at posting time, and Approve covers it. A failure here only means the pack is written at posting time as before."""
+    from frameflow import publish
+    out = Path(row["out_dir"])
+    try:
+        if not (out / "publish.json").exists():
+            publish.publish(row["id"], require=False)
+        p = json.loads((out / "publish.json").read_text())
+        telegram.send("📝 Post text (approved together with the video; Revise in your words to change it):\n\n"
+                      f"YouTube title: {p['yt_title']}\n\nYouTube description:\n{p['yt_description'][:900]}\n\n"
+                      f"Instagram / Facebook caption:\n{p['ig_caption'][:1500]}\n\nPinned comment: {p['pinned_comment']}")
+        update(day, note="post text sent with the video card")
+    except (Exception, SystemExit) as e:
+        update(day, note=f"post text not sent ({str(e)[:150]}): it is written at posting time")
 
 
 def order(day):
