@@ -376,8 +376,12 @@ CUE_SCHEMA = {"type": "object", "required": ["stories"], "properties": {"stories
 
 
 def page_for(s):
-    """The article to screenshot: the story's own link unless it is an aggregator redirect, else the first fact's source."""
-    for u in [s.get("url", "")] + [f["source"] for f in s["facts"]]:
+    """The article to screenshot: the page the verified facts come from (the source chip names it, so picture and chip
+    agree; dry run 29 Oct: an ET newsletter headline under a 'Yahoo Finance' chip), else the story's own link."""
+    key = re.sub(r"[^a-z0-9]", "", (s.get("source_name") or "").lower())
+    urls = [f["source"] for f in s["facts"]]
+    urls = sorted(urls, key=lambda u: not (key and key[:6] in re.sub(r"[^a-z0-9]", "", u.lower())))   # the chip's outlet first
+    for u in urls + [s.get("url", "")]:
         if u and "news.google.com" not in u:
             return u
     return ""
@@ -442,7 +446,7 @@ def visuals(script, data, out):
             by.setdefault(story, {})["photo"] = {"src": src, "w": r["width"], "h": r["height"],
                                                 "credit": f"Photo: {r['author'][:40]} · {r['licence']} · {r['source']}"}
         elif kind == "screenshot":
-            by.setdefault(story, {})["shot"] = {"src": src, "w": r["width"], "h": r["height"], "head": r.get("headline"),
+            by.setdefault(story, {})["shot"] = {"src": src, "w": r["width"], "h": r["height"], "head": r.get("headline"), "page": r.get("page"),
                                                "credit": f"Source: {r['source'].removeprefix('www.')}"}
         elif kind == "logo":
             by.setdefault(story, {})["logo"] = {"src": src, "name": r["name"]}
@@ -558,6 +562,10 @@ def direct(script, data, vd, ep, day, media_by=None):
         m = (media_by or {}).get(g["story"])
         if m and (m.get("photo") or m.get("shot")):   # real visuals for the first ~45% of the story, then the graphic
             seg["media"] = {**m, "dur": round(min(max(seg["dur"] * 0.45, 3.0), 5.0), 2)}
+            if m.get("shot") and m["shot"].get("page"):   # the chip names the outlet whose page is on screen
+                key = re.sub(r"[^a-z0-9]", "", seg["source"].lower())[:6]
+                if not key or key not in re.sub(r"[^a-z0-9]", "", m["shot"]["page"].lower()):
+                    seg["source"] = daily.source_of(m["shot"]["page"])
         gag = gag_for(g, seg, [w for w in words if w["s"] >= seg["start"] - 0.01 and w["s"] < seg["start"] + seg["dur"]], media_by)
         if gag:
             seg["gag"] = gag

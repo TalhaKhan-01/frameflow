@@ -386,7 +386,7 @@
         if (sh.head) {
           const [hx, hy, hw, hh] = sh.head.map((v) => v * f);
           cx = x + hx + hw / 2; cy = y + hy + hh / 2;
-          k = clamp(Math.min((BW - 40) / Math.max(hw, 1), 130 / Math.max(hh, 1)), 1, 2.6);   // as big as fits the box, never cut
+          k = clamp(Math.min(((BW - 40) / Math.max(hw, 1)) * 0.88, 130 / Math.max(hh, 1)), 1, 2.6);   // as big as fits the box with a margin (an h1 box can be narrower than its text)
           hl = el("rect", { x: x + hx - 8, y: y + hy - 4, width: hw + 16, height: hh + 8, fill: "#ffe14d", opacity: 0.5,
                             style: "mix-blend-mode:multiply" }, zoom);   // over the headline, multiplied so the text stays black
           gsap.set(hl, { svgOrigin: `${x + hx - 8} ${cy}` });
