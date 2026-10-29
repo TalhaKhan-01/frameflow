@@ -158,21 +158,27 @@ Hard rules:
 Return JSON only."""
 
 ANALOGIES = ROOT / "research" / "analogies.json"
+_SLUG = {}   # the episode being written (set by write), so the reuse rule only looks at earlier episodes
 
 
 def analogies():
     return json.loads(ANALOGIES.read_text())
 
 
-def analogy_images():
-    """The catalogue's pictures that the visual library already holds (judged once): the writer is offered only
-    these, so a chosen gag always has its picture and always looks the same. No library yet = the whole catalogue."""
+def analogy_images(before=None):
+    """The catalogue pictures the writer may use (Talha, 29 Oct): every picture, searched at make time if the library
+    doesn't hold it yet (a miss is searched again next episode; an approved picture is reused for good), minus the
+    pictures used in the last `reuse_after` episodes, so gags don't repeat. Deterministic: it depends only on the
+    catalogue and on earlier episodes' scripts."""
     a = analogies()
-    idx_path = ROOT / json.loads((ROOT / "research" / "visual-sourcing.json").read_text())["library"] / "index.json"
-    if not idx_path.exists():
-        return list(a["images"])
-    idx = json.loads(idx_path.read_text())
-    return [k for k, name in a["images"].items() if "photo-" + re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") in idx]
+    recent = set()
+    eps = sorted((d for d in OUT.glob("*-daily-habit-ep*") if (d / "script.json").exists() and (not before or d.name < before)),
+                 key=lambda d: d.name)[-a.get("reuse_after", 3):]
+    for d in eps:
+        for g in json.loads((d / "script.json").read_text()).get("segments", []):
+            an = g.get("analogy") or {}
+            recent |= {an.get(k) for k in ("image", "left", "right") if an.get(k)}
+    return [k for k in a["images"] if k not in recent]
 
 
 def analogy_rules():
@@ -182,7 +188,7 @@ def analogy_rules():
   truly helps (most segments: treatment "none"). It appears on screen while the witty line (or the end of the segment)
   is said, so pair it with the segment's witty line when there is one. Pick the treatment by what the line needs:
 {tr}
-  image, left, right: only these image ids: {', '.join(analogy_images())}. A number in big/labels must be in the verified facts.""")
+  image, left, right: only these image ids: {', '.join(analogy_images(_SLUG.get('now')))}. A number in big/labels must be in the verified facts.""")
 
 
 def writer_system():
@@ -292,7 +298,7 @@ def lint_analogies(script):
     for g in used:
         an, t = g["analogy"], g["analogy"]["treatment"]
         for k in a["treatments"][t]["needs"]:
-            if an.get(k) not in analogy_images():
+            if an.get(k) not in analogy_images(_SLUG.get("now")):
                 errs.append(f"segment {g['story']}: analogy {t} needs {k} from the image list (got {an.get(k)!r})")
         if t == "stamp" and not 1 <= len(an.get("word", "")) <= 14:
             errs.append(f"segment {g['story']}: stamp word must be 1-14 characters")
@@ -327,6 +333,7 @@ def table_read(script, data):
 
 
 def write(data, out, ep, date):
+    _SLUG["now"] = out.name
     path = out / "script.json"
     if path.exists():
         return json.loads(path.read_text())
@@ -944,6 +951,7 @@ def revise(day, notes):
     o = json.loads(run["options"])
     slug = slug_for(day, o["episode"])
     out = OUT / slug
+    _SLUG["now"] = slug   # the analogy reuse rule looks only at earlier episodes
     data, old = json.loads((out / "research.json").read_text()), json.loads((out / "script.json").read_text())
     n = len(list(out.glob("revision-*.json"))) + 1
     shutil.copy(out / "script.json", out / f"revision-{n}.before.json")

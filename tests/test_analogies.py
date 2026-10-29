@@ -36,3 +36,16 @@ def test_gag_timed_to_the_witty_line_after_media():
     assert show.gag_for(g, sg, words, {"analogy": {"rice-grain": {"src": "a.jpg"}}}) is None
     assert show.gag_for(seg(8, {"treatment": "stamp", "word": "OUCH"}), sg, words, {})["treatment"] == "stamp"
     assert show.gag_for(seg(8, {"treatment": "none"}), sg, words, pics) is None
+
+
+def test_reuse_rule_skips_pictures_of_the_last_episodes(tmp_path, monkeypatch):
+    import json
+    monkeypatch.setattr(show, "OUT", tmp_path)
+    monkeypatch.setattr(show, "analogies", lambda: {"images": {"chai": "c", "ant": "a", "snail": "s", "elephant": "e"}, "reuse_after": 2,
+                                                     "max_per_episode": 3, "treatments": {}})
+    for i, img in enumerate(["chai", "ant", "snail"], 1):
+        d = tmp_path / f"2026-11-0{i}-daily-habit-ep{i}"
+        d.mkdir()
+        (d / "script.json").write_text(json.dumps({"segments": [{"analogy": {"treatment": "photo", "image": img}}]}))
+    assert show.analogy_images("2026-11-04-daily-habit-ep4") == ["chai", "elephant"]   # ant, snail: the last 2 episodes
+    assert show.analogy_images("2026-11-03-daily-habit-ep3") == ["snail", "elephant"]   # only earlier episodes count

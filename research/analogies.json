@@ -1,5 +1,5 @@
 {
-  "_about": "P25.2.4 analogy visuals: the writer may attach ONE analogy to a segment (at most max_per_episode), picked only from these treatments and images, so the same choice always renders the same way. Where to use what: `when` is what the writer reads. Images are sourced once by visual-sourcing (judged) and reused from research/assets/visuals.",
+  "_about": "P25.2.4 analogy visuals: the writer may attach ONE analogy to a segment (at most max_per_episode), picked only from these treatments and images, so the same choice always renders the same way. Where to use what: `when` is what the writer reads. Images are sourced once by visual-sourcing (judged) and reused from research/assets/visuals. Rule (Talha, 29 Oct): every picture is offered and searched at make time; an approved one is reused from the library for good, a miss is searched again next episode; a picture used in the last reuse_after episodes is not offered.",
   "max_per_episode": 3,
   "treatments": {
     "compare": {
@@ -57,5 +57,6 @@
     "server-room": "Data center server racks",
     "school-exam": "Students writing exam",
     "monsoon-rain": "Monsoon rain in India street"
-  }
+  },
+  "reuse_after": 3
 }
