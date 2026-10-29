@@ -499,7 +499,7 @@ def narrate(script, out):
     if (vd / "words.json").exists():
         return vd
     lines = lines_of(script)
-    vs = {"engine": "chatterbox", "model": "standard", "tempo": 1.0, "seed": 7, "pad": GAP,
+    vs = {"engine": "chatterbox", "model": "standard", "tempo": 1.0, "seed": 7, "pad": GAP, "fallback": False,
           "lines": [{"id": l["id"], "say": l["say"], "energy": ENERGY.get(l["emotion"], 0.6), "beat": "hook" if l["id"] == "open" else
                      "outro" if l["id"] == "outro" else "and", "emotion": l["emotion"]} for l in lines]}
     (out / "voice-script.json").write_text(json.dumps(vs, ensure_ascii=False, indent=1))

@@ -19,6 +19,7 @@ import json
 import os
 import re
 import subprocess
+import time
 import tempfile
 import wave
 from pathlib import Path
@@ -72,11 +73,18 @@ def chatterbox_lines(lines, out, seed=7, model="standard", ref=None, timeout=180
            "lines": [{"text": text, "out": str(path), "seed": seed + i, **expression(energy), **extra} for i, (text, energy, path) in enumerate(lines)]}
     job_file = Path(out) / job_name
     job_file.write_text(json.dumps(job, ensure_ascii=False, indent=1))
-    r = subprocess.run(CHATTERBOX + [str(job_file)], capture_output=True, text=True, timeout=timeout,
-                       env=dict(os.environ, HF_HOME=str(Path("~/.cache/frameflow/hf").expanduser())))
-    if r.returncode or not all(Path(p).exists() for _, _, p in lines):
-        raise RuntimeError(f"chatterbox worker failed: {(r.stderr or r.stdout)[-1200:]}")
-    return [p for _, _, p in lines]
+    # out of GPU memory is usually another process holding the 4 GB card for a moment: wait and try again (29 Oct: Ep 3
+    # fell back to Kokoro, a different voice, on the first OOM)
+    for attempt in range(3):
+        r = subprocess.run(CHATTERBOX + [str(job_file)], capture_output=True, text=True, timeout=timeout,
+                           env=dict(os.environ, HF_HOME=str(Path("~/.cache/frameflow/hf").expanduser()),
+                                    PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"))
+        if not r.returncode and all(Path(p).exists() for _, _, p in lines):
+            return [p for _, _, p in lines]
+        if "out of memory" not in (r.stderr or r.stdout).lower() or attempt == 2:
+            break
+        time.sleep(30 * (attempt + 1))
+    raise RuntimeError(f"chatterbox worker failed: {(r.stderr or r.stdout)[-1200:]}")
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -187,7 +195,9 @@ def tts(script_path, out_dir):
                     if abs(wpm / target - 1) > pace.get("tolerance", 0.04):
                         lo, hi = pace.get("tempo_range", [0.85, 1.12])
                         finish(p.with_suffix(".raw.wav"), p, min(max(target / wpm * float(script.get("tempo", 1.0)), lo), hi))
-        except Exception as e:   # no GPU memory, worker crash: the video still gets a voice
+        except Exception as e:   # no GPU memory, worker crash: the video still gets a voice, unless the script forbids another one
+            if script.get("fallback") is False:   # the show: Habit's voice is part of the brand; stop, never swap it (Talha, 29 Oct)
+                raise RuntimeError(f"Habit's voice (Chatterbox) could not run, and the show never swaps voices: {str(e)[-300:]}") from None
             engine_used, fallback = "kokoro", str(e)[-400:]
     if engine_used == "kokoro":
         for line, p in zip(script["lines"], paths):
