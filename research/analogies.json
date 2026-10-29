@@ -1,0 +1,38 @@
+{
+  "_about": "P25.2.4 analogy visuals: the writer may attach ONE analogy to a segment (at most max_per_episode), picked only from these treatments and images, so the same choice always renders the same way. Where to use what: `when` is what the writer reads. Images are sourced once by visual-sourcing (judged) and reused from research/assets/visuals.",
+  "max_per_episode": 3,
+  "treatments": {
+    "compare": {"when": "a number or thing is hard to feel, and one everyday object makes it click (a chip the size of a rice grain; revenue = a year of chai sales)", "needs": ["left", "right"], "fields": "left: image id, right: image id, left_label, right_label (max 18 chars each), joiner: '=' or 'vs' or '≈'"},
+    "scale": {"when": "a multiplier or big count (100x cheaper, 60,000 workers): one everyday image repeated in a grid with the multiplier", "needs": ["image"], "fields": "image: image id, big: the multiplier or count as shown in the facts (e.g. '100x'), label (max 24 chars)"},
+    "photo": {"when": "the witty line names an everyday scene the viewer pictures at once (Mumbai local at 9 am, a traffic jam, a wedding baraat)", "needs": ["image"], "fields": "image: image id, caption (max 30 chars, the punchline)"},
+    "stamp": {"when": "a deadpan verdict on the story (OUCH, PLOT TWIST, BIG IF TRUE, NOT YET): a rubber stamp slams over the graphic", "needs": [], "fields": "word: 1-3 words, max 14 chars"}
+  },
+  "images": {
+    "chai": "Masala chai in a glass",
+    "cutting-chai": "Cutting chai glass India",
+    "auto-rickshaw": "Auto rickshaw India",
+    "mumbai-local": "Crowded Mumbai suburban railway train",
+    "traffic-jam": "Traffic jam in Bangalore",
+    "cricket-stadium": "Wankhede Stadium",
+    "samosa": "Samosa",
+    "pressure-cooker": "Pressure cooker",
+    "wedding-baraat": "Baraat Indian wedding procession",
+    "gold-jewellery": "Indian gold jewellery",
+    "piggy-bank": "Piggy bank",
+    "rupee-coins": "Indian rupee coins",
+    "atm-queue": "Queue at ATM India",
+    "rice-grain": "Grains of rice close up",
+    "elephant": "Indian elephant",
+    "ant": "Ant macro",
+    "snail": "Snail",
+    "cheetah": "Cheetah running",
+    "rocket-launch": "PSLV launch",
+    "mount-everest": "Mount Everest",
+    "taj-mahal": "Taj Mahal",
+    "smartphone": "Smartphone in hand",
+    "laptop": "Laptop computer",
+    "server-room": "Data center server racks",
+    "school-exam": "Students writing an examination in a hall",
+    "monsoon-rain": "Monsoon rain in India street"
+  }
+}

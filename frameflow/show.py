@@ -157,8 +157,25 @@ Hard rules:
   Every number in a graphic must be in the verified facts. Labels short (max 28 characters).
 Return JSON only."""
 
+ANALOGIES = ROOT / "research" / "analogies.json"
+
+
+def analogies():
+    return json.loads(ANALOGIES.read_text())
+
+
+def analogy_rules():
+    a = analogies()
+    tr = "\n".join(f"  {k}: {v['when']}. Fields: {v['fields']}." for k, v in a["treatments"].items())
+    return (f"""- analogy: a picture gag that makes one segment land, at most {a['max_per_episode']} in the episode and only where it
+  truly helps (most segments: treatment "none"). It appears on screen while the witty line (or the end of the segment)
+  is said, so pair it with the segment's witty line when there is one. Pick the treatment by what the line needs:
+{tr}
+  image, left, right: only these image ids: {', '.join(a['images'])}. A number in big/labels must be in the verified facts.""")
+
+
 def writer_system():
-    return WRITER_SYSTEM.replace("MAX_JOKES", str(cfg().get("max_jokes", 3)))
+    return WRITER_SYSTEM.replace("MAX_JOKES", str(cfg().get("max_jokes", 3))).replace("Return JSON only.", analogy_rules() + "\nReturn JSON only.")
 
 
 G_ITEM = {"type": "object", "properties": {"label": {"type": "string"}, "value": {"type": "string"}}}
@@ -166,7 +183,7 @@ LINE = {"type": "object", "required": ["say", "emotion"], "properties": {"say": 
 WRITER_SCHEMA = {"type": "object", "required": ["title", "breaking", "open", "segments", "outro"], "properties": {
     "title": {"type": "string"}, "breaking": {"type": "string"}, "open": LINE, "outro": LINE,
     "segments": {"type": "array", "items": {"type": "object",
-                 "required": ["story", "say", "witty", "emotion", "headline", "wall", "facts", "graphic"],
+                 "required": ["story", "say", "witty", "emotion", "headline", "wall", "facts", "graphic", "analogy"],
                  "properties": {"story": {"type": "integer"}, "say": {"type": "string"}, "witty": {"type": "string"},
                                 "emotion": {"type": "string", "enum": EMOTIONS}, "headline": {"type": "string"},
                                 "wall": {"type": "string"}, "facts": {"type": "array", "items": {"type": "string"}},
@@ -175,7 +192,13 @@ WRITER_SCHEMA = {"type": "object", "required": ["title", "breaking", "open", "se
                                     "sub": {"type": "string"}, "top": {"type": "string"}, "bottom": {"type": "string"},
                                     "kicker": {"type": "string"}, "text": {"type": "string"}, "who": {"type": "string"},
                                     "title": {"type": "string"}, "caption": {"type": "string"},
-                                    "left": G_ITEM, "right": G_ITEM, "items": {"type": "array", "items": {}}}}}}}}}
+                                    "left": G_ITEM, "right": G_ITEM, "items": {"type": "array", "items": {}}}},
+                                "analogy": {"type": "object", "required": ["treatment"], "properties": {
+                                    "treatment": {"type": "string", "enum": ["none", "compare", "scale", "photo", "stamp"]},
+                                    "image": {"type": "string"}, "left": {"type": "string"}, "right": {"type": "string"},
+                                    "left_label": {"type": "string"}, "right_label": {"type": "string"}, "joiner": {"type": "string"},
+                                    "big": {"type": "string"}, "label": {"type": "string"}, "caption": {"type": "string"},
+                                    "word": {"type": "string"}}}}}}}}
 
 
 def stories_block(data):
@@ -226,8 +249,10 @@ def lint(script, data):
             errs.append(f"segment {g['story']}: {gr['type']} graphic lacks {miss}")
         if gr["type"] == "bars" and not 2 <= len(gr.get("items") or []) <= 4:
             errs.append(f"segment {g['story']}: bars need 2-4 items")
+    errs += lint_analogies(script)
     said = " ".join(t for _, t, _, _ in lines)
-    shown = " ".join(json.dumps(g["graphic"], ensure_ascii=False) for g in script["segments"])
+    shown = " ".join(json.dumps(g["graphic"], ensure_ascii=False) for g in script["segments"]) + " " + \
+        " ".join(f"{(g.get('analogy') or {}).get('big', '')} {(g.get('analogy') or {}).get('label', '')}" for g in script["segments"])
     for what, text in (("said", said), ("shown", re.sub(r'"type": "\w+"', "", shown))):
         r = factcheck.check_script(text, {"facts": list(facts.values())})
         if not r["pass"]:
@@ -244,6 +269,25 @@ def lint(script, data):
     emos = [g["emotion"] for g in script["segments"]]
     if len(set(emos)) < 4:
         errs.append(f"emotions too samey: {emos} (use at least 4 different ones)")
+    return errs
+
+
+def lint_analogies(script):
+    a, errs = analogies(), []
+    used = [g for g in script["segments"] if (g.get("analogy") or {}).get("treatment", "none") != "none"]
+    if len(used) > a["max_per_episode"]:
+        errs.append(f"{len(used)} analogies (at most {a['max_per_episode']}: keep the ones that land best)")
+    lim = {"left_label": 18, "right_label": 18, "label": 24, "caption": 30, "word": 14}
+    for g in used:
+        an, t = g["analogy"], g["analogy"]["treatment"]
+        for k in a["treatments"][t]["needs"]:
+            if an.get(k) not in a["images"]:
+                errs.append(f"segment {g['story']}: analogy {t} needs {k} from the image list (got {an.get(k)!r})")
+        if t == "stamp" and not 1 <= len(an.get("word", "")) <= 14:
+            errs.append(f"segment {g['story']}: stamp word must be 1-14 characters")
+        if t == "scale" and not an.get("big"):
+            errs.append(f"segment {g['story']}: scale needs big (the multiplier or count)")
+        errs += [f"segment {g['story']}: analogy {k} over {n} characters" for k, n in lim.items() if len(an.get(k) or "") > n]
     return errs
 
 
@@ -329,13 +373,17 @@ def page_for(s):
 
 
 def visuals(script, data, out):
+    """Cues for every story (subject photo, logo, the source's headline) and every analogy image -> visual-sourcing.
+    Cues already in the ledger are kept (a revise only fetches what is new); the skill's library keeps picks stable."""
     vdir = out / "visuals"
-    led_path = vdir / "ledger.json"
-    if not led_path.exists():
-        stories = {s["story"]: s for s in data["stories"]}
+    vdir.mkdir(parents=True, exist_ok=True)
+    led_path, cue_path = vdir / "ledger.json", vdir / "cues.json"
+    ledger = json.loads(led_path.read_text()) if led_path.exists() else []
+    cues = json.loads(cue_path.read_text()) if cue_path.exists() else []
+    stories = {s["story"]: s for s in data["stories"]}
+    if not cues:
         ask = "\n".join(f"STORY {g['story']}: {stories[g['story']]['headline']} | {g['say']}" for g in script["segments"])
         picks = llm.call(ask, CUE_SYSTEM, CUE_SCHEMA, model=cfg().get("visuals", {}).get("model", "haiku"), purpose="show.visual-cues", timeout=600)
-        cues = []
         for p in picks["stories"]:
             s = stories.get(p["story"])
             if not s:
@@ -347,17 +395,38 @@ def visuals(script, data, out):
                 cues.append({"id": f"s{p['story']}-logo", "kind": "logo", "name": p["logo"]})
             if page_for(s):
                 cues.append({"id": f"s{p['story']}-shot", "kind": "screenshot", "url": page_for(s)})
-        vdir.mkdir(parents=True, exist_ok=True)
-        (vdir / "cues.json").write_text(json.dumps(cues, ensure_ascii=False, indent=1))
+    imgs = analogies()["images"]
+    for g in script["segments"]:   # analogy images: fixed catalogue names, so the library returns the same picture
+        an = g.get("analogy") or {}
+        for k in ("image", "left", "right"):
+            iid = an.get(k)
+            if iid in imgs and not any(c["id"] == f"a-{iid}" for c in cues):
+                cues.append({"id": f"a-{iid}", "kind": "photo", "name": imgs[iid], "context": "an everyday picture for a visual analogy in an Indian news Short"})
+    cue_path.write_text(json.dumps(cues, ensure_ascii=False, indent=1))
+    have = {r["id"] for r in ledger}
+    todo = [c for c in cues if c["id"] not in have]
+    if todo:
         from frameflow import direct as directmod
-        directmod.skill([VISUALS, "--project", ROOT, "find", vdir / "cues.json", "--out", vdir], timeout=1800, strict=True)
-    ledger = json.loads(led_path.read_text())
+        batch = vdir / f"batch-{len(list(vdir.glob('batch-*'))) + 1}"
+        batch.mkdir()
+        (batch / "cues.json").write_text(json.dumps(todo, ensure_ascii=False, indent=1))
+        directmod.skill([VISUALS, "--project", ROOT, "find", batch / "cues.json", "--out", batch], timeout=1800, strict=True)
+        for r in json.loads((batch / "ledger.json").read_text()):
+            if not r.get("missing"):
+                shutil.move(str(batch / r["file"]), vdir / r["file"])
+            ledger.append(r)
+        shutil.rmtree(batch)
+        led_path.write_text(json.dumps(ledger, ensure_ascii=False, indent=1))
     by = {}
     for r in ledger:
         if r.get("missing"):
             continue
-        story, kind = int(r["id"].split("-")[0][1:]), r["kind"]
         src = f"assets/media/{r['file']}"
+        if r["id"].startswith("a-"):
+            by.setdefault("analogy", {})[r["id"][2:]] = {"src": src, "w": r.get("width"), "h": r.get("height"),
+                                                         "credit": f"{r['author'][:30]} · {r['licence']}"}
+            continue
+        story, kind = int(r["id"].split("-")[0][1:]), r["kind"]
         if kind == "photo":
             by.setdefault(story, {})["photo"] = {"src": src, "w": r["width"], "h": r["height"],
                                                 "credit": f"Photo: {r['author'][:40]} · {r['licence']} · {r['source']}"}
@@ -367,6 +436,29 @@ def visuals(script, data, out):
         elif kind == "logo":
             by.setdefault(story, {})["logo"] = {"src": src, "name": r["name"]}
     return by, ledger
+
+
+def gag_for(g, seg, mine_words, media_by):
+    """The segment's analogy as a render spec, timed to the witty line (or 55% of the segment), after the real visuals."""
+    an = g.get("analogy") or {}
+    t = an.get("treatment", "none")
+    if t == "none":
+        return None
+    pics = (media_by or {}).get("analogy", {})
+    spec = {"treatment": t, **{k: an.get(k, "") for k in ("left_label", "right_label", "joiner", "big", "label", "caption", "word")}}
+    for k in analogies()["treatments"][t]["needs"]:
+        if an.get(k) not in pics:
+            return None   # its picture wasn't found: no half gag
+        spec[k] = pics[an[k]]
+    at = seg["dur"] * 0.55
+    if g.get("witty") and g["witty"].strip() in g["say"] and mine_words:
+        k = words(g["say"][:g["say"].index(g["witty"].strip())])
+        if k < len(mine_words):
+            at = mine_words[k]["s"] - seg["start"]
+    lo = (seg.get("media") or {}).get("dur", 0) + 0.3
+    spec["dur"] = 2.4
+    spec["at"] = round(min(max(at, lo), seg["dur"] - spec["dur"] - 0.2), 2)
+    return spec if spec["at"] >= lo - 0.01 else None
 
 
 # ---------- narrator ----------
@@ -455,6 +547,9 @@ def direct(script, data, vd, ep, day, media_by=None):
         m = (media_by or {}).get(g["story"])
         if m and (m.get("photo") or m.get("shot")):   # real visuals for the first ~45% of the story, then the graphic
             seg["media"] = {**m, "dur": round(min(max(seg["dur"] * 0.45, 3.0), 5.0), 2)}
+        gag = gag_for(g, seg, [w for w in words if w["s"] >= seg["start"] - 0.01 and w["s"] < seg["start"] + seg["dur"]], media_by)
+        if gag:
+            seg["gag"] = gag
     c["tickerAt"] = round(t + 0.2, 3)
     place("outro", {"shot": "wide", "emotion": script["outro"]["emotion"], "wall": "SEE YOU", "wallSub": "TOMORROW"})
     c["endAt"] = round(segs[-1]["start"] + D["outro"]["seconds"] - 0.2, 3)
@@ -546,12 +641,21 @@ def mix(c, voice_at, out):
         if not s.get("topic"):
             continue
         sheet.append({"t": s["start"] - 0.05, "name": "whoosh", "gain": -16})
+        g0 = s["start"] + (s["media"]["dur"] if s.get("media") else 0)   # the graphic enters after the real visuals
+        if s.get("media"):
+            sheet.append({"t": s["start"] + 0.5, "name": "pop", "gain": -20})   # the logo badge
+            sheet.append({"t": g0 - 0.15, "name": "whoosh", "gain": -20})
         if s.get("g"):
-            sheet.append({"t": s["start"] + 0.2, "name": "pop", "gain": -18})
+            sheet.append({"t": g0 + 0.2, "name": "pop", "gain": -18})
             if s["g"]["type"] in ("stat", "versus", "bars"):
-                sheet.append({"t": s["start"] + 1.4, "name": "ding", "gain": -22})
+                sheet.append({"t": g0 + 1.4, "name": "ding", "gain": -22})
             if s["g"]["type"] == "headline":
-                sheet.append({"t": s["start"] + 0.3, "name": "slam", "gain": -16})
+                sheet.append({"t": g0 + 0.3, "name": "slam", "gain": -16})
+        if s.get("gag"):   # analogy visuals (P25.2.4): one fixed sound per treatment
+            t = s["start"] + s["gag"]["at"]
+            sheet.append({"t": t, "name": {"stamp": "slam", "scale": "pop", "compare": "whoosh", "photo": "whoosh"}[s["gag"]["treatment"]], "gain": -16})
+            if s["gag"]["treatment"] == "compare":
+                sheet.append({"t": t + 0.7, "name": "ding", "gain": -22})
         for off, _ in s.get("shots", [])[1:]:
             sheet.append({"t": s["start"] + off - 0.1, "name": "whoosh", "gain": -20})
         for sec in (3, 2, 1):   # countdown ticks into the next topic

@@ -418,6 +418,55 @@
     };
   }
 
+  // ---------- analogy gags (P25.2.4): four fixed recipes, picked by the writer from research/analogies.json ----------
+  // a = {treatment, at, dur, image|left|right: {src, credit}, left_label, right_label, joiner, big, label, caption, word}
+  function gagBuilder(S) {
+    const BX = 60, BY = 300, BW = 960, BH = 680;
+    let n = 0;
+    const pic = (g, p, x, y, w, h, r = 20) => {
+      const id = `gclip${n++}`;
+      el("rect", { x, y, width: w, height: h, rx: r }, el("clipPath", { id }, el("defs", {}, g)));
+      el("rect", { x: x - 5, y: y - 5, width: w + 10, height: h + 10, rx: r + 4, fill: S.ink }, g);
+      return el("image", { href: p.src, x, y, width: w, height: h, preserveAspectRatio: "xMidYMid slice", "clip-path": `url(#${id})` }, g);
+    };
+    const label = (g, x, y, s, size, fill = S.text, maxW = 420) => { const t = txt(g, x, y, String(s || "").toUpperCase(), { size, font: S.body, fill, weight: 800, spacing: 1 }); fit(t, maxW, size); return t; };
+    const pop = (tl, node, t, ox, oy, d = 0.35) => { gsap.set(node, { svgOrigin: `${ox} ${oy}` }); tl.fromTo(node, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: d, ease: "back.out(2)" }, t); };
+    return function gag(g, tl, t0, a) {
+      const back = el("rect", { x: BX, y: BY, width: BW, height: BH, rx: 22, fill: S.bg, stroke: S.ink, "stroke-width": a.treatment === "stamp" ? 0 : 5,
+                                opacity: a.treatment === "stamp" ? 0 : 1 }, g);
+      if (a.treatment !== "stamp") tl.fromTo(back, { opacity: 0 }, { opacity: 1, duration: 0.2 }, t0);
+      if (a.treatment === "compare") {
+        const L = el("g", {}, g), R = el("g", {}, g);
+        pic(L, a.left, 110, 360, 360, 360); label(L, 290, 790, a.left_label, 40);
+        pic(R, a.right, 610, 360, 360, 360); label(R, 790, 790, a.right_label, 40);
+        const j = txt(g, 540, 560, a.joiner || "=", { size: 120, font: S.head, fill: S.red, weight: 900 });
+        pop(tl, L, t0 + 0.05, 290, 540); pop(tl, j, t0 + 0.45, 540, 560); pop(tl, R, t0 + 0.7, 790, 540);
+      } else if (a.treatment === "scale") {
+        const big = txt(g, 540, 400, a.big || "", { size: 130, font: S.head, fill: S.red, weight: 900 }); fit(big, 900, 130);
+        pop(tl, big, t0 + 0.05, 540, 400);
+        const cells = el("g", {}, g);
+        for (let i = 0; i < 12; i++) { const c = el("g", {}, cells); pic(c, a.image, 132 + (i % 6) * 140, 500 + Math.floor(i / 6) * 150, 116, 116, 14); pop(tl, c, t0 + 0.3 + i * 0.07, 190 + (i % 6) * 140, 558 + Math.floor(i / 6) * 150, 0.25); }
+        const l = label(g, 540, 850, a.label, 42, S.text, 900); tl.fromTo(l, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t0 + 1.2);
+      } else if (a.treatment === "photo") {
+        const im = pic(g, a.image, BX + 20, BY + 20, BW - 40, BH - 40, 18);
+        gsap.set(im, { svgOrigin: `540 640` });
+        tl.fromTo(im, { scale: 1.15, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power3.out" }, t0);
+        const bar = el("g", {}, g);
+        el("rect", { x: BX + 20, y: BY + BH - 150, width: BW - 40, height: 110, fill: S.red }, bar);
+        const c = txt(bar, 540, BY + BH - 95, String(a.caption || "").toUpperCase(), { size: 56, font: S.head, fill: S.textOnRed, weight: 900 }); fit(c, BW - 100, 56);
+        tl.fromTo(bar, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, t0 + 0.4);
+      } else {   // stamp: slams over whatever is on screen
+        const st = el("g", { transform: "rotate(-12 540 640)" }, g);
+        const w = Math.max(360, 64 * String(a.word).length + 80);
+        el("rect", { x: 540 - w / 2, y: 560, width: w, height: 160, rx: 14, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
+        const t = txt(st, 540, 642, String(a.word || "").toUpperCase(), { size: 110, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 60, 110);
+        gsap.set(st, { svgOrigin: "540 640" });
+        tl.fromTo(st, { scale: 3, opacity: 0 }, { scale: 1, opacity: 0.92, duration: 0.18, ease: "power4.in" }, t0);
+      }
+      tl.to(g, { opacity: 0, duration: 0.25 }, t0 + a.dur - 0.25);
+    };
+  }
+
   window.SHOW = { build(cfg) {
     const S = SETS[cfg.set];
     const q = (f) => f.replace(/"/g, "'");   // font names inside an innerHTML style="..." attribute
@@ -437,13 +486,20 @@
     if (cfg.set === "night") { for (let x = 0; x < W; x += 60) el("rect", { x, y: 0, width: 1, height: H, fill: "#151b36" }, visSvg); for (let y = 0; y < H; y += 60) el("rect", { x: 0, y, width: W, height: 1, fill: "#151b36" }, visSvg); }
     const G = graphics(S, cfg);
     const media = mediaBuilder(S);
+    const gag = gagBuilder(S);
     const groups = cfg.segments.map((seg, si) => {
       const hasG = seg.g && G[seg.g.type];
-      if (!hasG && !seg.media) return null;
+      if (!hasG && !seg.media && !seg.gag) return null;
       const g = el("g", {}, visSvg);
       const m = seg.media ? seg.media.dur : 0;   // real visuals first (P25.2.2), then the data graphic
-      if (hasG) G[seg.g.type](el("g", { filter: look(S) }, g), tl, seg.start + 0.15 + m, seg.g);
+      const gr = hasG ? el("g", { filter: look(S) }, g) : null;
+      if (hasG) G[seg.g.type](gr, tl, seg.start + 0.15 + m, seg.g);
       if (seg.media) media(el("g", {}, g), tl, seg.start + 0.15, seg.media, si);
+      if (seg.gag) {   // the graphic steps back while the gag is on (a stamp over live text read as a clash)
+        const a0 = seg.start + seg.gag.at, gg = el("g", {}, g);
+        gsap.set(gg, { opacity: 0 }); tl.set(gg, { opacity: 1 }, a0); gag(gg, tl, a0, seg.gag);
+        if (gr) { tl.to(gr, { opacity: seg.gag.treatment === "stamp" ? 0.12 : 0, duration: 0.15 }, a0); tl.to(gr, { opacity: 1, duration: 0.2 }, a0 + seg.gag.dur - 0.2); }
+      }
       return g;
     });
 
