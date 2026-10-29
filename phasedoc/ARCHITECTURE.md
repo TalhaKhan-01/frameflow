@@ -128,6 +128,14 @@ The top row is the groundwork. The two rows below are the daily pipeline, from a
 | `betadoc` | Story page, documentation and narrated tour | P13 |
 | `control` | Frameflow Control panel (127.0.0.1:7310): controls, connection lights, Making view | P14 |
 | `studio` | The studio board: desks with gates, animatic, one delivery render, showrunner Revise, analyst | P15 |
+| `showrunner` | shorts-producer skill: Revise change orders and topic memory (no story twice in 14 days) | P25 |
+| `visuals` | visual-sourcing skill (logos, judged photos, headline screenshots, licence tiers, library) + the show's media layer and analogy gags | P25 |
+| `narrator` | voice-narrate skill (planned) | P25 |
+| `editor` | video-editor skill: assembly and the one render (planned) | P25 |
+| `critic` | video-critic skill: table read + screening (planned) | P25 |
+| `integrity` | video-integrity skill: facts + standards + QC (planned) | P25 |
+| `publisher` | social-publisher skill: posting + 48 h analyst (planned) | P25 |
+| `docs` | README, vault, betadoc and Studio pages kept in step with the system | P25 |
 
 ## The pipeline as it runs today (2026-10-27): the studio board
 The day (P10, `frameflow.daily` driven by the bot's tick): **14:00** topic card (3 stories, lane rotation tech → AI → money) → pick, or auto-pick at **15:00** → make → video card on Telegram (Approve / Approve anyway / Revise / Reject) → **11:30** next day: YouTube (The Pilot in Studio), Facebook and Instagram (API; The Pilot while the Meta token is blocked) and the card post → links → +48 h stats card → lessons → asset library → cleanup.
@@ -143,3 +151,6 @@ A make (`videos.make2` → `board.make`, P15), every desk's gate before the next
 Models: the **lean** profile (Opus/high only for the draft, storyboard and animatic screening; Sonnet/medium for hooks and fixes; Haiku for small jobs), ~405k tokens a video with both fix rounds (vault Docs/Token Budget.md).
 
 One bar for every desk: `research/quality-bar.json`; one re-hook definition (`qa.is_rehook`) for QA, the narrator checks and the writer's lint. Progress per step: `logs/progress-<day>.jsonl` (control panel Making view, Studio Board tab).
+
+## P25 (2026-10-29): the show's flow with the first new skills
+14:00 `showdesk.scout` → `shorts-producer topics.py filter` (repeats of the last 14 days removed, follow-ups labelled) → the topic card → pick → `show.make_day`: research + fact-check per story → rundown writer (analogy ids only from `research/analogies.json` and the visual library) → `hookpick.pick` (10 opens on Telegram, waits on `hooks.json`, 20 min → hook 1) → `show.produce`: `show.visuals` (Haiku names each story's subject and logo → `visual-sourcing find`: Simple Icons / Commons / Openverse / site icon, Playwright headline capture, vision judge, library) → voice → `show.direct` (media first, then the data graphic, gag at the witty line) → sound (bed: Sneaky Snitch from Ep 3) → render (`show.js` media + gag layers) → QA + screening → `daily.video_card` + `post_text_card` (social-caption pack) → carousel. `showdesk.pick` records the aired stories in the topic ledger.
