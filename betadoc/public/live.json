@@ -1,8 +1,8 @@
 {
- "generated": "2026-10-30T11:32:57",
+ "generated": "2026-10-30T11:36:46",
  "ideas": 1676,
  "videos_made": 9,
- "videos_posted": 5,
+ "videos_posted": 6,
  "card_posts": 5,
  "lessons": 43,
  "library": 136,
@@ -12,18 +12,18 @@
  "today": {
   "day": "2026-10-30",
   "lane": "show",
-  "state": "posting"
+  "state": "posted"
  },
  "latest": {
-  "title": "Anthropic files for IPO; Free Fire India launches",
+  "title": "Apple's Touchscreen MacBook Pro Starts at $2,899",
   "lane": "Tech",
   "seconds": null,
   "lufs": null,
   "wpm": null,
-  "review_total": 18,
+  "review_total": 17,
   "links": {
-   "youtube": "https://youtube.com/shorts/-tx3o2r-baw",
-   "instagram": "https://www.instagram.com/reel/DfEUxZoNzrM/"
+   "youtube": "https://youtube.com/shorts/Ym8g61b5k2A",
+   "instagram": "https://www.instagram.com/reel/DfG5ZPcMwQS/"
   },
   "gates": {},
   "media": {}
@@ -76,7 +76,7 @@
     }
    ],
    "timeline": {
-    "seconds": 74488.0,
+    "seconds": 74742.0,
     "events": [
      {
       "t": 1.0,
@@ -171,10 +171,17 @@
      },
      {
       "t": 74488.0,
-      "d": 0.0,
+      "d": 113.0,
       "desk": "publisher",
       "label": "post to youtube",
-      "status": "running"
+      "status": "done"
+     },
+     {
+      "t": 74601.0,
+      "d": 141.0,
+      "desk": "publisher",
+      "label": "post to instagram",
+      "status": "done"
      }
     ]
    }
