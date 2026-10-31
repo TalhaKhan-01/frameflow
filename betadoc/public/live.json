@@ -1,8 +1,8 @@
 {
- "generated": "2026-10-30T11:36:46",
- "ideas": 1676,
- "videos_made": 9,
- "videos_posted": 6,
+ "generated": "2026-10-31T11:45:14",
+ "ideas": 1880,
+ "videos_made": 10,
+ "videos_posted": 7,
  "card_posts": 5,
  "lessons": 43,
  "library": 136,
@@ -10,20 +10,20 @@
  "leaves_partial": 43,
  "leaves_total": 222,
  "today": {
-  "day": "2026-10-30",
+  "day": "2026-10-31",
   "lane": "show",
   "state": "posted"
  },
  "latest": {
-  "title": "Apple's Touchscreen MacBook Pro Starts at $2,899",
+  "title": "Binance's $6.3B Breach, Claude Reports & UPI | Daily Habit",
   "lane": "Tech",
   "seconds": null,
   "lufs": null,
   "wpm": null,
   "review_total": 17,
   "links": {
-   "youtube": "https://youtube.com/shorts/Ym8g61b5k2A",
-   "instagram": "https://www.instagram.com/reel/DfG5ZPcMwQS/"
+   "youtube": "https://youtube.com/shorts/ZAmWqCccM4E",
+   "instagram": "https://www.instagram.com/reel/DfJeMwUOjke/"
   },
   "gates": {},
   "media": {}
@@ -33,15 +33,15 @@
   "instagram": "https://www.instagram.com/madebythirdspace/"
  },
  "board": {
-  "videos": 3,
+  "videos": 4,
   "one_render": 0,
   "first_render_passed": 0,
   "animatic_within_1": 0,
   "latest": {
-   "title": "Apple's Touchscreen MacBook Pro Starts at $2,899",
+   "title": "Binance's $6.3B Breach, Claude Reports & UPI | Daily Habit",
    "renders": 0,
    "fix_rounds": 0,
-   "minutes": 24.6,
+   "minutes": 39.2,
    "animatic": null,
    "final": 17,
    "max": null,
@@ -76,109 +76,109 @@
     }
    ],
    "timeline": {
-    "seconds": 74742.0,
+    "seconds": 74697.0,
     "events": [
      {
-      "t": 1.0,
-      "d": 152.0,
+      "t": 0.0,
+      "d": 159.0,
       "desk": "factcheck",
       "label": "research + fact-check every story",
       "status": "done"
      },
      {
-      "t": 153.0,
-      "d": 459.0,
+      "t": 159.0,
+      "d": 397.0,
       "desk": "writer",
       "label": "write the rundown (writer, lints, table read)",
       "status": "done"
      },
      {
-      "t": 612.0,
-      "d": 51.0,
+      "t": 556.0,
+      "d": 42.0,
       "desk": "writer",
       "label": "hooks: 10 opens for the hook card",
       "status": "done"
      },
      {
-      "t": 664.0,
-      "d": 40.0,
+      "t": 598.0,
+      "d": 1202.0,
       "desk": "writer",
       "label": "hooks: waiting for Talha's pick",
       "status": "done"
      },
      {
-      "t": 704.0,
-      "d": 308.0,
+      "t": 1800.0,
+      "d": 199.0,
       "desk": "visuals",
       "label": "visuals: logos, photos, headline screenshots",
       "status": "done"
      },
      {
-      "t": 1012.0,
-      "d": 140.0,
+      "t": 1999.0,
+      "d": 125.0,
       "desk": "narrator",
       "label": "voice (narrator)",
       "status": "done"
      },
      {
-      "t": 1152.0,
-      "d": 2.0,
+      "t": 2124.0,
+      "d": 1.0,
       "desk": "director",
       "label": "direct (framings, package, emotions)",
       "status": "done"
      },
      {
-      "t": 1154.0,
-      "d": 11.0,
+      "t": 2125.0,
+      "d": 9.0,
       "desk": "sound",
       "label": "sound (stamp, theme, bed, SFX)",
       "status": "done"
      },
      {
-      "t": 1165.0,
-      "d": 149.0,
+      "t": 2134.0,
+      "d": 116.0,
       "desk": "render",
       "label": "render",
       "status": "done"
      },
      {
-      "t": 1314.0,
-      "d": 62.0,
+      "t": 2250.0,
+      "d": 48.0,
       "desk": "qc",
       "label": "QA + screening",
       "status": "done"
      },
      {
-      "t": 1377.0,
-      "d": 51.0,
+      "t": 2299.0,
+      "d": 27.0,
       "desk": "you",
       "label": "send video card to Telegram",
       "status": "done"
      },
      {
-      "t": 1428.0,
-      "d": 48.0,
+      "t": 2326.0,
+      "d": 27.0,
       "desk": "packaging",
       "label": "make card post (carousel)",
-      "status": "done"
+      "status": "failed"
      },
      {
-      "t": 74344.0,
-      "d": 144.0,
+      "t": 73805.0,
+      "d": 108.0,
       "desk": "publisher",
       "label": "post to facebook",
       "status": "done"
      },
      {
-      "t": 74488.0,
-      "d": 113.0,
+      "t": 73913.0,
+      "d": 137.0,
       "desk": "publisher",
       "label": "post to youtube",
       "status": "done"
      },
      {
-      "t": 74601.0,
-      "d": 141.0,
+      "t": 74050.0,
+      "d": 647.0,
       "desk": "publisher",
       "label": "post to instagram",
       "status": "done"
