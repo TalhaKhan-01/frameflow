@@ -1,8 +1,8 @@
 {
- "generated": "2026-11-03T11:35:11",
+ "generated": "2026-11-03T11:38:39",
  "ideas": 2377,
  "videos_made": 11,
- "videos_posted": 7,
+ "videos_posted": 8,
  "card_posts": 6,
  "lessons": 46,
  "library": 136,
@@ -12,18 +12,18 @@
  "today": {
   "day": "2026-11-03",
   "lane": "show",
-  "state": "posting"
+  "state": "posted"
  },
  "latest": {
-  "title": "Binance's $6.3B Breach, Claude Reports & UPI | Daily Habit",
+  "title": "FBI Ties North Korea to $6.3B Binance Heist | Daily Habit",
   "lane": "Tech",
   "seconds": null,
   "lufs": null,
   "wpm": null,
   "review_total": 17,
   "links": {
-   "youtube": "https://youtube.com/shorts/ZAmWqCccM4E",
-   "instagram": "https://www.instagram.com/reel/DfJeMwUOjke/"
+   "youtube": "https://youtube.com/shorts/7yuuBW2T120",
+   "instagram": "https://www.instagram.com/reel/DfRM2zBtBbs/"
   },
   "gates": {},
   "media": {}
@@ -76,7 +76,7 @@
     }
    ],
    "timeline": {
-    "seconds": 73924.0,
+    "seconds": 74301.0,
     "events": [
      {
       "t": 0.0,
@@ -171,10 +171,17 @@
      },
      {
       "t": 73924.0,
-      "d": 0.0,
+      "d": 263.0,
       "desk": "publisher",
       "label": "post to youtube",
-      "status": "running"
+      "status": "done"
+     },
+     {
+      "t": 74187.0,
+      "d": 114.0,
+      "desk": "publisher",
+      "label": "post to instagram",
+      "status": "done"
      }
     ]
    }
