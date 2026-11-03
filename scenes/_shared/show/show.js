@@ -129,20 +129,21 @@
     if (cfg.set === "riso") {
       el("rect", { x: 60, y: 1320, width: 960, height: 30, fill: S.ink }, g);
       el("rect", { x: 90, y: 1350, width: 900, height: 380, fill: S.red }, g);
-      FF.pixelText(g, 540, 1470, "THE DAILY HABIT", 12, "p");
+      FF.pixelText(el("g", { class: "mark" }, g), 540, 1470, "THE DAILY HABIT", 12, "p");
       for (let i = 0; i < 9; i++) el("rect", { x: 110 + i * 100, y: 1600, width: 60, height: 12, fill: S.bg }, g);
-      FF.pixel(g, ["kkkkk", "kpppk.", "kpppkk", "kpppk.", ".kkk."], 760, 1250, 12, { p: S.bg });   // chai cup
+      FF.pixel(g, ["kkkkk", "kpppk.", "kpppkk", "kpppk.", ".kkk."], 250, 1250, 12, { p: S.bg });   // chai cup (left: the right edge is the platform buttons)
     } else if (cfg.set === "paper") {
       el("path", { d: "M 70 1325 L 1010 1318 L 990 1360 L 90 1365 Z", fill: "#3b3743" }, g);
       el("path", { d: "M 95 1362 L 985 1356 L 975 1730 L 105 1735 Z", fill: S.red }, g);
-      txt(g, 540, 1470, "The Daily Habit", { size: 92, font: S.head, fill: "#fbf8f1", weight: 800 });
-      txt(g, 540, 1560, "A THIRDSPACE PRODUCTION", { size: 30, font: S.body, fill: "#fbf8f1", weight: 600, spacing: 6 });
-      el("rect", { x: 740, y: 1240, width: 70, height: 84, rx: 8, fill: "#fbf8f1", stroke: S.ink, "stroke-width": 4 }, g);
+      const mk = el("g", { class: "mark" }, g);
+      txt(mk, 540, 1470, "The Daily Habit", { size: 92, font: S.head, fill: "#fbf8f1", weight: 800 });
+      txt(mk, 540, 1560, "A THIRDSPACE PRODUCTION", { size: 30, font: S.body, fill: "#fbf8f1", weight: 600, spacing: 6 });
+      el("rect", { x: 270, y: 1240, width: 70, height: 84, rx: 8, fill: "#fbf8f1", stroke: S.ink, "stroke-width": 4 }, g);   // mug, left of Habit
     } else {
       el("rect", { x: 70, y: 1318, width: 940, height: 26, rx: 6, fill: "#1d2442" }, g);
       el("rect", { x: 70, y: 1318, width: 940, height: 4, fill: S.blue }, g);
       el("rect", { x: 100, y: 1344, width: 880, height: 390, rx: 10, fill: "#10142a", stroke: S.red, "stroke-width": 4 }, g);
-      txt(g, 540, 1470, "THE DAILY HABIT", { size: 84, font: S.head, fill: S.ink, weight: 700, spacing: 6 });
+      txt(el("g", { class: "mark" }, g), 540, 1470, "THE DAILY HABIT", { size: 84, font: S.head, fill: S.ink, weight: 700, spacing: 6 });
       el("rect", { x: 300, y: 1530, width: 480, height: 5, fill: S.red }, g);
     }
     return g;
@@ -392,8 +393,7 @@
           gsap.set(hl, { svgOrigin: `${x + hx - 8} ${cy}` });
         }
         gsap.set(zoom, { svgOrigin: `${cx} ${cy}` });
-        credit(L, sh.credit);
-        layers.push({ L, run: (a, b) => {
+        layers.push({ L, run: (a, b) => {   // no credit bar: the source chip names the outlet (screening: a duplicate source)
           tl.fromTo(zoom, { scale: 1, x: 0, y: 0 }, { scale: k, x: BX + BW / 2 - cx, y: BY + BH / 2 - cy, duration: Math.min(1.2, (b - a) * 0.6), ease: "power2.inOut" }, a + 0.1);
           if (hl) tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, a + 0.5);
         } });
@@ -422,9 +422,10 @@
       });
       if (m.logo) {   // logo badge, top left of the box, pops in after the first beat
         const lg = el("g", {}, frame);
-        el("rect", { x: BX + 24, y: BY + 24, width: 250, height: 150, rx: 18, fill: "#ffffff", stroke: S.ink, "stroke-width": 5 }, lg);
-        el("image", { href: m.logo.src, x: BX + 44, y: BY + 44, width: 210, height: 110, preserveAspectRatio: "xMidYMid meet" }, lg);
-        gsap.set(lg, { svgOrigin: `${BX + 149} ${BY + 99}` });
+        const ly = BY - 46, lx = BX + BW - 236;   // straddles the box's top-right corner: over the site's nav bar, never its text
+        el("rect", { x: lx, y: ly, width: 220, height: 130, rx: 18, fill: "#ffffff", stroke: S.ink, "stroke-width": 5 }, lg);
+        el("image", { href: m.logo.src, x: lx + 18, y: ly + 18, width: 184, height: 94, preserveAspectRatio: "xMidYMid meet" }, lg);
+        gsap.set(lg, { svgOrigin: `${lx + 110} ${ly + 65}` });
         tl.fromTo(lg, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2.2)" }, t0 + 0.35);
       }
       gsap.set(frame, { svgOrigin: `${BX + BW / 2} ${BY + BH / 2}` });
@@ -471,11 +472,11 @@
         const c = txt(bar, 540, BY + BH - 95, String(a.caption || "").toUpperCase(), { size: 56, font: S.head, fill: S.textOnRed, weight: 900 }); fit(c, BW - 100, 56);
         tl.fromTo(bar, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, t0 + 0.4);
       } else {   // stamp: slams over whatever is on screen
-        const st = el("g", { transform: "rotate(-12 540 640)" }, g);
-        const w = Math.max(360, 64 * String(a.word).length + 80);
-        el("rect", { x: 540 - w / 2, y: 560, width: w, height: 160, rx: 14, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
-        const t = txt(st, 540, 642, String(a.word || "").toUpperCase(), { size: 110, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 60, 110);
-        gsap.set(st, { svgOrigin: "540 640" });
+        const st = el("g", { transform: "rotate(-5 540 930)" }, g);   // low in the box, so the number above stays clear
+        const w = Math.max(300, 50 * String(a.word).length + 70);
+        el("rect", { x: 540 - w / 2, y: 885, width: w, height: 96, rx: 14, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
+        const t = txt(st, 540, 935, String(a.word || "").toUpperCase(), { size: 70, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 50, 70);
+        gsap.set(st, { svgOrigin: "540 930" });
         tl.fromTo(st, { scale: 3, opacity: 0 }, { scale: 1, opacity: 0.92, duration: 0.18, ease: "power4.in" }, t0);
       }
       tl.to(g, { opacity: 0, duration: 0.25 }, t0 + a.dur - 0.25);
@@ -513,7 +514,7 @@
       if (seg.gag) {   // the graphic steps back while the gag is on (a stamp over live text read as a clash)
         const a0 = seg.start + seg.gag.at, gg = el("g", {}, g);
         gsap.set(gg, { opacity: 0 }); tl.set(gg, { opacity: 1 }, a0); gag(gg, tl, a0, seg.gag);
-        if (gr) { tl.to(gr, { opacity: seg.gag.treatment === "stamp" ? 0.12 : 0, duration: 0.15 }, a0); tl.to(gr, { opacity: 1, duration: 0.2 }, a0 + seg.gag.dur - 0.2); }
+        if (gr) { tl.to(gr, { opacity: seg.gag.treatment === "stamp" ? 1 : 0, duration: 0.15 }, a0); tl.to(gr, { opacity: 1, duration: 0.2 }, a0 + seg.gag.dur - 0.2); }
       }
       return g;
     });
@@ -527,6 +528,7 @@
     const rig = RIGS[cfg.look](cam);
     const deskSvg = svgBox(cam); defs(deskSvg, S);
     drawDesk(deskSvg, S, cfg);
+    const marks = Array.from(deskSvg.querySelectorAll(".mark"));
     const sweeps = Array.from(setSvg.querySelectorAll(".sweep"));
 
     const pipFrame = div(root, `position:absolute;left:${PIP.x - 8}px;top:${PIP.y - 8}px;width:${PIP.s + 16}px;height:${PIP.s + 16}px;border:8px solid ${S.red};border-radius:36px;box-sizing:border-box;opacity:0`);
@@ -536,16 +538,15 @@
     // package: show bug (top left), topic countdown (top right), topic strip, source chip, breaking bar, ticker, sting, end card
     const pkg = div(root, "position:absolute;inset:0;pointer-events:none");
     const bug = div(pkg, `position:absolute;left:48px;top:64px;display:flex;gap:12px;align-items:center;font:800 28px/1 ${S.body};letter-spacing:3px`);
-    bug.innerHTML = `<span style="background:${S.red};color:${S.textOnRed};padding:12px 18px">EP ${esc(cfg.episode)}</span><span style="color:${S.text};background:${S.bg};padding:12px 14px;border:3px solid ${S.text}">THE DAILY HABIT</span>`;
+    bug.innerHTML = `<span style="background:${S.red};color:${S.textOnRed};padding:12px 18px">THE DAILY HABIT · EP ${esc(cfg.episode)}</span>`;   // one bug (screening: two read as clutter)
     // countdown to the next topic: a ring that empties over the topic, the seconds left, and n/N
     const cd = div(pkg, `position:absolute;right:48px;top:44px;width:132px;height:132px;opacity:0`);
     const cdSvg = svgBox(cd, 132, 132, "position:absolute;left:0;top:0");
     el("circle", { cx: 66, cy: 66, r: 58, fill: S.bg, stroke: S.ink, "stroke-width": 5 }, cdSvg);
     const ring = el("circle", { cx: 66, cy: 66, r: 50, fill: "none", stroke: S.red, "stroke-width": 12, "stroke-dasharray": `${2 * Math.PI * 50}`, transform: "rotate(-90 66 66)" }, cdSvg);
-    const cdNum = txt(cdSvg, 66, 62, "", { size: 52, font: S.head, fill: S.text, weight: 800 });
-    const cdOf = txt(cdSvg, 66, 100, "", { size: 18, font: S.body, fill: S.text, weight: 800, spacing: 1 });
+    const cdNum = txt(cdSvg, 66, 84, "", { size: 52, font: S.head, fill: S.text, weight: 800 });
     const strip = div(pkg, `position:absolute;left:48px;top:176px;width:984px;opacity:0;display:flex;align-items:stretch;font:800 40px/1.15 ${q(S.head)}`);
-    const chip = div(pkg, `position:absolute;left:48px;top:250px;background:${S.bg};color:${S.text};border:3px solid ${S.text};font:700 24px/1 ${S.body};padding:10px 16px;opacity:0`);
+    const chip = div(pkg, `position:absolute;left:48px;top:250px;background:${S.bg};color:${S.text};border:3px solid ${S.text};font:800 28px/1 ${S.body};padding:8px 14px;opacity:0`);   // ~50 px tall with padding; placed under the strip each topic
     const ticker = div(pkg, `position:absolute;left:0;top:1432px;width:1080px;height:64px;background:${S.ink};overflow:hidden;opacity:0`);
     const tickTag = div(ticker, `position:absolute;left:0;top:0;height:64px;z-index:2;background:${S.red};color:${S.textOnRed};font:800 28px/64px ${S.body};padding:0 22px;letter-spacing:3px`);
     tickTag.textContent = "TODAY";
@@ -558,7 +559,7 @@
     const capBox = div(root, `position:absolute;left:0;top:0;width:1080px;height:0`);
     const cap = div(capBox, `position:absolute;left:60px;width:960px;text-align:center;font:800 62px/1.1 ${S.body === '"FF Mono", monospace' ? '"FF Display", sans-serif' : S.body};color:${S.text}`);
     const capStyle = (shot) => {
-      if (shot === "pip") return { left: 400, width: 640, top: 1240, align: "left" };
+      if (shot === "pip") return { left: 400, width: 480, top: 1200, align: "left", size: 54 };   // right of the PiP, clear of the buttons (x > 900)
       if (shot === "split") return { left: 60, width: 960, top: 990, align: "center" };
       if (shot === "wide") return { left: 60, width: 960, top: 1380, align: "center" };   // under the breaking bar
       return { left: 60, width: 960, top: 1210, align: "center" };
@@ -619,7 +620,7 @@
       pipFrame.style.opacity = shot === "pip" ? clamp((since - 0.3) / 0.3) : 0;
       const si = segAt(t);
       const seg = cfg.segments[si];
-      groups.forEach((g, i) => { if (g) g.style.display = i === si || (i === si - 1 && t - seg.start < 0.15) ? "" : "none"; });
+      groups.forEach((g, i) => { if (g) g.style.display = i === si || (i === si - 1 && t - seg.start < 0.15 && cfg.segments[i].topic !== seg.topic) ? "" : "none"; });
       wall.set(seg.wall || "TODAY", seg.wallSub || "THE DAILY HABIT");
       const lookY = shot === "split" ? 0.8 : 0, lookX = shot === "pip" ? 0.7 : Math.sin(t * 0.7) * 0.15;
       const talking = mouthAt(t);
@@ -637,11 +638,11 @@
         cdNum.textContent = String(Math.ceil(left - 1e-6));
         ring.setAttribute("stroke-dashoffset", `${2 * Math.PI * 50 * (1 - left / seg.dur)}`);
         ring.setAttribute("stroke", left < 3 ? S.red : S.blue);
-        cdOf.textContent = `${seg.topic}/${cfg.topics}`;
         if (lastStrip !== si) {
-          strip.innerHTML = `<span style="background:${S.red};color:${S.textOnRed};padding:12px 18px 8px;font-family:${q(S.body)};font-size:30px;letter-spacing:2px">${String(seg.topic).padStart(2, "0")} · ${esc(seg.lane).toUpperCase()}</span>` +
-            `<span style="background:${S.ink};color:${S.bg};padding:12px 20px 8px;white-space:nowrap;font-size:${String(seg.headline).length > 32 ? 30 : String(seg.headline).length > 26 ? 35 : 40}px">${esc(seg.headline)}</span>`;
+          strip.innerHTML = `<span style="background:${S.red};color:${S.textOnRed};padding:12px 18px 8px;font-family:${q(S.body)};font-size:30px;letter-spacing:2px">${seg.topic}/${cfg.topics} · ${esc(seg.lane).toUpperCase()}</span>` +
+            `<span style="background:${S.ink};color:${S.bg};padding:12px 20px 8px;white-space:nowrap;font-size:${String(seg.headline).length > 30 ? 34 : 40}px;white-space:normal">${esc(seg.headline)}</span>`;
           lastStrip = si;
+          chip.style.top = `${strip.offsetTop + strip.offsetHeight + 6}px`;
         }
         const sk = clamp((t - seg.start - 0.1) / 0.3);
         strip.style.opacity = shot === "wide" ? 0 : sk; strip.style.transform = `translateX(${(1 - ease(sk)) * -60}px)`;
@@ -661,13 +662,15 @@
       }
       if (cfg.endAt != null) end.style.opacity = clamp((t - cfg.endAt) / 0.3);
       const w = words.findIndex((x) => t >= x.s && t < x.e + 0.25);
+      const markOn = f.s < 1.05 && (w < 0 || atEnd || inSting);
+      marks.forEach((mk) => { mk.style.opacity = markOn ? 1 : 0; });
       if (w < 0 || atEnd || inSting) cap.textContent = "";
       else {
         const grp = words.filter((x) => x.g === words[w].g);
-        cap.innerHTML = `<span style="background:${S.bg};padding:8px 20px;border-radius:${cfg.set === "riso" ? 0 : 14}px;box-shadow:0 0 0 3px ${S.text}">` +
+        cap.innerHTML = `<span style="display:inline-block;text-wrap:balance;max-width:100%;box-sizing:border-box;background:${S.bg};padding:8px 20px;border-radius:${cfg.set === "riso" ? 0 : 14}px;box-shadow:0 0 0 3px ${S.text}">` +
           grp.map((x) => `<span style="color:${x === words[w] ? S.red : S.text}">${esc(x.w)}</span>`).join(" ") + "</span>";
         const c = capStyle(shot);
-        Object.assign(cap.style, { left: c.left + "px", width: c.width + "px", top: c.top + "px", textAlign: c.align, display: "block" });
+        Object.assign(cap.style, { left: c.left + "px", width: c.width + "px", top: c.top + "px", textAlign: c.align, display: "block", fontSize: (c.size || 62) + "px" });
       }
     };
     const clock = { t: 0 };
