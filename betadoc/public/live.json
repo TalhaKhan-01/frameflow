@@ -1,18 +1,18 @@
 {
- "generated": "2026-10-31T11:45:14",
- "ideas": 1880,
- "videos_made": 10,
+ "generated": "2026-11-03T11:35:11",
+ "ideas": 2377,
+ "videos_made": 11,
  "videos_posted": 7,
- "card_posts": 5,
- "lessons": 43,
+ "card_posts": 6,
+ "lessons": 46,
  "library": 136,
- "leaves_done": 136,
- "leaves_partial": 43,
+ "leaves_done": 138,
+ "leaves_partial": 42,
  "leaves_total": 222,
  "today": {
-  "day": "2026-10-31",
+  "day": "2026-11-03",
   "lane": "show",
-  "state": "posted"
+  "state": "posting"
  },
  "latest": {
   "title": "Binance's $6.3B Breach, Claude Reports & UPI | Daily Habit",
@@ -33,15 +33,15 @@
   "instagram": "https://www.instagram.com/madebythirdspace/"
  },
  "board": {
-  "videos": 4,
+  "videos": 5,
   "one_render": 0,
   "first_render_passed": 0,
   "animatic_within_1": 0,
   "latest": {
-   "title": "Binance's $6.3B Breach, Claude Reports & UPI | Daily Habit",
+   "title": "FBI Ties North Korea to $6.3B Binance Heist | Daily Habit",
    "renders": 0,
    "fix_rounds": 0,
-   "minutes": 39.2,
+   "minutes": 22.6,
    "animatic": null,
    "final": 17,
    "max": null,
@@ -76,7 +76,7 @@
     }
    ],
    "timeline": {
-    "seconds": 74697.0,
+    "seconds": 73924.0,
     "events": [
      {
       "t": 0.0,
@@ -87,101 +87,94 @@
      },
      {
       "t": 159.0,
-      "d": 397.0,
+      "d": 327.0,
       "desk": "writer",
       "label": "write the rundown (writer, lints, table read)",
       "status": "done"
      },
      {
-      "t": 556.0,
-      "d": 42.0,
+      "t": 486.0,
+      "d": 51.0,
       "desk": "writer",
       "label": "hooks: 10 opens for the hook card",
       "status": "done"
      },
      {
-      "t": 598.0,
-      "d": 1202.0,
+      "t": 538.0,
+      "d": 235.0,
       "desk": "writer",
       "label": "hooks: waiting for Talha's pick",
       "status": "done"
      },
      {
-      "t": 1800.0,
-      "d": 199.0,
+      "t": 773.0,
+      "d": 204.0,
       "desk": "visuals",
       "label": "visuals: logos, photos, headline screenshots",
       "status": "done"
      },
      {
-      "t": 1999.0,
-      "d": 125.0,
+      "t": 977.0,
+      "d": 135.0,
       "desk": "narrator",
       "label": "voice (narrator)",
       "status": "done"
      },
      {
-      "t": 2124.0,
-      "d": 1.0,
+      "t": 1112.0,
+      "d": 0.0,
       "desk": "director",
       "label": "direct (framings, package, emotions)",
       "status": "done"
      },
      {
-      "t": 2125.0,
+      "t": 1112.0,
       "d": 9.0,
       "desk": "sound",
       "label": "sound (stamp, theme, bed, SFX)",
       "status": "done"
      },
      {
-      "t": 2134.0,
-      "d": 116.0,
+      "t": 1121.0,
+      "d": 112.0,
       "desk": "render",
       "label": "render",
       "status": "done"
      },
      {
-      "t": 2250.0,
-      "d": 48.0,
+      "t": 1233.0,
+      "d": 58.0,
       "desk": "qc",
       "label": "QA + screening",
       "status": "done"
      },
      {
-      "t": 2299.0,
-      "d": 27.0,
+      "t": 1292.0,
+      "d": 30.0,
       "desk": "you",
       "label": "send video card to Telegram",
       "status": "done"
      },
      {
-      "t": 2326.0,
-      "d": 27.0,
+      "t": 1322.0,
+      "d": 37.0,
       "desk": "packaging",
       "label": "make card post (carousel)",
-      "status": "failed"
+      "status": "done"
      },
      {
-      "t": 73805.0,
-      "d": 108.0,
+      "t": 73808.0,
+      "d": 116.0,
       "desk": "publisher",
       "label": "post to facebook",
       "status": "done"
      },
      {
-      "t": 73913.0,
-      "d": 137.0,
+      "t": 73924.0,
+      "d": 0.0,
       "desk": "publisher",
       "label": "post to youtube",
-      "status": "done"
-     },
-     {
-      "t": 74050.0,
-      "d": 647.0,
-      "desk": "publisher",
-      "label": "post to instagram",
-      "status": "done"
+      "status": "running"
      }
     ]
    }
