@@ -53,10 +53,12 @@ def main():
         probe = [1.0] + [s["start"] + s["dur"] * 0.5 for s in c["segments"]] + [c["dur"] - 0.2]
         same = [round(t, 2) for t in probe if fh(final, t) != fh(again, t)]
         q["gates"]["deterministic"] = {"pass": not same, "detail": f"{len(probe)} frames compared; differ at {same}" if same else f"{len(probe)} frames identical"}
-        (out / "again.mp4").unlink()
+        if not same:
+            (out / "again.mp4").unlink()
     times = [c["breakingAt"] + 1.0, c["stingAt"] + 0.7] + [s["start"] + s["dur"] * f for s in c["segments"] if s.get("topic") for f in (0.3, 0.8)] + [c["endAt"] + 1.0]
     png = show.stills(final, times, out, "contact")
-    res = {"check_errors": len(errs), "qa": q["pass"], "gates": {k: v["pass"] for k, v in q["gates"].items()}, "contact": str(png)}
+    res = {"check_errors": len(errs), "qa": q["pass"], "gates": {k: v["pass"] for k, v in q["gates"].items()}, "contact": str(png),
+           "failed": {k: v.get("detail") for k, v in q["gates"].items() if not v["pass"]}}
     if "--no-screening" not in sys.argv:
         scr = show.screening(png, times, script)
         res["screening"] = {"total": scr["total"], "max": scr["max"], "rows": scr["rows"]}

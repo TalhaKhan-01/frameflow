@@ -76,3 +76,20 @@ def test_phrase_chunks_keep_numbers_and_never_end_on_a_joining_word():
         assert all(len(c) > 1 or ws[c[0]].endswith((".", "?", "!", ",")) for c in ch), lines
     ws = "Binance lost six point three billion dollars in one hack,".split()
     assert any(" ".join(ws[i] for i in c) == "six point three billion dollars" for c in phrase_chunks(ws))
+
+
+def test_set_and_look_are_one_config_value_each():
+    """P24.4.1 / P24.4.3: research/show.json names the default set and Habit look; the template has every set and look,
+    and the director passes the config through (renders of riso, night and pixel: spikes/show_test_render.py --set/--look)."""
+    import json, re
+    from pathlib import Path
+    from frameflow import show
+    root = Path(show.__file__).resolve().parent.parent
+    c = json.loads((root / "research" / "show.json").read_text())
+    assert (c["set"], c["look"]) == ("paper", "puppet")
+    js = (root / "scenes" / "_shared" / "show" / "show.js").read_text()
+    for s in ("riso", "paper", "night"):
+        assert re.search(rf"\b{s}\s*:", js), s
+    assert re.search(r"RIGS\s*=\s*\{\s*pixel:\s*rigPixel,\s*puppet:\s*rigPuppet\s*\}", js)
+    src = Path(show.__file__).read_text()
+    assert '"set": cfg()["set"], "look": cfg()["look"]' in src

@@ -548,7 +548,7 @@
     const ring = el("circle", { cx: 66, cy: 66, r: 50, fill: "none", stroke: S.red, "stroke-width": 12, "stroke-dasharray": `${2 * Math.PI * 50}`, transform: "rotate(-90 66 66)" }, cdSvg);
     const cdNum = txt(cdSvg, 66, 84, "", { size: 52, font: S.head, fill: S.text, weight: 800 });
     const strip = div(pkg, `position:absolute;left:48px;top:176px;width:984px;opacity:0;display:flex;align-items:stretch;font:800 40px/1.15 ${q(S.head)}`);
-    const chip = div(pkg, `position:absolute;left:48px;top:250px;background:${S.bg};color:${S.text};border:3px solid ${S.text};font:800 28px/1 ${S.body};padding:8px 14px;opacity:0`);   // ~50 px tall with padding; placed under the strip each topic
+    const chip = div(pkg, `position:absolute;left:48px;top:244px;background:${S.bg};color:${S.text};border:3px solid ${S.text};font:800 28px/1 ${S.body};padding:8px 14px;opacity:0`);   // ~50 px tall with padding; placed under the strip each topic
     const ticker = div(pkg, `position:absolute;left:0;top:1432px;width:1080px;height:64px;background:${S.ink};overflow:hidden;opacity:0`);
     const tickTag = div(ticker, `position:absolute;left:0;top:0;height:64px;z-index:2;background:${S.red};color:${S.textOnRed};font:800 28px/64px ${S.body};padding:0 22px;letter-spacing:3px`);
     tickTag.textContent = "TODAY";
@@ -645,7 +645,6 @@
             `<span style="background:${S.ink};color:${S.bg};padding:12px 20px 8px;white-space:nowrap;font-size:${String(seg.headline).length > 30 ? 34 : 40}px">${esc(seg.headline)}</span>`;
           chip.textContent = `SOURCE · ${seg.source || ""}`;   // the source only (a subject logo beside it read as the source)
           lastStrip = si;
-          chip.style.top = `${strip.offsetTop + strip.offsetHeight + 6}px`;
         }
         const sk = clamp((t - seg.start - 0.1) / 0.3);
         strip.style.opacity = shot === "wide" ? 0 : sk; strip.style.transform = `translateX(${(1 - ease(sk)) * -60}px)`;
