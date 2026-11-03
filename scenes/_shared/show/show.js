@@ -213,8 +213,9 @@
       const m = Math.max(p.mouth, p.mouth > 0.08 ? e.open ?? 0 : 0);
       // speech opens the mouth a little (0.55 of the envelope); only surprised / excited / laughing open it wide (e.open).
       // An O-shaped talking mouth read as shock on every line (screening, Ep 3-5).
-      const h = clamp(p.mouth * 0.55 + (p.mouth > 0.08 ? (e.open ?? 0) * 0.9 : 0)), sm = Math.max(e.smile, -0.3), y = 297 - 4 * sm, wd = 30 - 6 * (e.open ?? 0);
-      mouthO.setAttribute("d", `M ${180 - wd} ${y} Q 180 ${y + 12 * sm} ${180 + wd} ${y} Q ${180 + wd * 0.8} ${y + 8 + 34 * h} 180 ${y + 8 + 34 * h} Q ${180 - wd * 0.8} ${y + 8 + 34 * h} ${180 - wd} ${y} Z`);
+      const h = clamp(p.mouth * 0.55 + (p.mouth > 0.08 ? (e.open ?? 0) * 0.9 : 0)), sm = Math.max(e.smile, -0.6), y = 297 - 4 * sm, wd = 30 - 6 * (e.open ?? 0);
+      const flat = sm < 0.1, bot = y + (flat ? 4 + 20 * h : 8 + 34 * h), top = flat ? y - 4 + 40 * Math.min(sm, 0) : y + 12 * sm;   // a frown talks under an arch, not a U
+      mouthO.setAttribute("d", `M ${180 - wd} ${y} Q 180 ${top} ${180 + wd} ${y} Q ${180 + wd * 0.8} ${bot} 180 ${bot} Q ${180 - wd * 0.8} ${bot} ${180 - wd} ${y} Z`);
       mouthO.setAttribute("opacity", m > 0.08 ? 1 : 0); tongue.setAttribute("opacity", h > 0.5 ? 1 : 0); tongue.setAttribute("cy", y + 4 + 26 * h);
       smile.setAttribute("opacity", m > 0.08 ? 0 : 1);
       head.setAttribute("transform", `rotate(${p.lookX * 4 + p.tilt} 180 330) translate(0 ${p.bob * 0.6})`);

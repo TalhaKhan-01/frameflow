@@ -203,6 +203,10 @@ def library():
                      "source": f"{title}, Kevin MacLeod (incompetech.com)", "licence": "CC BY 4.0",
                      "url": "https://incompetech.com/music/royalty-free/", "author": "Kevin MacLeod",
                      "credit": f"{title} Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\nhttps://creativecommons.org/licenses/by/4.0/"})
+    for f in sorted((LIB / "theme").glob("*.wav")):   # The Daily Habit theme (frameflow.show theme-assets), kept on a rebuild
+        rows.append({"file": f"theme/{f.name}", "kind": "theme", "name": f.stem, "seconds": round(len(load(f)) / SR, 3),
+                     "source": "frameflow.show.theme (synthesised)", "licence": "original work by Talha Khan; free for any use",
+                     "url": "local", "author": "Frameflow"})
     (LIB / "ledger-v2.json").write_text(json.dumps(rows, indent=1))
     return rows
 

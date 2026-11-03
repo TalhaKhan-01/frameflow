@@ -715,7 +715,6 @@ def mix(c, voice_at, out):
         sheet.append({"t": s["start"] - 0.05, "name": "whoosh", "gain": -16})
         g0 = s["start"] + (s["media"]["dur"] if s.get("media") else 0)   # the graphic enters after the real visuals
         if s.get("media"):
-            sheet.append({"t": s["start"] + 0.5, "name": "pop", "gain": -20})   # the logo badge
             sheet.append({"t": g0 - 0.15, "name": "whoosh", "gain": -20})
         if s.get("g"):
             sheet.append({"t": g0 + 0.2, "name": "pop", "gain": -18})
@@ -739,7 +738,13 @@ def mix(c, voice_at, out):
     final = out / "mix.wav"
     media.ffmpeg("-i", str(raw), "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000", "-ac", "2", str(final))
     (out / "sfx.json").write_text(json.dumps(sheet, indent=1))
-    (out / "music.json").write_text(json.dumps({"track": track, "bed_from": bed_from, **m}, indent=1))
+    on = talk > 0.95   # measured where Habit is speaking: the bed must sit >= 10 dB under the voice (P24.5.4)
+    rms = lambda x: float(20 * np.log10(np.sqrt(np.mean(np.square(x))) + 1e-9)) if len(x) else -120.0
+    level = {"voice_db": round(rms(vtrack[on]), 1), "music_under_voice_db": round(rms(mtrack[on]), 1)}
+    level["gap_db"] = round(level["voice_db"] - level["music_under_voice_db"], 1)
+    open_cues = {"stamp_at": c["breakingAt"], "theme_at": round(th_at, 3), "bed_at": round(bed_from, 3),
+                 "premix_peak": round(float(np.max(np.abs(stems))), 3)}   # P24.5.2: stamp -> theme -> bed, in that order
+    (out / "music.json").write_text(json.dumps({"track": track, "bed_from": bed_from, **m, "level": level, "open": open_cues}, indent=1))
     return final, sheet
 
 
@@ -1027,11 +1032,40 @@ def revise(day, notes):
     return r
 
 
+def theme_assets():
+    """P24.5.1: the theme ident (3.6 s) and its sting cut (the last 1.6 s, as on the end card) as library files at -15 LUFS,
+    with ledger rows (licence: original) and their measured loudness and peak."""
+    d = sound.LIB / "theme"
+    d.mkdir(parents=True, exist_ok=True)
+    th = theme()
+    out = {}
+    for name, clip in (("daily-habit-ident", th), ("daily-habit-sting", th[-int(1.6 * SR):])):
+        raw = d / f"{name}.raw.wav"
+        music.write_wav(raw, clip / max(float(np.max(np.abs(clip))), 1e-9) * 0.5)
+        f = d / f"{name}.wav"
+        def measure(path):
+            r = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(path), "-af", "ebur128=peak=true", "-f", "null", "-"], capture_output=True, text=True).stderr
+            return float(re.findall(r"I:\s+(-?[\d.]+) LUFS", r)[-1]), float(re.findall(r"Peak:\s+(-?[\d.]+|-inf) dBFS", r)[-1])
+        gain = -15 - measure(raw)[0]
+        for _ in range(3):   # gain to -15 LUFS, a limiter holds the peaks under -1 dBFS (loudnorm can't lift a short transient clip)
+            media.ffmpeg("-i", str(raw), "-af", f"volume={gain:.2f}dB,alimiter=limit=0.85:level=false", "-ar", "48000", "-ac", "2", str(f))
+            lufs, peak = measure(f)
+            if abs(lufs + 15) <= 0.5:
+                break
+            gain += -15 - lufs
+        raw.unlink()
+        out[name] = {"file": str(f), "lufs": lufs, "true_peak_dbfs": peak, "ok": -16 <= lufs <= -14 and peak < 0}
+    sound.library()
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description="The Daily Habit show maker")
-    ap.add_argument("cmd", choices=["make", "render", "theme", "cards"])
-    ap.add_argument("arg")
+    ap.add_argument("cmd", choices=["make", "render", "theme", "theme-assets", "cards"])
+    ap.add_argument("arg", nargs="?")
     a = ap.parse_args()
+    if a.cmd == "theme-assets":
+        return print(json.dumps(theme_assets(), indent=1))
     if a.cmd == "theme":
         music.write_wav(Path(a.arg), theme())
         return print(a.arg)
