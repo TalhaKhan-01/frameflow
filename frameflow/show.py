@@ -382,16 +382,18 @@ CUE_SCHEMA = {"type": "object", "required": ["stories"], "properties": {"stories
         "name": {"type": "string"}, "wiki": {"type": "string"}, "logo": {"type": "string"}}}}}}
 
 
-def page_for(s):
-    """The article to screenshot: the page the verified facts come from (the source chip names it, so picture and chip
-    agree; dry run 29 Oct: an ET newsletter headline under a 'Yahoo Finance' chip), else the story's own link."""
+def pages_for(s):
+    """Pages to screenshot, in order: the facts' sources from the chip's outlet first, then the other fact sources, then the
+    story's own link (no aggregator redirects). The first that captures cleanly is used (29 Oct: 403 and failed pages)."""
     key = re.sub(r"[^a-z0-9]", "", (s.get("source_name") or "").lower())
     urls = [f["source"] for f in s["facts"]]
     urls = sorted(urls, key=lambda u: not (key and key[:6] in re.sub(r"[^a-z0-9]", "", u.lower())))   # the chip's outlet first
-    for u in urls + [s.get("url", "")]:
-        if u and "news.google.com" not in u:
-            return u
-    return ""
+    return list(dict.fromkeys(u for u in urls + [s.get("url", "")] if u and "news.google.com" not in u))[:4]
+
+
+def page_for(s):
+    p = pages_for(s)
+    return p[0] if p else ""
 
 
 def visuals(script, data, out):
@@ -415,8 +417,8 @@ def visuals(script, data, out):
                              "context": s["headline"]})
             if p["logo"]:
                 cues.append({"id": f"s{p['story']}-logo", "kind": "logo", "name": p["logo"]})
-            if page_for(s):
-                cues.append({"id": f"s{p['story']}-shot", "kind": "screenshot", "url": page_for(s)})
+            if pages_for(s):
+                cues.append({"id": f"s{p['story']}-shot", "kind": "screenshot", "urls": pages_for(s)})
     imgs = analogies()["images"]
     for g in script["segments"]:   # analogy images: fixed catalogue names, so the library returns the same picture
         an = g.get("analogy") or {}
@@ -566,8 +568,10 @@ def direct(script, data, vd, ep, day, media_by=None):
                "emotion": g["emotion"], "wall": g["wall"].upper(), "wallSub": s["lane"].upper(), "g": g["graphic"]}
         place(f"t{k}", seg, lo)
         seg["shots"] = [[round(seg["dur"] * f, 2), shot] for f, shot in pat]
-        m = (media_by or {}).get(g["story"])
-        if m and (m.get("photo") or m.get("shot")):   # real visuals for the first ~45% of the story, then the graphic
+        m = dict((media_by or {}).get(g["story"]) or {})
+        if media_by is not None and not (m.get("photo") or m.get("shot")):   # nothing captured: a drawn headline card, never an empty slot
+            m["card"] = {"title": s.get("title") or s["headline"], "outlet": s.get("source_name") or s.get("outlet", "")}
+        if m.get("photo") or m.get("shot") or m.get("card"):   # real visuals for the first ~45% of the story, then the graphic
             seg["media"] = {**m, "dur": round(min(max(seg["dur"] * 0.45, 3.0), 5.0), 2)}
             if m.get("shot") and m["shot"].get("page"):   # the chip names the outlet whose page is on screen
                 key = re.sub(r"[^a-z0-9]", "", seg["source"].lower())[:6]

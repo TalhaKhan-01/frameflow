@@ -398,6 +398,21 @@
           if (hl) tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, a + 0.5);
         } });
       }
+      if (m.card) {   // no capture and no photo: the story's real headline as a press clipping, highlighter over it
+        const L = el("g", {}, inner);
+        el("rect", { x: BX, y: BY, width: BW, height: BH, fill: "#fbf8f1" }, L);
+        const out = txt(L, BX + 60, BY + 90, String(m.card.outlet || "").toUpperCase(), { size: 34, font: S.body, fill: S.red, weight: 800, anchor: "start", spacing: 3 });
+        fit(out, BW - 120, 34);
+        el("rect", { x: BX + 60, y: BY + 120, width: BW - 120, height: 4, fill: S.ink }, L);
+        const words = String(m.card.title || "").split(/\s+/); const lines = []; let cur = "";
+        words.forEach((w) => { if ((cur + " " + w).trim().length > 26 && cur) { lines.push(cur); cur = w; } else cur = (cur + " " + w).trim(); });
+        if (cur) lines.push(cur);
+        const shown = lines.slice(0, 5), lh = 74, y0 = BY + 210;
+        const hl = el("rect", { x: BX + 52, y: y0 - 50, width: BW - 104, height: lh * Math.min(2, shown.length) + 14, fill: "#ffe14d", opacity: 0.5, style: "mix-blend-mode:multiply" }, L);
+        gsap.set(hl, { svgOrigin: `${BX + 52} ${y0}` });
+        shown.forEach((l, i) => { const t = txt(L, BX + 60, y0 + i * lh, l, { size: 60, font: S.head, fill: S.ink, weight: 800, anchor: "start" }); fit(t, BW - 120, 60); });
+        layers.push({ L, run: (a) => tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, a + 0.4) });
+      }
       // timing: one layer = the whole window; two = split it; each layer fades in over the one before
       const span = m.dur - 0.25;
       layers.forEach(({ L, run }, i) => {
