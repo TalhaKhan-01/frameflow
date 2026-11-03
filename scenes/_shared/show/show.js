@@ -319,18 +319,19 @@
       bars(g, tl, t0, d) {
         const items = (d.items || []).slice(0, 4);
         const max = Math.max(...items.map((x) => Math.abs(parseNum(x.value)?.n ?? 0)), 1e-9);
-        const top = 360, gap = items.length > 3 ? 130 : 160;
+        if (d.title) { const tt = B(g, 540, 345, String(d.title).toUpperCase(), 40, { weight: 800, spacing: 3 }); fit(tt, 900, 40); tl.fromTo(tt, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t0); }
+        const gap = items.length > 3 ? 135 : items.length > 2 ? 160 : 190, top = 430 + (4 - items.length) * 22;   // the block sits in the box's middle
         items.forEach((it, i) => {
           const y = top + i * gap;
-          const lab = B(g, 110, y, String(it.label || "").toUpperCase(), 34, { anchor: "start", weight: 800 }); fit(lab, 860, 34);
+          const lab = B(g, 110, y, String(it.label || "").toUpperCase(), 46, { anchor: "start", weight: 800 }); fit(lab, 860, 46);
           const w = 40 + 700 * Math.abs(parseNum(it.value)?.n ?? 0) / max;
           const bar = el("rect", { x: 110, y: y + 26, width: w, height: 64, rx: cfg.set === "riso" ? 0 : 10, fill: i === (d.highlight ?? 0) ? S.red : S.blue }, g); piv(bar, 110, y + 58);
-          const v = B(g, 110 + w + 18, y + 60, "", 46, { anchor: "start", weight: 800 });
+          const v = B(g, 110 + w + 18, y + 64, "", 56, { anchor: "start", weight: 800 });
           tl.fromTo(bar, { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power3.out" }, t0 + 0.2 + i * 0.3);
           countUp(tl, v, it.value, t0 + 0.2 + i * 0.3, 0.6);
           if (w > 760) { v.setAttribute("x", 110 + w - 18); v.setAttribute("text-anchor", "end"); v.setAttribute("fill", "#fbf8f1"); }
         });
-        kicker(g, tl, t0 + 0.4 + items.length * 0.3, d.caption, 920);
+        kicker(g, tl, t0 + 0.4 + items.length * 0.3, d.caption, Math.min(930, top + items.length * gap + 50));
       },
       quote(g, tl, t0, d) {
         card(g, 90, 300, 900, 620, paper);
@@ -396,15 +397,21 @@
         if (sh.head) {
           const [hx, hy, hw, hh] = sh.head.map((v) => v * f);
           cx = x + hx + hw / 2; cy = y + hy + hh / 2;
-          k = clamp(Math.min(((BW - 40) / Math.max(hw, 1)) * 0.88, 130 / Math.max(hh, 1)), 1, 2.6);   // as big as fits the box with a margin (an h1 box can be narrower than its text)
+          k = clamp(Math.min(((BW - 40) / Math.max(hw, 1)) * 0.9, 300 / Math.max(hh, 1)), 1, 3.2);   // the headline fills the box (3 Nov: up to 300 px tall; was 130, so body text stayed tiny on screen)
           hl = el("rect", { x: x + hx - 8, y: y + hy - 4, width: hw + 16, height: hh + 8, fill: "#ffe14d", opacity: 0.5,
                             style: "mix-blend-mode:multiply" }, zoom);   // over the headline, multiplied so the text stays black
           gsap.set(hl, { svgOrigin: `${x + hx - 8} ${cy}` });
         }
         gsap.set(zoom, { svgOrigin: `${cx} ${cy}` });
+        let veil = null;
+        if (sh.head) {   // after the zoom, paper covers everything under the headline: unreadable body text never shows
+          const hb = BY + BH * 0.42 + (sh.head[3] * f * k) / 2 + 28;
+          if (hb < BY + BH - 40) veil = el("rect", { x: BX, y: hb, width: BW, height: BY + BH - hb, fill: "#fbf8f1" }, L);
+        }
         layers.push({ L, run: (a, b) => {   // no credit bar: the source chip names the outlet (screening: a duplicate source)
-          tl.fromTo(zoom, { scale: 1, x: 0, y: 0 }, { scale: k, x: BX + BW / 2 - cx, y: BY + BH / 2 - cy, duration: Math.min(1.2, (b - a) * 0.6), ease: "power2.inOut" }, a + 0.1);
+          tl.fromTo(zoom, { scale: 1, x: 0, y: 0 }, { scale: k, x: BX + BW / 2 - cx, y: BY + BH * 0.42 - cy, duration: Math.min(1.2, (b - a) * 0.6), ease: "power2.inOut" }, a + 0.1);
           if (hl) tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, a + 0.5);
+          if (veil) tl.fromTo(veil, { opacity: 0 }, { opacity: 1, duration: 0.35 }, a + 0.1 + Math.min(1.2, (b - a) * 0.6) - 0.2);
         } });
       }
       if (m.card) {   // no capture and no photo: the story's real headline as a press clipping, highlighter over it

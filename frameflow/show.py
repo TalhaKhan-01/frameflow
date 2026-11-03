@@ -154,7 +154,7 @@ Hard rules:
   characters, naming the top story.
 - graphic: what fills the screen while Habit speaks. Pick the type that shows the fact best and vary types:
   stat {value, label, sub} (value like "90%", "₹225 Cr", "$16.3B", "60,000"; digits allowed in graphics),
-  versus {left:{label,value}, right:{label,value}, caption}, bars {items:[{label,value}] 2-4, caption},
+  versus {left:{label,value}, right:{label,value}, caption}, bars {title (what is measured, with its unit, e.g. "MARKET VALUE, $ TRILLION"), items:[{label,value}] 2-4, caption},
   headline {top, bottom, kicker}, quote {text (max 20 words, verbatim from a fact), who}, list {title, items: 3 short}.
   Every number in a graphic must be in the verified facts. Labels short (max 28 characters).
 Return JSON only."""
