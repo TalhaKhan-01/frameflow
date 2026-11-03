@@ -88,6 +88,8 @@ def candidates(n=None, hours=36, day=None):
         ideas.collect()
         ideas.rank(hours=hours, keep=40)
     except Exception as e:   # a dead feed or a model hiccup shouldn't stop the card: use what is already ranked
+        if "limit" in str(e) and "resets" in str(e):   # but a usage limit is a wait: daily re-runs the scout at the reset (2 Nov: 0 stories)
+            raise
         print(f"collect/rank: {e}", file=sys.stderr)
     cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=hours)
     used = used_urls()

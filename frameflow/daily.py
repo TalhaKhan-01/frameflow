@@ -324,8 +324,22 @@ def revise(day):
     its stages re-run. The older notes-straight-to-a-re-render path went with the studio board (27 Oct cleanup)."""
     run = get(day)
     if not (run.get("order_file") and Path(run["order_file"]).exists()):
+        if card_pending(run):   # the revise itself finished and only the card failed (29 Oct): send the card, don't refuse
+            update(day, note="revise already done: sending the video card")
+            return video_card(day)
         raise RuntimeError("no confirmed change order: Revise starts with the showrunner (Telegram Revise, or the control panel)")
     return revise_order(day)
+
+
+def card_pending(run):
+    """True when the log's last 'revise done' / 'change order done' comes after its last 'video card sent'."""
+    done = sent = -1
+    for i, line in enumerate((run.get("log") or "").splitlines()):
+        if "show revise done" in line or "change order done" in line:
+            done = i
+        if "video card sent" in line:
+            sent = i
+    return done > sent
 
 
 def revise_order(day):
@@ -453,7 +467,7 @@ def tick():
         if run["state"] == "waiting-limit":
             m = re.search(r"retry at (\S+) \(step (\w+)\)", (run.get("log") or "").strip().splitlines()[-1])
             if m and t >= dt.datetime.fromisoformat(m.group(1)):
-                update(day, state="making" if m.group(2) != "post" else "posting", note=f"usage limit reset: re-running {m.group(2)}")
+                update(day, state={"post": "posting", "scout": "scouting"}.get(m.group(2), "making"), note=f"usage limit reset: re-running {m.group(2)}")
                 spawn(m.group(2), day)
             continue
         from frameflow import showdesk
@@ -511,14 +525,19 @@ def weekly():
 
 
 def limit_reset(message):
-    """'You've hit your session limit · resets 8:20pm (...)' -> the ISO time to retry (2 minutes after the reset)."""
-    m = re.search(r"limit.*?resets\s+(\d{1,2})(?::(\d{2}))?\s*([ap]m)", message, re.I)
+    """'You've hit your session limit · resets 8:20pm (...)' or the weekly '... resets Nov 1, 3:30pm (...)' -> the ISO time
+    to retry (2 minutes after the reset). The dated form failed to parse on 31 Oct, so the day failed instead of waiting."""
+    m = re.search(r"limit.*?resets\s+(?:([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s*)?(\d{1,2})(?::(\d{2}))?\s*([ap]m)", message, re.I)
     if not m:
         return None
-    h, mi, ap = int(m.group(1)), int(m.group(2) or 0), m.group(3).lower()
+    mon, mday, h, mi, ap = m.group(1), m.group(2), int(m.group(3)), int(m.group(4) or 0), m.group(5).lower()
     h = h % 12 + (12 if ap == "pm" else 0)
-    when = dt.datetime.combine(dt.date.today(), dt.time(h, mi)) + dt.timedelta(minutes=2)
-    if when < now() - dt.timedelta(hours=1):
+    day = now().date()
+    if mon and mday:
+        month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].index(mon.lower()) + 1
+        day = dt.date(day.year + (1 if month < day.month - 6 else 0), month, int(mday))
+    when = dt.datetime.combine(day, dt.time(h, mi)) + dt.timedelta(minutes=2)
+    if not mon and when < now() - dt.timedelta(hours=1):
         when += dt.timedelta(days=1)
     return when.replace(microsecond=0).isoformat()
 
