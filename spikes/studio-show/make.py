@@ -275,7 +275,7 @@ def safe():
         for u in UI:
             if g[0] < u[2] and g[2] > u[0] and g[1] < u[3] and g[3] > u[1]:
                 bad.append(f"graphics zone {g} overlaps UI {u}")
-    pip = (48, 1120, 368, 1440)
+    pip = (48, 1050, 468, 1470)   # 3 Nov: the 420 px PiP
     if any(pip[0] < u[2] and pip[2] > u[0] and pip[1] < u[3] and pip[3] > u[1] for u in UI):
         bad.append("PiP window overlaps UI")
     print("SAFE OK" if not bad else "\n".join(bad))

@@ -148,8 +148,20 @@ def pick(script, data, out, day, poll=5):
     return apply(script, h, out)
 
 
+def story_of(say, script):
+    """The segment a hook is about: the most shared words (4+ letters) with its headline and wall text; None if unclear."""
+    words = lambda t: set(re.findall(r"[a-z0-9₹$]{4,}", t.lower()))
+    said = words(say)
+    best = max(script.get("segments", []), key=lambda g: len(said & words(g["headline"] + " " + g.get("wall", ""))), default=None)
+    return best if best and len(said & words(best["headline"] + " " + best.get("wall", ""))) >= 2 else None
+
+
 def apply(script, h, out):
+    old = script["open"]["say"]
     script = dict(script, open=dict(script["open"], say=h["choice"]["say"]))
+    g = story_of(h["choice"]["say"], script) if h["choice"]["say"] != old else None
+    if g and g is not story_of(old, script):   # the open's banner names the story the picked hook is about (Ep 5: Anthropic hook, FBI banner)
+        script["breaking"] = g["headline"][:55]
     script["hook_pick"] = h["choice"]
     (out / "script.json").write_text(json.dumps(script, ensure_ascii=False, indent=1))
     return script

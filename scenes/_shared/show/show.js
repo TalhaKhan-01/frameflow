@@ -129,21 +129,20 @@
     if (cfg.set === "riso") {
       el("rect", { x: 60, y: 1320, width: 960, height: 30, fill: S.ink }, g);
       el("rect", { x: 90, y: 1350, width: 900, height: 380, fill: S.red }, g);
-      FF.pixelText(el("g", { class: "mark" }, g), 540, 1470, "THE DAILY HABIT", 12, "p");
+      FF.pixelText(el("g", { class: "mark" }, g), 540, 1505, "THE DAILY HABIT", 12, "p");
       for (let i = 0; i < 9; i++) el("rect", { x: 110 + i * 100, y: 1600, width: 60, height: 12, fill: S.bg }, g);
       FF.pixel(g, ["kkkkk", "kpppk.", "kpppkk", "kpppk.", ".kkk."], 250, 1250, 12, { p: S.bg });   // chai cup (left: the right edge is the platform buttons)
     } else if (cfg.set === "paper") {
       el("path", { d: "M 70 1325 L 1010 1318 L 990 1360 L 90 1365 Z", fill: "#3b3743" }, g);
       el("path", { d: "M 95 1362 L 985 1356 L 975 1730 L 105 1735 Z", fill: S.red }, g);
       const mk = el("g", { class: "mark" }, g);
-      txt(mk, 540, 1470, "The Daily Habit", { size: 92, font: S.head, fill: "#fbf8f1", weight: 800 });
-      txt(mk, 540, 1560, "A THIRDSPACE PRODUCTION", { size: 30, font: S.body, fill: "#fbf8f1", weight: 600, spacing: 6 });
+      txt(mk, 540, 1505, "The Daily Habit", { size: 80, font: S.head, fill: "#fbf8f1", weight: 800 });
       el("rect", { x: 270, y: 1240, width: 70, height: 84, rx: 8, fill: "#fbf8f1", stroke: S.ink, "stroke-width": 4 }, g);   // mug, left of Habit
     } else {
       el("rect", { x: 70, y: 1318, width: 940, height: 26, rx: 6, fill: "#1d2442" }, g);
       el("rect", { x: 70, y: 1318, width: 940, height: 4, fill: S.blue }, g);
       el("rect", { x: 100, y: 1344, width: 880, height: 390, rx: 10, fill: "#10142a", stroke: S.red, "stroke-width": 4 }, g);
-      txt(el("g", { class: "mark" }, g), 540, 1470, "THE DAILY HABIT", { size: 84, font: S.head, fill: S.ink, weight: 700, spacing: 6 });
+      txt(el("g", { class: "mark" }, g), 540, 1505, "THE DAILY HABIT", { size: 76, font: S.head, fill: S.ink, weight: 700, spacing: 6 });
       el("rect", { x: 300, y: 1530, width: 480, height: 5, fill: S.red }, g);
     }
     return g;
@@ -197,7 +196,7 @@
     const eL = el("ellipse", { cx: 140, cy: 230, rx: 12, ry: 16, fill: INK }, eyes);
     const eR = el("ellipse", { cx: 220, cy: 230, rx: 12, ry: 16, fill: INK }, eyes);
     const gL = el("circle", { cx: 144, cy: 224, r: 4, fill: "#fff" }, eyes), gR = el("circle", { cx: 224, cy: 224, r: 4, fill: "#fff" }, eyes);
-    const mouthO = el("ellipse", { cx: 180, cy: 300, rx: 24, ry: 4, fill: "#5B1D1D", ...st, "stroke-width": 4 }, head);
+    const mouthO = el("path", { d: "", fill: "#5B1D1D", ...st, "stroke-width": 4 }, head);   // talking mouth: a D shape under the emotion's smile line
     const tongue = el("ellipse", { cx: 180, cy: 312, rx: 14, ry: 6, fill: "#FF6B5B" }, head);
     const smile = el("path", { d: "M 152 296 Q 180 318 208 296", fill: "none", stroke: INK, "stroke-width": 6, "stroke-linecap": "round" }, head);
     misreg.innerHTML = `<ellipse cx="180" cy="228" rx="108" ry="122" fill="#1F3A93"/><path d="M 40 560 Q 40 400 180 392 Q 320 400 320 560 Z" fill="#1F3A93"/>`;
@@ -212,8 +211,11 @@
       bR.setAttribute("transform", `rotate(${e.tilt} 220 192) translate(0 ${-(e.upR ?? 0) * 12})`);
       smile.setAttribute("d", `M 152 ${298 - 4 * e.smile} Q 180 ${298 + 24 * e.smile} 208 ${298 - 4 * e.smile}`);
       const m = Math.max(p.mouth, p.mouth > 0.08 ? e.open ?? 0 : 0);
-      mouthO.setAttribute("ry", 3 + 22 * m); mouthO.setAttribute("rx", 22 + 6 * (1 - m)); mouthO.setAttribute("cy", 300 + 8 * m);
-      mouthO.setAttribute("opacity", m > 0.08 ? 1 : 0); tongue.setAttribute("opacity", m > 0.45 ? 1 : 0); tongue.setAttribute("cy", 300 + 20 * m);
+      // speech opens the mouth a little (0.55 of the envelope); only surprised / excited / laughing open it wide (e.open).
+      // An O-shaped talking mouth read as shock on every line (screening, Ep 3-5).
+      const h = clamp(p.mouth * 0.55 + (p.mouth > 0.08 ? (e.open ?? 0) * 0.9 : 0)), sm = Math.max(e.smile, -0.3), y = 297 - 4 * sm, wd = 30 - 6 * (e.open ?? 0);
+      mouthO.setAttribute("d", `M ${180 - wd} ${y} Q 180 ${y + 12 * sm} ${180 + wd} ${y} Q ${180 + wd * 0.8} ${y + 8 + 34 * h} 180 ${y + 8 + 34 * h} Q ${180 - wd * 0.8} ${y + 8 + 34 * h} ${180 - wd} ${y} Z`);
+      mouthO.setAttribute("opacity", m > 0.08 ? 1 : 0); tongue.setAttribute("opacity", h > 0.5 ? 1 : 0); tongue.setAttribute("cy", y + 4 + 26 * h);
       smile.setAttribute("opacity", m > 0.08 ? 0 : 1);
       head.setAttribute("transform", `rotate(${p.lookX * 4 + p.tilt} 180 330) translate(0 ${p.bob * 0.6})`);
       box.style.transform = `translateY(${p.bob * 0.4}px)`;
@@ -237,13 +239,13 @@
     [key, lerp(a[key] ?? (key === "eyeR" ? 1 : 0), b[key] ?? (key === "eyeR" ? 1 : 0), k)]));
 
   // ---------- framings: where the studio window is, and where the camera looks ----------
-  const PIP = { x: 48, y: 1120, s: 320 };
-  function framing(shot) {
+  const PIP = { x: 48, y: 1050, s: 420 };   // 3 Nov: 320 -> 420, the PiP frames looked empty (screening Ep 3-5); face stays above y 1500
+  function framing(shot) {   // split: face at y 1345 (3 Nov: 25 px lower so captions clear his headphones)
     const cam = (s, tx, ty) => ({ s, tx: tx - FACE.x * s, ty: ty - FACE.y * s });
     switch (shot) {
-      case "split": return { ...cam(1.6, 540, 1320), ct: 0, cr: 0, cb: 0, cl: 0, rad: 0, ma: 960, mb: 1150, op: 1 };
-      case "pip": return { ...cam(1.12, PIP.x + PIP.s / 2, PIP.y + PIP.s / 2 + 30), ct: PIP.y, cr: W - PIP.x - PIP.s, cb: H - PIP.y - PIP.s, cl: PIP.x, rad: 30, ma: -2, mb: -1, op: 1 };
-      case "full": return { ...cam(1.12, PIP.x + PIP.s / 2, PIP.y + PIP.s / 2 + 30), ct: PIP.y + PIP.s / 2, cr: W - PIP.x - PIP.s / 2, cb: H - PIP.y - PIP.s / 2, cl: PIP.x + PIP.s / 2, rad: 30, ma: -2, mb: -1, op: 0 };
+      case "split": return { ...cam(1.6, 540, 1345), ct: 0, cr: 0, cb: 0, cl: 0, rad: 0, ma: 960, mb: 1150, op: 1 };
+      case "pip": return { ...cam(1.12 * PIP.s / 320, PIP.x + PIP.s / 2, PIP.y + PIP.s / 2 + 40), ct: PIP.y, cr: W - PIP.x - PIP.s, cb: H - PIP.y - PIP.s, cl: PIP.x, rad: 30, ma: -2, mb: -1, op: 1 };
+      case "full": return { ...cam(1.12 * PIP.s / 320, PIP.x + PIP.s / 2, PIP.y + PIP.s / 2 + 40), ct: PIP.y + PIP.s / 2, cr: W - PIP.x - PIP.s / 2, cb: H - PIP.y - PIP.s / 2, cl: PIP.x + PIP.s / 2, rad: 30, ma: -2, mb: -1, op: 0 };
       case "end": return { ...cam(1, 540, 1090), ct: 0, cr: 0, cb: 0, cl: 0, rad: 0, ma: -2, mb: -1, op: 0 };
       default: return { ...cam(1, 540, 1090), ct: 0, cr: 0, cb: 0, cl: 0, rad: 0, ma: -2, mb: -1, op: 1 };   // wide
     }
@@ -281,10 +283,16 @@
       },
       stat(g, tl, t0, d) {
         const num = H1(g, 540, 520, "", 300, { fill: S.red });
-        countUp(tl, num, d.value, t0 + 0.1, 1.2, 980);
+        countUp(tl, num, d.value, t0 + 0.1, 1.2, 900);   // 90 px side margins
         const l1 = B(g, 540, 720, String(d.label || "").toUpperCase(), 46, { weight: 800, spacing: 1 }); fit(l1, 960, 46);
         tl.fromTo(l1, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35 }, t0 + 0.8);
-        if (d.sub) { const l2 = H1(g, 540, 810, d.sub, 60, { fill: S.blue }); fit(l2, 960, 60); tl.fromTo(l2, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35 }, t0 + 1.15); }
+        if (d.sub) {   // one or two lines at >= 40 px in ink (a long sub shrank to ~22 px in blue)
+          const ws = String(d.sub).split(/\s+/), two = String(d.sub).length > 30, half = Math.ceil(ws.length / 2);
+          (two ? [ws.slice(0, half).join(" "), ws.slice(half).join(" ")] : [d.sub]).forEach((line, i) => {
+            const l2 = B(g, 540, (two ? 790 : 810) + i * 50, line, 42, { weight: 700 }); fit(l2, 900, 42);
+            tl.fromTo(l2, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35 }, t0 + 1.15 + i * 0.1);
+          });
+        }
         const p = parseNum(d.value);
         if (p && String(d.value).includes("%") && p.n <= 100) {   // a 100-dot grid for a share
           const dots = el("g", {}, g);
@@ -420,14 +428,7 @@
         if (i) tl.fromTo(L, { opacity: 0 }, { opacity: 1, duration: 0.25 }, a); else gsap.set(L, { opacity: 1 });
         run(a, b);
       });
-      if (m.logo) {   // logo badge, top left of the box, pops in after the first beat
-        const lg = el("g", {}, frame);
-        const ly = BY - 46, lx = BX + BW - 236;   // straddles the box's top-right corner: over the site's nav bar, never its text
-        el("rect", { x: lx, y: ly, width: 220, height: 130, rx: 18, fill: "#ffffff", stroke: S.ink, "stroke-width": 5 }, lg);
-        el("image", { href: m.logo.src, x: lx + 18, y: ly + 18, width: 184, height: 94, preserveAspectRatio: "xMidYMid meet" }, lg);
-        gsap.set(lg, { svgOrigin: `${lx + 110} ${ly + 65}` });
-        tl.fromTo(lg, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2.2)" }, t0 + 0.35);
-      }
+      // the logo rides in the topic strip (3 Nov: a badge on the box covered the page's own text)
       gsap.set(frame, { svgOrigin: `${BX + BW / 2} ${BY + BH / 2}` });
       tl.fromTo(frame, { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "power3.out" }, t0);
       tl.to(frame, { opacity: 0, y: -40, duration: 0.3, ease: "power2.in" }, t0 + m.dur - 0.25);
@@ -472,11 +473,11 @@
         const c = txt(bar, 540, BY + BH - 95, String(a.caption || "").toUpperCase(), { size: 56, font: S.head, fill: S.textOnRed, weight: 900 }); fit(c, BW - 100, 56);
         tl.fromTo(bar, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, t0 + 0.4);
       } else {   // stamp: slams over whatever is on screen
-        const st = el("g", { transform: "rotate(-5 540 930)" }, g);   // low in the box, so the number above stays clear
-        const w = Math.max(300, 50 * String(a.word).length + 70);
-        el("rect", { x: 540 - w / 2, y: 885, width: w, height: 96, rx: 14, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
-        const t = txt(st, 540, 935, String(a.word || "").toUpperCase(), { size: 70, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 50, 70);
-        gsap.set(st, { svgOrigin: "540 930" });
+        const st = el("g", { transform: "rotate(-4 540 940)" }, g);   // low in the box, so the number above stays clear
+        const w = Math.max(280, 42 * String(a.word).length + 60);
+        el("rect", { x: 540 - w / 2, y: 900, width: w, height: 80, rx: 14, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
+        const t = txt(st, 540, 942, String(a.word || "").toUpperCase(), { size: 58, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 50, 58);
+        gsap.set(st, { svgOrigin: "540 940" });
         tl.fromTo(st, { scale: 3, opacity: 0 }, { scale: 1, opacity: 0.92, duration: 0.18, ease: "power4.in" }, t0);
       }
       tl.to(g, { opacity: 0, duration: 0.25 }, t0 + a.dur - 0.25);
@@ -552,17 +553,17 @@
     tickTag.textContent = "TODAY";
     const tickText = div(ticker, `position:absolute;left:0;top:0;height:64px;white-space:nowrap;color:${S.bg};font:700 30px/64px ${S.body};letter-spacing:2px`);
     tickText.textContent = ((cfg.ticker || []).join("   ◆   ") + "   ◆   ").repeat(3);
-    const breaking = div(pkg, `position:absolute;left:0;top:1160px;width:1080px;opacity:0`);
-    breaking.innerHTML = `<div style="background:${S.red};color:${S.textOnRed};font:900 70px/1 ${q(S.head)};padding:22px 48px;letter-spacing:4px">BREAKING</div>
-      <div style="background:${S.ink};color:${S.bg};font:700 36px/1.2 ${q(S.body)};padding:16px 48px">${esc(cfg.breakingText)}</div>`;
+    const breaking = div(pkg, `position:absolute;left:0;top:1236px;width:1080px;opacity:0;display:flex;align-items:stretch`);   // one compact row under Habit's chin (y 1236-1320)
+    breaking.innerHTML = `<div style="background:${S.red};color:${S.textOnRed};font:900 44px/1 ${q(S.head)};padding:20px 22px 16px 48px;letter-spacing:3px;white-space:nowrap">BREAKING</div>
+      <div style="flex:1;background:${S.ink};color:${S.bg};font:700 32px/1.15 ${q(S.body)};padding:14px 24px;display:flex;align-items:center">${esc(cfg.breakingText)}</div>`;
 
     const capBox = div(root, `position:absolute;left:0;top:0;width:1080px;height:0`);
     const cap = div(capBox, `position:absolute;left:60px;width:960px;text-align:center;font:800 62px/1.1 ${S.body === '"FF Mono", monospace' ? '"FF Display", sans-serif' : S.body};color:${S.text}`);
     const capStyle = (shot) => {
-      if (shot === "pip") return { left: 400, width: 480, top: 1200, align: "left", size: 54 };   // right of the PiP, clear of the buttons (x > 900)
-      if (shot === "split") return { left: 60, width: 960, top: 990, align: "center" };
-      if (shot === "wide") return { left: 60, width: 960, top: 1380, align: "center" };   // under the breaking bar
-      return { left: 60, width: 960, top: 1210, align: "center" };
+      if (shot === "pip") return { left: 500, width: 380, top: 1160, align: "left", size: 52 };   // right of the PiP, clear of the buttons (x > 900)
+      if (shot === "split") return { left: 60, width: 820, top: 992, align: "center", size: 56 };   // inside x 60-880: the buttons sit right of x 900
+      if (shot === "wide") return { left: 60, width: 820, top: 1336, align: "center", size: 54 };   // under the breaking row, above the ticker (y 1432)   // under the breaking bar
+      return { left: 60, width: 820, top: 1210, align: "center" };
     };
 
     const sting = div(root, `position:absolute;inset:0;opacity:0;background:${S.red}`);
@@ -639,14 +640,14 @@
         ring.setAttribute("stroke-dashoffset", `${2 * Math.PI * 50 * (1 - left / seg.dur)}`);
         ring.setAttribute("stroke", left < 3 ? S.red : S.blue);
         if (lastStrip !== si) {
-          strip.innerHTML = `<span style="background:${S.red};color:${S.textOnRed};padding:12px 18px 8px;font-family:${q(S.body)};font-size:30px;letter-spacing:2px">${seg.topic}/${cfg.topics} · ${esc(seg.lane).toUpperCase()}</span>` +
-            `<span style="background:${S.ink};color:${S.bg};padding:12px 20px 8px;white-space:nowrap;font-size:${String(seg.headline).length > 30 ? 34 : 40}px;white-space:normal">${esc(seg.headline)}</span>`;
+          strip.innerHTML = `<span style="background:${S.red};color:${S.textOnRed};padding:12px 18px 8px;font-family:${q(S.body)};font-size:30px;letter-spacing:2px;white-space:nowrap">${seg.topic}/${cfg.topics} · ${esc(seg.lane).toUpperCase()}</span>` +
+            `<span style="background:${S.ink};color:${S.bg};padding:12px 20px 8px;white-space:nowrap;font-size:${String(seg.headline).length > 30 ? 34 : 40}px">${esc(seg.headline)}</span>`;
+          chip.textContent = `SOURCE · ${seg.source || ""}`;   // the source only (a subject logo beside it read as the source)
           lastStrip = si;
           chip.style.top = `${strip.offsetTop + strip.offsetHeight + 6}px`;
         }
         const sk = clamp((t - seg.start - 0.1) / 0.3);
         strip.style.opacity = shot === "wide" ? 0 : sk; strip.style.transform = `translateX(${(1 - ease(sk)) * -60}px)`;
-        chip.textContent = `SOURCE · ${seg.source || ""}`;
         chip.style.opacity = seg.source && shot !== "wide" ? clamp((t - seg.start - 0.6) / 0.3) : 0;
       } else { cd.style.opacity = 0; strip.style.opacity = 0; chip.style.opacity = 0; }
       const tk = cfg.tickerAt != null ? clamp((t - cfg.tickerAt) / 0.4) : 0;
@@ -661,13 +662,17 @@
         stingBar.setAttribute("transform", `translate(${p > 1.1 ? ease(clamp((p - 1.1) / 0.42)) * W - 24 : -W} 0)`);
       }
       if (cfg.endAt != null) end.style.opacity = clamp((t - cfg.endAt) / 0.3);
-      const w = words.findIndex((x) => t >= x.s && t < x.e + 0.25);
-      const markOn = f.s < 1.05 && (w < 0 || atEnd || inSting);
+      let w = words.findIndex((x) => t >= x.s && t < x.e + 0.25);
+      if (w < 0) {   // a short pause keeps the last phrase up (stills between words showed no caption)
+        const k = words.findLastIndex((x) => x.e <= t);
+        if (k >= 0 && t - words[k].e < 0.9 && !(words[k + 1] && words[k + 1].s <= t)) w = k;
+      }
+      const markOn = f.s < 1.05;   // on the wide shot only (cut off in close-ups); at y 1505, under the open's caption
       marks.forEach((mk) => { mk.style.opacity = markOn ? 1 : 0; });
       if (w < 0 || atEnd || inSting) cap.textContent = "";
       else {
         const grp = words.filter((x) => x.g === words[w].g);
-        cap.innerHTML = `<span style="display:inline-block;text-wrap:balance;max-width:100%;box-sizing:border-box;background:${S.bg};padding:8px 20px;border-radius:${cfg.set === "riso" ? 0 : 14}px;box-shadow:0 0 0 3px ${S.text}">` +
+        cap.innerHTML = `<span style="display:inline-block;text-wrap:balance;max-width:100%;width:fit-content;box-sizing:border-box;background:${S.bg};padding:8px 20px;border-radius:${cfg.set === "riso" ? 0 : 14}px;box-shadow:0 0 0 3px ${S.text}">` +
           grp.map((x) => `<span style="color:${x === words[w] ? S.red : S.text}">${esc(x.w)}</span>`).join(" ") + "</span>";
         const c = capStyle(shot);
         Object.assign(cap.style, { left: c.left + "px", width: c.width + "px", top: c.top + "px", textAlign: c.align, display: "block", fontSize: (c.size || 62) + "px" });

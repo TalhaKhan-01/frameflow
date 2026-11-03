@@ -23,6 +23,11 @@ def main():
             shutil.copy(a / f, out / f)
     shutil.copytree(a / "voice", out / "voice", dirs_exist_ok=True)
     data, script = json.loads((out / "research.json").read_text()), json.loads((out / "script.json").read_text())
+    if script.get("hook_pick"):   # the banner follows the picked hook (hookpick.apply since 3 Nov)
+        from frameflow import hookpick
+        g = hookpick.story_of(script["open"]["say"], script)
+        if g:
+            script["breaking"] = g["headline"][:55]
     ep = int(src.rsplit("ep", 1)[1])
     day = src[:10]
     media_by, _ = show.visuals(script, data, out)

@@ -61,3 +61,18 @@ def test_tick_buttons():
     assert ("✅ 2", "stog:2026-10-28:2") in flat
     assert any(data == "smake:2026-10-28" and "(2/" in label for label, data in flat)
     assert all(len(data.encode()) <= 64 for _, data in flat)
+
+
+def test_phrase_chunks_keep_numbers_and_never_end_on_a_joining_word():
+    from frameflow.show import phrase_chunks, _JOIN
+    for text in ["Binance lost six point three billion dollars in one hack, and the FBI says North Korea did it.",
+                 "Apple retakes the most valuable company crown from Nvidia this week",
+                 "existing staff on AI work, becoming part of the job"]:
+        ws = text.split()
+        ch = phrase_chunks(ws)
+        assert sorted(i for c in ch for i in c) == list(range(len(ws)))   # every word once, in order
+        lines = [" ".join(ws[i] for i in c) for c in ch]
+        assert all(ws[c[-1]].lower().strip(",.") not in _JOIN for c in ch), lines
+        assert all(len(c) > 1 or ws[c[0]].endswith((".", "?", "!", ",")) for c in ch), lines
+    ws = "Binance lost six point three billion dollars in one hack,".split()
+    assert any(" ".join(ws[i] for i in c) == "six point three billion dollars" for c in phrase_chunks(ws))

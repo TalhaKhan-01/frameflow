@@ -145,7 +145,9 @@ Hard rules:
 - open: 10-20 words, starts with "Breaking:" and teases the top two stories with a stake.
 - outro: 10-20 words, a one-line wrap that calls back to one story, and ends exactly with "Make learning a Habit."
 - witty: copy the exact witty sentence from `say` (verbatim), or "" when the segment has no joke (most segments).
-- emotion: Habit's face for that line, one of neutral, excited, surprised, doubtful, smug, worried, laughing, serious.
+- emotion: Habit's face for that line, one of neutral, excited, surprised, doubtful, smug, worried, laughing, serious. The face fits the news
+  first: worried, serious or surprised for losses, hacks, scams, layoffs and risks; excited, smug or laughing only for good
+  news or the witty line (screening: a grin on a record hack read as wrong).
   Match it to the line, and vary it across the episode.
 - headline: the on-screen topic strip, at most 38 characters. wall: one big word or number for the studio wall, at most
   8 characters. breaking: the open's on-screen bar, at most 55 characters. title: the episode's post title, at most 60
@@ -522,6 +524,48 @@ def envelope(wav):
 
 
 # ---------- director (code): timeline, framings, package ----------
+_JOIN = set("a an the of to in on for and but or nor with at by from as than into onto about over under per via is are was were "
+             "be been has have had its it's their his her our your my this that these those who which whose not no".split())
+_NUM = set("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen "
+           "nineteen twenty thirty forty fifty sixty seventy eighty ninety hundred thousand lakh lakhs crore crores million millions "
+           "billion billions trillion point percent per cent rupees dollars".split())
+
+
+def phrase_chunks(ws, most=4, chars=24):
+    """Caption chunks as index lists. A break after punctuation; when a chunk is full (`most` words or `chars` letters) it breaks
+    at its best point: before a joining word ('of', 'the', 'is'), never inside a spoken number ('six point three billion');
+    a lone word joins the chunk before."""
+    bare = [re.sub(r"[^\w'-]", "", w.lower()) for w in ws]
+    num = lambda k: 0 <= k < len(ws) and (bare[k] in _NUM or bare[k][:1].isdigit())
+    def ok_after(k):   # may a chunk end after word k?
+        return bare[k] not in _JOIN and not (num(k) and num(k + 1))
+    out, cur = [], []
+    for k, w in enumerate(ws):
+        cur.append(k)
+        if re.search(r"[,.;:!?]$", w):
+            out.append(cur); cur = []
+            continue
+        if len(cur) >= most or sum(len(ws[x]) + 1 for x in cur) >= chars:
+            cuts = [m for m in range(len(cur) - 1, 0, -1) if ok_after(cur[m - 1]) and (bare[cur[m]] in _JOIN or m == len(cur))]
+            cuts += [m for m in range(len(cur), 1, -1) if ok_after(cur[m - 1])]
+            if cuts and len(cur) < most + 3:
+                if cuts[0] == len(cur) and not ok_after(cur[-1]):
+                    continue
+                m = cuts[0]
+                out.append(cur[:m]); cur = cur[m:]
+            elif len(cur) >= most + 3:
+                out.append(cur); cur = []
+    if cur:
+        out.append(cur)
+    merged = []
+    for ch in out:   # no lonely word: it joins the chunk before (unless that chunk ended a sentence)
+        if len(ch) == 1 and merged and len(merged[-1]) <= most and not re.search(r"[.!?]$", ws[merged[-1][-1]]):
+            merged[-1] = merged[-1] + ch
+        else:
+            merged.append(ch)
+    return merged
+
+
 def direct(script, data, vd, ep, day, media_by=None):
     D = {l["id"]: l for l in json.loads((vd / "durations.json").read_text())["lines"]}
     heard = json.loads((vd / "words.json").read_text())
@@ -540,12 +584,10 @@ def direct(script, data, vd, ep, day, media_by=None):
         seg.update({"start": round(t, 3), "dur": round(dur, 3), "id": lid})
         a, b = info["start"] - 0.05, info["start"] + info["seconds"] + 0.05
         mine = [w for w in shown if a <= w["s"] < b]
-        grp, n = 0, 0
-        for w in mine:   # caption chunks: up to 3 words, a new chunk after a comma, colon or full stop
-            words.append({"w": w["w"], "s": round(t + w["s"] - info["start"], 3), "e": round(t + w["e"] - info["start"], 3), "g": f"{len(segs)}-{grp}"})
-            n += 1
-            if n == 3 or re.search(r"[,.;:!?]$", w["w"]):
-                grp, n = grp + 1, 0
+        for grp, ch in enumerate(phrase_chunks([w["w"] for w in mine])):   # caption chunks by phrase (screening: no fragments)
+            for i in ch:
+                w = mine[i]
+                words.append({"w": w["w"], "s": round(t + w["s"] - info["start"], 3), "e": round(t + w["e"] - info["start"], 3), "g": f"{len(segs)}-{grp}"})
         e = envelope(vd / info["file"])
         f0 = int(round(t * FPS))
         env += [0.0] * max(f0 - len(env), 0)
@@ -783,7 +825,9 @@ look (polished, consistent, on-brand), readability (graphic text and numbers rea
 overlapping), framing (Habit and graphics placed well; nothing important in the bottom 420 px or the right 180 px below
 y 1000, where the platform buttons sit), captions (readable, never covering a key graphic), package (topic strip,
 countdown, bug and source chip clear and not cluttered), story (each still tells its topic), habit (the narrator looks
-alive and his face fits the line). For every row under 2 give one concrete fix. Be strict and specific."""
+alive and his face fits the line). For every row under 2 give one concrete fix. Be strict and specific.
+House style, decided by the owner (never a fault): the end card shows the pixel-art Habit (the studio's mascot look) while the
+show uses the drawn Habit."""
 SCREEN_ROWS = ["look", "readability", "framing", "captions", "package", "story", "habit"]
 SCREEN_SCHEMA = {"type": "object", "required": ["rows", "fixes"], "properties": {
     "rows": {"type": "object", "required": SCREEN_ROWS, "properties": {k: {"type": "integer", "minimum": 0, "maximum": 2} for k in SCREEN_ROWS}},
