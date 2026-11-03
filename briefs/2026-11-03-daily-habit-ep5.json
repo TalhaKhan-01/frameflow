@@ -1,0 +1,207 @@
+{
+ "topic": "The Daily Habit Ep 5: today's 7 stories (FBI: North Korea behind Binance hack; UPI tops ₹1 lakh crore a day; Unreleased AI writes Chrome hacks; Apple retakes top spot from Nvidia; Big Tech's debt jumps 45%; Burj Khalifa tickets via UPI; Cognizant puts 25,000 on OpenAI)",
+ "angle_hint": "An episode digest carousel: slide 1 a bold hook naming the biggest story and that there are 7 stories today; then one stat, compare or fact slide per story for the first five stories in the episode's order (each with its own source); a close slide inviting people to watch the full episode for all of them.",
+ "facts": [
+  {
+   "id": "s1f1",
+   "text": "The hack was a record $6.3 billion exploit of Binance; Binance said it set aside about $6.34 billion of company funds to cover losses.",
+   "source": "https://www.nbcnews.com/business/business-news/fbi-says-north-korea-was-6-billion-binance-crypto-hack-rcna606758",
+   "story": 1
+  },
+  {
+   "id": "s1f2",
+   "text": "Binance said it has replaced 90% of the stolen assets with company money; the remaining 10% is less liquid and may take longer.",
+   "source": "https://www.nbcnews.com/business/business-news/fbi-says-north-korea-was-6-billion-binance-crypto-hack-rcna606758",
+   "story": 1
+  },
+  {
+   "id": "s1f3",
+   "text": "Co-CEO Richard Teng said: \"Our users will not bear the financial impact of this incident.\"",
+   "source": "https://www.nbcnews.com/business/business-news/fbi-says-north-korea-was-6-billion-binance-crypto-hack-rcna606758",
+   "story": 1
+  },
+  {
+   "id": "s1f4",
+   "text": "Binance paused customer withdrawals after the hack but said it was on track to reopen them on Sunday.",
+   "source": "https://www.nbcnews.com/business/business-news/fbi-says-north-korea-was-6-billion-binance-crypto-hack-rcna606758",
+   "story": 1
+  },
+  {
+   "id": "s2f1",
+   "text": "UPI's average daily transaction value in October 2026 was Rs 1,01,707 crore, the first month above Rs 1 lakh crore, up from Rs 97,913 crore in September.",
+   "source": "https://www.outlookmoney.com/banking/upi-average-daily-transaction-value-crosses-rs-1-lakh-crore-for-first-time-ever-in-october",
+   "story": 2
+  },
+  {
+   "id": "s2f2",
+   "text": "October 2026 UPI total: 25.47 billion transactions worth Rs 31.53 lakh crore, a record monthly value (previous high Rs 29.90 lakh crore in May 2026).",
+   "source": "https://www.outlookmoney.com/banking/upi-average-daily-transaction-value-crosses-rs-1-lakh-crore-for-first-time-ever-in-october",
+   "story": 2
+  },
+  {
+   "id": "s2f3",
+   "text": "Year on year (vs October 2025), UPI volume rose 23% and value rose 16%.",
+   "source": "https://www.outlookmoney.com/banking/upi-average-daily-transaction-value-crosses-rs-1-lakh-crore-for-first-time-ever-in-october",
+   "story": 2
+  },
+  {
+   "id": "s2f4",
+   "text": "Average daily volume was 822 million transactions in October, up from 802 million in September.",
+   "source": "https://www.outlookmoney.com/banking/upi-average-daily-transaction-value-crosses-rs-1-lakh-crore-for-first-time-ever-in-october",
+   "story": 2
+  },
+  {
+   "id": "s2f5",
+   "text": "Per NPCI data, October's total was Rs 31.53 lakh crore across 25.47 billion transactions, and the daily value crossed Rs 1 lakh crore for the first time.",
+   "source": "https://daijiworld.com/news/newsDisplay?newsID=1334099",
+   "story": 2
+  },
+  {
+   "id": "s2f6",
+   "text": "The proposed 0.40% MDR on P2M transactions above Rs 2,000 (capped at Rs 300), planned from October 15, has been deferred until after Diwali with no new date. P2P transfers are excluded.",
+   "source": "https://www.outlookmoney.com/banking/upi-average-daily-transaction-value-crosses-rs-1-lakh-crore-for-first-time-ever-in-october",
+   "story": 2
+  },
+  {
+   "id": "s4f1",
+   "text": "Anthropic said an unreleased internal research model wrote exploit chains for Chrome, Safari and Android (tested on a physical Google Pixel 9), among five attack chains in total. The page text provided doesn't show the publication date or the Windows and Linux details.",
+   "source": "https://www.anthropic.com/research/discovering-vulnerabilities-with-claude",
+   "story": 4
+  },
+  {
+   "id": "s4f2",
+   "text": "Anthropic reported 62 Chrome CVEs to Google, all rated critical or high severity and patched as of Chrome 156; 13 were sandbox escapes and 21 could have been used to compromise the renderer.",
+   "source": "https://www.anthropic.com/research/discovering-vulnerabilities-with-claude",
+   "story": 4
+  },
+  {
+   "id": "s4f5",
+   "text": "Claude wrote the Chrome, Safari and Android exploits after initial prompting. The attack chains needed little to no user interaction from the victim. Anthropic reported each vulnerability to the affected vendor under coordinated vulnerability disclosure.",
+   "source": "https://www.anthropic.com/research/discovering-vulnerabilities-with-claude",
+   "story": 4
+  },
+  {
+   "id": "s4f6",
+   "text": "Punto Informatico reports a Chrome chain of four bugs that opened the Calculator app on a Mac after a user visited a trap page, and a Linux chain giving root commands on a remote vulnerable server with no victim action.",
+   "source": "https://www.punto-informatico.it/claude-ha-hackerato-chrome-safari-android-pochi-secondi/",
+   "story": 4
+  },
+  {
+   "id": "s5f1",
+   "text": "Apple regained the title of world's most valuable public company on Monday (27 July 2026), with a market cap of nearly $4.95 trillion.",
+   "source": "https://freepressjournal.in/business/apple-reclaims-worlds-most-valuable-company-spot-as-nvidia-shares-fall",
+   "story": 5
+  },
+  {
+   "id": "s5f2",
+   "text": "Nvidia shares fell nearly 5%, taking its market value to about $4.77 trillion.",
+   "source": "https://freepressjournal.in/business/apple-reclaims-worlds-most-valuable-company-spot-as-nvidia-shares-fall",
+   "story": 5
+  },
+  {
+   "id": "s5f3",
+   "text": "Reported reason: investor concern over the scale and funding of AI infrastructure, including reports that Nvidia was discussing a guarantee of around $250 billion for an OpenAI data centre project in Ohio (talks ongoing, terms could change).",
+   "source": "https://freepressjournal.in/business/apple-reclaims-worlds-most-valuable-company-spot-as-nvidia-shares-fall",
+   "story": 5
+  },
+  {
+   "id": "s5f4",
+   "text": "Apple's stock rose more than 1% and its market cap was about US$4.9 trillion. Nvidia was about US$4.8 trillion, per Bloomberg. Investors sought safety in Apple: 'People see the AI trade is volatile, and they see Apple as almost like owning an index' (Daniel Newman, Futurum Group).",
+   "source": "https://thenightly.com.au/business/tech-giant-apple-reclaims-title-from-nvidia-as-the-worlds-most-valuable-public-company-c-22637526",
+   "story": 5
+  },
+  {
+   "id": "s5f5",
+   "text": "Analysts say Apple's comparatively lower spending on data centres and AI infrastructure has shielded it from some financial pressure.",
+   "source": "https://freepressjournal.in/business/apple-reclaims-worlds-most-valuable-company-spot-as-nvidia-shares-fall",
+   "story": 5
+  },
+  {
+   "id": "s6f1",
+   "text": "Combined debt of the Magnificent Seven rose nearly 45% to USD 578 billion by mid-2026, per SBI Research.",
+   "source": "https://www.devdiscourse.com/article/business/4000442-ai-debt-surge-pushes-magnificent-seven-borrowing-to-usd-578-billion-up-45-sbi-research",
+   "story": 6
+  },
+  {
+   "id": "s6f2",
+   "text": "The group (Alphabet, Amazon, Apple, Meta, Microsoft, Nvidia, Tesla) had about USD 399 billion of debt in 2025.",
+   "source": "https://www.devdiscourse.com/article/business/4000442-ai-debt-surge-pushes-magnificent-seven-borrowing-to-usd-578-billion-up-45-sbi-research",
+   "story": 6
+  },
+  {
+   "id": "s6f3",
+   "text": "Using an equity duration approach, a rise in yields could cut the group's market cap by about USD 1.67-2 trillion, against a combined value of about USD 23 trillion.",
+   "source": "https://www.devdiscourse.com/article/business/4000442-ai-debt-surge-pushes-magnificent-seven-borrowing-to-usd-578-billion-up-45-sbi-research",
+   "story": 6
+  },
+  {
+   "id": "s6f4",
+   "text": "The report points to Anthropic's expected entry into public markets, likely around November 12, with a target valuation of USD 1.5-2 trillion, and describes the proposed listing as a 'high-stakes litmus test' for the financial viability of the AI boom.",
+   "source": "https://www.devdiscourse.com/article/business/4000442-ai-debt-surge-pushes-magnificent-seven-borrowing-to-usd-578-billion-up-45-sbi-research",
+   "story": 6
+  },
+  {
+   "id": "s6f5",
+   "text": "The US 10-year yield rose from 4.18% to 4.44% between December 2025 and June 2026.",
+   "source": "https://www.devdiscourse.com/article/business/4000442-ai-debt-surge-pushes-magnificent-seven-borrowing-to-usd-578-billion-up-45-sbi-research",
+   "story": 6
+  },
+  {
+   "id": "s7f1",
+   "text": "Ministry of Finance said on 30 Oct 2026 (per ANI) that Indian travellers can now book and pay via UPI apps for At the Top, Burj Khalifa (Dubai) and Resorts World Sentosa in Singapore, including Universal Studios Singapore, Singapore Oceanarium and Adventure Cove Waterpark.",
+   "source": "https://www.devdiscourse.com/article/business/3999699-upi-payments-expanded-to-online-bookings-at-tourist-attractions-in-uae-singapore",
+   "story": 7
+  },
+  {
+   "id": "s7f2",
+   "text": "Burj Khalifa (At the Top) is the first UAE attraction to accept UPI for e-commerce transactions, via NEOPAY and Emaar Entertainment with NPCI International (NIPL). Gulf News reported the launch on July 29, 2026.",
+   "source": "https://gulfnews.com/business/tourism/indian-travellers-can-now-use-upi-to-book-at-the-top-burj-khalifa-tickets-online-1.500623758",
+   "story": 7
+  },
+  {
+   "id": "s7f3",
+   "text": "Singapore's UPI acceptance runs through FOMO Pay with NIPL; the partnership was announced September 9.",
+   "source": "https://www.devdiscourse.com/article/business/3999699-upi-payments-expanded-to-online-bookings-at-tourist-attractions-in-uae-singapore",
+   "story": 7
+  },
+  {
+   "id": "s7f4",
+   "text": "UPI is accepted in 10 countries, including Singapore, UAE, France, Mauritius, Nepal, Bhutan, Qatar, Sri Lanka, Cambodia and Greece; Uzbekistan is expected to be the 11th.",
+   "source": "https://www.devdiscourse.com/article/business/3999699-upi-payments-expanded-to-online-bookings-at-tourist-attractions-in-uae-singapore",
+   "story": 7
+  },
+  {
+   "id": "s7f5",
+   "text": "Payment is made online on the attraction's official website before travel, using a UPI app.",
+   "source": "https://gulfnews.com/business/tourism/indian-travellers-can-now-use-upi-to-book-at-the-top-burj-khalifa-tickets-online-1.500623758",
+   "story": 7
+  },
+  {
+   "id": "s8f4",
+   "text": "Eleven days earlier, Cognizant put about 18,000 staff behind Google's Gemini, so it is not betting on a single model maker.",
+   "source": "https://thenextweb.com/news/cognizant-openai-frontier-capability-group-25000",
+   "story": 8
+  },
+  {
+   "id": "s8f5",
+   "text": "CEO Ravi Kumar S. said: 'We are committing more than 25,000 of our people to bring that change inside our clients' businesses.'",
+   "source": "https://thenextweb.com/news/cognizant-openai-frontier-capability-group-25000",
+   "story": 8
+  }
+ ],
+ "lane": "global-tech",
+ "cautions": [
+  "Could not open The Verge or the FBI page (403/blocked). The FBI attribution, 'TraderTraitor' label, Oct 29 date and Ethereum laundering come only from search-result summaries of the FBI notice, Bloomberg, CoinDesk and BleepingComputer, not from pages I read.",
+  "Amount varies by outlet: $6.3B (NBC, BleepingComputer), about $6.4B (CoinDesk), and 'more than $6 billion' (FBI headline). Use '$6.3 billion' with attribution.",
+  "A search summary says Trump told reporters 'We don't know if it's North Korea' (ABC News). I did not verify this. Say 'FBI says', not 'North Korea did it'.",
+  "The NBC article does not mention India or Indian users. Do not claim Indian users were affected.",
+  "The search summary says Binance linked the breach to a compromised DevOps engineer's laptop, and NPR says the access method is still unclear. Don't state a cause.",
+  "Daijiworld gives average daily volume as 821 million, Outlook Money gives 822 million. Use 'about 820 million' or cite one source.",
+  "The Rs 1 lakh crore figure is a monthly daily average. UPI had crossed Rs 1 lakh crore on single days before.",
+  "The MDR is only proposed and deferred, so don't say UPI charges are coming.",
+  "October 2026 is partly festive-driven (Diwali), so don't call it a permanent new baseline.",
+  "Value growth is 16% YoY; volume growth is 23%. Don't mix them up.",
+  "I could not open the MediaNama article itself. Facts come from Anthropic's post and Punto Informatico.",
+  "The model is unreleased, so users cannot use it. Don't say 'Claude' the public chatbot hacked these."
+ ]
+}

@@ -1,0 +1,249 @@
+{
+ "topic": "The Daily Habit Ep 4: today's 8 stories (Binance hit by record crypto breach; Claude's smart reports for bosses; UPI: 55.49 crore users onboarded; Claude flags potential misuse; Free textbooks inside Gemini; India No.2 in AI shopping; Google: AI search earns less; Indian AI firm eyes $3B for chips)",
+ "angle_hint": "An episode digest carousel: slide 1 a bold hook naming the biggest story and that there are 8 stories today; then one stat, compare or fact slide per story for the first five stories in the episode's order (each with its own source); a close slide inviting people to watch the full episode for all of them.",
+ "facts": [
+  {
+   "id": "s1f1",
+   "text": "Binance estimates about $6.3 Bn in assets was affected, which the article says appears to be the largest crypto heist on record; about $3 Bn has been frozen on-chain.",
+   "source": "https://inc42.com/buzz/binance-hit-by-record-6-3-bn-crypto-breach-suspends-withdrawals/",
+   "story": 1
+  },
+  {
+   "id": "s1f2",
+   "text": "Binance says it will cover all losses through its SAFU fund and company funds. Withdrawals are temporarily suspended and expected to be restored in the next 48 hours.",
+   "source": "https://inc42.com/buzz/binance-hit-by-record-6-3-bn-crypto-breach-suspends-withdrawals/",
+   "story": 1
+  },
+  {
+   "id": "s1f3",
+   "text": "Binance's initial investigation suggests the incident may involve a compromised DevOps engineer's laptop; it found no evidence of any wallet private key leak.",
+   "source": "https://www.coindesk.com/business/2026/10/29/potential-multi-billion-binance-hack-hitting-crypto-markets",
+   "story": 1
+  },
+  {
+   "id": "s1f4",
+   "text": "Tether reports freezing over $1.57 Bn in USDT and Circle over $800 Mn in USDC. Chainalysis puts the theft at roughly $5.9 Bn.",
+   "source": "https://www.coindesk.com/business/2026/10/29/potential-multi-billion-binance-hack-hitting-crypto-markets",
+   "story": 1
+  },
+  {
+   "id": "s1f5",
+   "text": "India angle: Indian exchange CoinDCX halted new trades on its futures desk as a precaution. Binance restarted operations in India in 2024 after registering with the FIU.",
+   "source": "https://inc42.com/buzz/binance-hit-by-record-6-3-bn-crypto-breach-suspends-withdrawals/",
+   "story": 1
+  },
+  {
+   "id": "s2f1",
+   "text": "Anthropic's smart reports for Claude Enterprise are now generally available. They analyze a sample of a selected team's transcripts and group the work into workstreams, showing spend, deliverables produced and the most common points of friction.",
+   "source": "https://claude.com/blog/smart-reports-surveys-pooled-budgets",
+   "story": 2
+  },
+  {
+   "id": "s2f2",
+   "text": "The Inefficiencies section counts sessions that produced nothing usable and sessions that were personal or off-topic, with their cost, shown only as an aggregate count and cost, with no summaries or drilldown. Personal conversations also don't include individual sessions or names.",
+   "source": "https://support.claude.com/en/articles/16893491-get-started-with-smart-reports",
+   "story": 2
+  },
+  {
+   "id": "s2f3",
+   "text": "Smart reports are off by default and must be turned on in the organization's settings. The role required to enable them is Primary Owner or Owner.",
+   "source": "https://support.claude.com/en/articles/16893491-get-started-with-smart-reports",
+   "story": 2
+  },
+  {
+   "id": "s2f5",
+   "text": "Anthropic says smart reports 'should not be used for evaluating individual performance or making employment decisions.' They are meant for adoption and investment planning.",
+   "source": "https://support.claude.com/en/articles/16893491-get-started-with-smart-reports",
+   "story": 2
+  },
+  {
+   "id": "s2f6",
+   "text": "The same announcement added pooled group budgets, which let admins set one shared budget per team, and in-app surveys that capture the team's own feedback.",
+   "source": "https://claude.com/blog/smart-reports-surveys-pooled-budgets",
+   "story": 2
+  },
+  {
+   "id": "s3f1",
+   "text": "About 55.49 crore users had onboarded on UPI as of June 2026.",
+   "source": "https://www.ibef.org/news/upi-onboarded-55-49-crore-users-by-june-2026-transactions-reach-us-3-56-trillion-in-fy26",
+   "story": 3
+  },
+  {
+   "id": "s3f2",
+   "text": "In FY26, UPI handled 24,161.69 crore transactions worth Rs 314.23 lakh crore (about US$ 3.56 trillion).",
+   "source": "https://www.ibef.org/news/upi-onboarded-55-49-crore-users-by-june-2026-transactions-reach-us-3-56-trillion-in-fy26",
+   "story": 3
+  },
+  {
+   "id": "s3f3",
+   "text": "For comparison, FY22 had 4,595.61 crore UPI transactions worth Rs 84.16 lakh crore.",
+   "source": "https://www.ibef.org/news/upi-onboarded-55-49-crore-users-by-june-2026-transactions-reach-us-3-56-trillion-in-fy26",
+   "story": 3
+  },
+  {
+   "id": "s3f4",
+   "text": "The government shared the figures in a Lok Sabha reply (Minister of State for Finance Pankaj Chaudhary), as reported by Outlook Money on 22 July 2026.",
+   "source": "https://www.outlookmoney.com/banking/upi-transaction-value-reaches-rs-314-lakh-crore-in-fy26-govt-says-in-lok-sabha",
+   "story": 3
+  },
+  {
+   "id": "s4f1",
+   "text": "After Claude responds, it gives a preliminary safety assessment of the conversation, flagging potential misuse; Anthropic calls this technique 'self-assessment'.",
+   "source": "https://x.com/AnthropicAI/status/2115871889549865429",
+   "story": 4
+  },
+  {
+   "id": "s4f2",
+   "text": "Anthropic says that since it began using self-assessment in June, it has surfaced misuse that its other safeguards weren't designed to catch.",
+   "source": "https://x.com/AnthropicAI/status/2115871889549865429",
+   "story": 4
+  },
+  {
+   "id": "s4f3",
+   "text": "Each assessment records the reason for the flag, the harm category, a priority level and whether Claude refused. Users don't see these assessments.",
+   "source": "https://www.businesstoday.in/technology/news/story/anthropic-explains-how-claude-flags-conversations-that-may-involve-harmful-activity-564700-2026-10-30",
+   "story": 4
+  },
+  {
+   "id": "s4f4",
+   "text": "A flag is not automatically treated as a policy violation and does not block the user; assessments help Anthropic prioritise cases for human review. Anthropic says the system does not collect additional data, though flagged conversations may be retained for investigation under applicable policies.",
+   "source": "https://www.businesstoday.in/technology/news/story/anthropic-explains-how-claude-flags-conversations-that-may-involve-harmful-activity-564700-2026-10-30",
+   "story": 4
+  },
+  {
+   "id": "s4f5",
+   "text": "Anthropic reports that on Claude Fable 5, self-assessment identifies 78% of potentially harmful conversations flagged by a more resource-intensive classifier; for high-priority conversations the figure is 94%, with a reported false-positive rate of 1%.",
+   "source": "https://www.businesstoday.in/technology/news/story/anthropic-explains-how-claude-flags-conversations-that-may-involve-harmful-activity-564700-2026-10-30",
+   "story": 4
+  },
+  {
+   "id": "s5f1",
+   "text": "Google has added a catalogue of \"hundreds of textbooks\" to Gemini Notebook, free for students in India and the United States; no exact count is given.",
+   "source": "https://digitallearning.eletsonline.com/2026/10/google-gemini-notebook-free-textbooks-s-chand-openstax-students-india/",
+   "story": 5
+  },
+  {
+   "id": "s5f2",
+   "text": "Providers are New Delhi-based S Chand Publishing, OpenStax and Open Textbook Library.",
+   "source": "https://digitallearning.eletsonline.com/2026/10/google-gemini-notebook-free-textbooks-s-chand-openstax-students-india/",
+   "story": 5
+  },
+  {
+   "id": "s5f3",
+   "text": "To use it: open a Gemini Notebook, click Add sources, choose Textbooks, then pick a book from the list.",
+   "source": "https://www.digit.in/news/general/students-can-now-access-free-textbooks-directly-in-google-gemini-notebook-here-is-how.html",
+   "story": 5
+  },
+  {
+   "id": "s5f4",
+   "text": "Once a book is chosen, every question is answered from that book. Responses include inline citations and direct links to the original textbook sources.",
+   "source": "https://www.digit.in/news/general/students-can-now-access-free-textbooks-directly-in-google-gemini-notebook-here-is-how.html",
+   "story": 5
+  },
+  {
+   "id": "s5f5",
+   "text": "Students can generate study guides, practice quizzes and flashcards from the chosen textbook.",
+   "source": "https://www.digit.in/news/general/students-can-now-access-free-textbooks-directly-in-google-gemini-notebook-here-is-how.html",
+   "story": 5
+  },
+  {
+   "id": "s6f1",
+   "text": "76% of consumers in India use AI for shopping, per McKinsey research; China (80%) and India (76%) lead adoption among the 11 markets surveyed.",
+   "source": "https://retailtechinnovationhub.com/category/ai/mckinsey-research-shows-retailers-are-losing-the-start-of-the-shopping-journey-to-ai-tools",
+   "story": 6
+  },
+  {
+   "id": "s6f2",
+   "text": "China is highest at 80% of consumers using AI for shopping.",
+   "source": "https://retailtechinnovationhub.com/category/ai/mckinsey-research-shows-retailers-are-losing-the-start-of-the-shopping-journey-to-ai-tools",
+   "story": 6
+  },
+  {
+   "id": "s6f3",
+   "text": "Average across the 11 markets surveyed is 53% of consumers using AI for shopping, so India is well above it.",
+   "source": "https://retailtechinnovationhub.com/category/ai/mckinsey-research-shows-retailers-are-losing-the-start-of-the-shopping-journey-to-ai-tools",
+   "story": 6
+  },
+  {
+   "id": "s6f4",
+   "text": "The survey covers about 21,000 consumers across 11 markets.",
+   "source": "https://retailtechinnovationhub.com/category/ai/mckinsey-research-shows-retailers-are-losing-the-start-of-the-shopping-journey-to-ai-tools",
+   "story": 6
+  },
+  {
+   "id": "s7f1",
+   "text": "Alphabet's Q3 2026 revenue was $127.6B, up 25% year over year, with Google Cloud revenue at $30.7B (up 103%).",
+   "source": "https://www.fxstreet.com/news/alphabet-tanks-to-april-levels-on-quarterly-miss-202610282120",
+   "story": 7
+  },
+  {
+   "id": "s7f2",
+   "text": "Google's Philipp Schindler said each AI Mode query currently makes less than a traditional search, and he expects monetization to improve over time.",
+   "source": "https://seroundtable.com/google-earnings-q326-42403.html",
+   "story": 7
+  },
+  {
+   "id": "s7f3",
+   "text": "Google's Philipp Schindler announced the expansion of ads in AI Mode into international markets, alongside multi-turn ads in AI Mode in the U.S.",
+   "source": "https://seroundtable.com/google-earnings-q326-42403.html",
+   "story": 7
+  },
+  {
+   "id": "s7f4",
+   "text": "Shares fell about 9% after hours, from a close near $325 to about $290, a level last seen in April's sell-off.",
+   "source": "https://www.fxstreet.com/news/alphabet-tanks-to-april-levels-on-quarterly-miss-202610282120",
+   "story": 7
+  },
+  {
+   "id": "s7f5",
+   "text": "GAAP EPS was $2.12, missing consensus by $0.89 (nearly 30%). Revenue was about $330M short of expectations.",
+   "source": "https://www.fxstreet.com/news/alphabet-tanks-to-april-levels-on-quarterly-miss-202610282120",
+   "story": 7
+  },
+  {
+   "id": "s8f1",
+   "text": "CNBC headline: 'Indian AI firm seeks to raise $3 billion to buy Nvidia chips: report'. The body says the AI infrastructure firm is reportedly planning to raise up to $3 billion in debt (bonds and bank loans) to buy Nvidia's Rubin GPUs.",
+   "source": "https://www.cnbc.com/2026/10/30/nvidia-india-ai-chips-computing.html",
+   "story": 8
+  },
+  {
+   "id": "s8f2",
+   "text": "The firm is AM Intelligence, which plans to fund Nvidia Vera Rubin chip purchases through bank loans and bonds.",
+   "source": "https://www.whalesbook.com/news/English/technology/AM-Intelligence-Seeks-dollar3-Billion-Debt-for-Nvidia-AI-Chips/6ae40fcb4fc30694db530f38",
+   "story": 8
+  },
+  {
+   "id": "s8f3",
+   "text": "Per Whalesbook, the chips are intended to power a 1-gigawatt computing facility planned for Hyderabad, part of a larger $8 billion infrastructure project. CNBC reports different figures: 100 MW across Malaysia and India, and $6 billion.",
+   "source": "https://www.whalesbook.com/news/English/technology/AM-Intelligence-Seeks-dollar3-Billion-Debt-for-Nvidia-AI-Chips/6ae40fcb4fc30694db530f38",
+   "story": 8
+  },
+  {
+   "id": "s8f4",
+   "text": "The firm is reportedly relying on $300 million in advance payments from potential customers to offset some of the borrowing.",
+   "source": "https://www.whalesbook.com/news/English/technology/AM-Intelligence-Seeks-dollar3-Billion-Debt-for-Nvidia-AI-Chips/6ae40fcb4fc30694db530f38",
+   "story": 8
+  },
+  {
+   "id": "s8f5",
+   "text": "The firm is founded by the team behind Greenko Group.",
+   "source": "https://www.whalesbook.com/news/English/technology/AM-Intelligence-Seeks-dollar3-Billion-Debt-for-Nvidia-AI-Chips/6ae40fcb4fc30694db530f38",
+   "story": 8
+  }
+ ],
+ "lane": "global-tech",
+ "cautions": [
+  "Loss figures are early and vary. $6.3 Bn is Binance's estimate of total impact, early reports of outflows were $2.5-3.3 Bn, and Chainalysis says about $5.9 Bn. Don't present $6.3 Bn as money 'stolen and gone', because about $3 Bn is frozen.",
+  "North Korea/Lazarus attribution (TRM Labs, ZachXBT) is unconfirmed by Binance. Don't state it as fact.",
+  "The 48-hour withdrawal resumption is Binance's expectation, not a guarantee. The cause is a preliminary finding.",
+  "Don't link the ED's ₹4,940 Cr probe (Mudrex etc.) to the Binance breach. Inc42 doesn't connect them.",
+  "Forbes was not readable (403). The Inc42 and CoinDesk figures were read directly. A web search surfaced other outlets, which I did not open.",
+  "I could not open the Mashable article. These facts come from Anthropic's own pages, not Mashable's reporting.",
+  "The 'tells bosses when workers are off-topic' framing is overstated. By Anthropic's docs, off-topic use appears only as an aggregate count and cost, not per person, unless an optional attribution toggle is turned on.",
+  "It's an Enterprise-only feature, and admins have to switch it on. It is not on for everyone using Claude.",
+  "Anthropic's help pages still call smart reports beta in places, while the blog says generally available. Some secondary sources say beta began in September.",
+  "Don't say bosses can read employees' chats. Reports analyze a sample of transcripts and give summaries.",
+  "I did not confirm whether the optional individual-attribution toggle shows off-topic use per person.",
+  "55.49 crore is onboarded users as of June 2026, not active users and not FY26 transactions."
+ ]
+}
