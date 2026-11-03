@@ -168,7 +168,7 @@
       mouth.setAttribute("height", m < 0.15 ? C * 0.3 : m < 0.5 ? C * 0.65 : C);
       mouth.setAttribute("y", 6 * C + (m < 0.15 ? C * 0.35 : 0));
       tongue.setAttribute("opacity", m >= 0.5 ? 1 : 0);
-      box.style.transform = `translateY(${Math.round(p.bob / 4) * 4}px)`;   // pixel steps
+      box.style.marginTop = `${Math.round(p.bob / 4) * 4}px`;   // pixel steps (margin, not a transform: a composited transform can be captured a frame late)
     } };
   }
 
@@ -219,7 +219,7 @@
       mouthO.setAttribute("opacity", m > 0.08 ? 1 : 0); tongue.setAttribute("opacity", h > 0.5 ? 1 : 0); tongue.setAttribute("cy", y + 4 + 26 * h);
       smile.setAttribute("opacity", m > 0.08 ? 0 : 1);
       head.setAttribute("transform", `rotate(${p.lookX * 4 + p.tilt} 180 330) translate(0 ${p.bob * 0.6})`);
-      box.style.transform = `translateY(${p.bob * 0.4}px)`;
+      box.style.marginTop = `${p.bob * 0.4}px`;   // margin, not a transform (render determinism, 3 Nov)
     } };
   }
 
@@ -654,14 +654,14 @@
           lastStrip = si;
         }
         const sk = clamp((t - seg.start - 0.1) / 0.3);
-        strip.style.opacity = shot === "wide" ? 0 : sk; strip.style.transform = `translateX(${(1 - ease(sk)) * -60}px)`;
+        strip.style.opacity = shot === "wide" ? 0 : sk; strip.style.marginLeft = `${(1 - ease(sk)) * -60}px`;
         chip.style.opacity = seg.source && shot !== "wide" ? clamp((t - seg.start - 0.6) / 0.3) : 0;
       } else { cd.style.opacity = 0; strip.style.opacity = 0; chip.style.opacity = 0; }
       const tk = cfg.tickerAt != null ? clamp((t - cfg.tickerAt) / 0.4) : 0;
       ticker.style.opacity = atEnd ? 0 : tk;
-      tickText.style.transform = `translateX(${1080 - ((t - (cfg.tickerAt ?? 0)) * 170) % 2600}px)`;
+      tickText.style.left = `${1080 - ((t - (cfg.tickerAt ?? 0)) * 170) % 2600}px`;   // left, not a transform: the ticker differed between two renders
       const bk = cfg.breakingAt != null ? clamp((t - cfg.breakingAt) / 0.25) * clamp((cfg.breakingAt + (cfg.breakingDur ?? 4) - t) / 0.25) : 0;
-      breaking.style.opacity = bk; breaking.style.transform = `translateX(${(1 - bk) * -120}px)`;
+      breaking.style.opacity = bk; breaking.style.marginLeft = `${(1 - bk) * -120}px`;
       if (cfg.stingAt != null) {
         const p = t - cfg.stingAt;
         sting.style.opacity = p >= 0 && p < 1.55 ? 1 : 0;
