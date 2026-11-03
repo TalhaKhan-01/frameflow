@@ -703,11 +703,13 @@
     - [~] **P24.4.2** 2D puppet Habit with emotions (neutral, excited, surprised, doubtful, smug, worried, laughing, serious) and gestures, driven by each line's emotion  
       _Acceptance:_ an emotion sheet with all 8 faces in Review Queue, Talha approves; a talking clip changes expression on the script's emotion cues; spikes/studio-show/make.py mouth passes
       _Note 2026-10-27:_ 27 Oct: puppet emotions (8) driven by each line's emotion, blended over 0.35 s; emotion sheet for Talha still to make
+      _Note 2026-11-03:_ 3 Nov screening: the surprised (open-mouth) face is on most lines, also neutral facts; needs a neutral/explaining default and fewer surprised beats
     - [ ] **P24.4.3** Pixel Habit kept as an alternative look asset  
       _Acceptance:_ the show renders with look=pixel and 0 check errors
     - [~] **P24.4.4** Framing layer and show package as scene templates: breaking flash, sting, topic card with a countdown to the next topic (top right), lower-third, lane bug, source chip, PiP monitor, ticker, end card  
       _Acceptance:_ tests/scene_acceptance.py passes for every package template; the four framings pass the safe-zone check; the countdown shows the seconds to the next topic on rendered frames (looked at)
       _Note 2026-10-27:_ 27 Oct: package in scenes/_shared/show/show.js: breaking flash, sting, topic strip, countdown to the next topic (top right), source chip, PiP monitor, ticker, end card; Ep 1 hyperframes check 0 errors
+      _Note 2026-11-03:_ 3 Nov: Ep 3-5 screenings (17/28 each) repeated the same package faults; fixed in show.js (d9ec64a): wordmark, mug, one bug, n/N in the strip, chip under the strip, PiP captions x<=880, logo off the headline, stamp low, no doubled graphics. Test copy of Ep 5: 0 check errors, screening 6->7/14. Still partial: scene_acceptance per template not run; remaining screener asks: PiP frames look empty, phrase captions, pixel end card
   - **P24.5 Sound: original theme, breaking-flash open, SFX that follow the content, music under every video** (1/4)
     - [~] **P24.5.1** An original Daily Habit theme (ident ~3-4 s + a 1.5 s sting cut), generated locally  
       _Acceptance:_ theme WAVs in data/library/ with a ledger row (licence: original), loudness -14 to -16 LUFS, no clipping; listening file in Review Queue and Talha approves
@@ -739,6 +741,7 @@
       _Note 2026-10-27:_ 27 Oct 21:42: Ep 1 made unattended end to end (topic card 20:47, ticks 20:56, make 21:29-21:42, card sent); QA pass, editors 17/28 below the bar; waits for Talha's approval and the 11:30 post
       _Note 2026-10-27:_ 27 Oct 22:04: Ep 1 revised once (music bed, fewer jokes) and approved on Telegram; card post approved 22:08; both queued for 28 Oct 11:30
       _Note 2026-10-28:_ 28 Oct 10:32-10:39: Ep 1 + card post posted on YouTube, Instagram, Facebook (Talha's 10:32 test time, not 11:30); stays partial: approved below the bar (screening 7/14), so the acceptance is not met
+      _Note 2026-11-03:_ 3 Nov: Ep 3 (30 Oct), Ep 4 (31 Oct) posted, Ep 5 queued 3 Nov 11:30, all made unattended, QA pass, review 17/28 each (bar 80%): approved below the bar, so still partial. 1-2 Nov no episode: Claude weekly limit at the 14:00 scout
 - **P25 Fewer, stronger desks as reusable skills; real visuals; 10-hook pick; topic memory** (2/15)
   - **P25.1 Quick wins: topic memory and the hook pick** (1/2)
     - [x] **P25.1.1** Showrunner topic memory: shorts-producer topics.py (record/filter), ledger research/assets/topics.jsonl, wired into the 14:00 card  
