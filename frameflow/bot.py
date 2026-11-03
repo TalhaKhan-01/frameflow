@@ -336,6 +336,12 @@ def loop():
                 daily.tick()
             except Exception:
                 traceback.print_exc()
+            try:   # the Pilot's Chrome runs only while a Pilot run holds its lock (a run killed hard can't stop it)
+                from frameflow import pilot
+                if pilot.stop_chrome_if_idle():
+                    print("stopped idle frameflow-chrome", flush=True)
+            except Exception:
+                traceback.print_exc()
 
 
 if __name__ == "__main__":

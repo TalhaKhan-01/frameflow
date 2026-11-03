@@ -31,6 +31,8 @@ module.exports = {
     {
       // The Pilot's own Chrome: only the Thirdspace logins (YouTube Studio, Instagram), DevTools on 127.0.0.1:7307.
       // Talha's main Chrome (personal + office profiles) never needs remote debugging.
+      // On demand (2026-11-03): saved as stopped; frameflow.pilot starts it per run and stops it after, frameflow-bot stops
+      // it when no run holds logs/pilot-chrome.lock. To sign in by hand: uv run python -m frameflow.pilot open
       name: "frameflow-chrome",
       cwd: ROOT,
       script: `${ROOT}/scripts/pilot-chrome.sh`,   // waits for the X display at boot, then execs Chrome

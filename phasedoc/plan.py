@@ -256,6 +256,8 @@ TASKS = [
      "approved before 11:30 -> posted at 11:30 that day; approved after 11:30 -> posted at once (until the day ends)", "automation"),
     ("P10.4.2", "P10.4", "Dedicated Chrome for The Pilot",
      "a PM2-run Chrome with its own profile folder (Thirdspace Google + Instagram only) and a 127.0.0.1 DevTools port; Talha signed in once; YouTube upload works unattended", "publish"),
+    ("P10.4.5", "P10.4", "The Pilot's Chrome runs only on demand",
+     "pm2 resurrect leaves frameflow-chrome stopped; FRAMEFLOW_PILOT_DRY=1 pilot check and a dry youtube run each start Chrome, work and stop it (nothing published); Chrome started outside a run is stopped by frameflow-bot within a minute", "publish"),
     ("P10.4.3", "P10.4", "Facebook Page Reels",
      "the Meta token has pages_manage_posts; the approved video is posted as a Thirdspace Page Reel through the API and its link recorded", "publish"),
     ("P10.4.4", "P10.4", "Post checks and links",

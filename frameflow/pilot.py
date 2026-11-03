@@ -6,6 +6,10 @@ YouTube Studio uploads until the API audit passes, and Facebook/Instagram whenev
     python -m frameflow.pilot facebook <video_id>       post the Reel as the Page; prints {"url": ...}
     python -m frameflow.pilot photos <img>... [--fb-caption F] [--ig-caption F]   card slides via Business Suite
     python -m frameflow.pilot check                     is the Chrome up and signed in to both?
+    python -m frameflow.pilot open                      start the Chrome by hand (to sign in); Enter stops it
+
+Chrome runs on demand: each run starts PM2 frameflow-chrome and the last one out stops it (frameflow-bot also stops it
+when no run holds logs/pilot-chrome.lock, for runs that were killed).
 
 Only for videos Talha approved (publish.upload enforces it). The steps mirror what worked by hand on 2026-10-25/26:
 Studio's text boxes take execCommand('insertText'); Instagram's caption editor only takes real key input.
@@ -75,6 +79,77 @@ def js(code, timeout=60):
         except ValueError:                                    # missing, on Facebook and Instagram)
             pass
     return raw.splitlines()[-1] if raw else raw
+
+
+CHROME_APP = "frameflow-chrome"
+CHROME_LOCK = ROOT / "logs" / "pilot-chrome.lock"   # every run holds it shared; whoever can take it alone stops Chrome
+
+
+def pm2(*args, timeout=60):
+    env = {"PATH": f"{NODE_BIN}:/usr/bin:/bin", "HOME": str(Path.home()), "PM2_HOME": str(Path.home() / ".pm2-personal")}
+    return subprocess.run(["pm2", *args], capture_output=True, text=True, timeout=timeout, env=env)
+
+
+def chrome_up():
+    import urllib.request
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{PORT}/json/version", timeout=3) as r:
+            return r.status == 200
+    except OSError:
+        return False
+
+
+def stop_chrome_if_idle():
+    """Stop the Pilot's Chrome when no run holds the lock (a run ended, or one was killed hard). Returns True if stopped.
+    The exclusive lock is held while stopping, so a new run can't start Chrome in between."""
+    import fcntl
+    CHROME_LOCK.parent.mkdir(exist_ok=True)
+    with open(CHROME_LOCK, "a") as f:
+        try:
+            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return False   # a run is using it
+        try:
+            r = pm2("jlist")
+            online = any(a.get("name") == CHROME_APP and a.get("pm2_env", {}).get("status") == "online"
+                         for a in json.loads(r.stdout or "[]"))
+            if online:
+                pm2("stop", CHROME_APP)
+            return online
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)
+
+
+class chrome_session:
+    """Chrome on demand (3 Nov: ~300 MB+ idle all day for a few minutes of work): hold the shared lock, start Chrome under
+    PM2 (a no-op when it's already up), wait for DevTools; on exit, stop it unless another run still holds the lock."""
+    def __enter__(self):
+        import fcntl
+        CHROME_LOCK.parent.mkdir(exist_ok=True)
+        self.f = open(CHROME_LOCK, "a")
+        fcntl.flock(self.f, fcntl.LOCK_SH)
+        try:
+            if not chrome_up():
+                r = pm2("start", CHROME_APP)
+                if r.returncode:
+                    raise PilotError(f"pm2 start {CHROME_APP}: {(r.stdout + r.stderr)[-300:]}")
+                end = time.time() + 60
+                while not chrome_up():
+                    if time.time() > end:
+                        raise PilotError(f"Chrome's DevTools didn't answer on 127.0.0.1:{PORT} within 60 s")
+                    time.sleep(1)
+                time.sleep(2)   # the first tab is still loading
+        except BaseException:
+            self.__exit__(None, None, None)
+            raise
+        return self
+
+    def __exit__(self, *exc):
+        import fcntl
+        fcntl.flock(self.f, fcntl.LOCK_UN)
+        self.f.close()
+        stop_chrome_if_idle()
+        return False
 
 
 def connect(tries=5):
@@ -166,6 +241,8 @@ def youtube(video_id):
         time.sleep(2.5)
     js("(() => { const r=[...document.querySelectorAll('tp-yt-paper-radio-button')].find(x=>x.getAttribute('name')==='PUBLIC'); r&&r.click(); return !!r; })()")
     link = js("(() => { const a=[...document.querySelectorAll('a')].find(x=>/youtube\\.com\\/shorts\\/|youtu\\.be\\//.test(x.href)); return a ? a.href : ''; })()")
+    if DRY:   # the upload stays a private draft in Studio; nothing is published
+        return {"dry": True, "at": "Publish button", "draft": link}
     wait_for("!document.querySelector('#done-button')?.hasAttribute('disabled')", 600, 5, "Studio's Publish button")
     # 2026-10-26 a JS click on Publish didn't land and the Short stayed a draft: click for real, and again until the
     # 'Video published' dialog shows; nothing else counts as published
@@ -455,25 +532,32 @@ def check():
 
 def main():
     ap = argparse.ArgumentParser(description="The Pilot in Frameflow's dedicated Chrome")
-    ap.add_argument("what", choices=["youtube", "instagram", "facebook", "photos", "check"])
+    ap.add_argument("what", choices=["youtube", "instagram", "facebook", "photos", "check", "open"])
     ap.add_argument("video_id", nargs="?")
     ap.add_argument("images", nargs="*")
     ap.add_argument("--fb-caption", help="photos: Facebook caption file (posts to Facebook)")
     ap.add_argument("--ig-caption", help="photos: Instagram caption file (posts to Instagram)")
     a = ap.parse_args()
+    if a.what == "open":   # Chrome by hand (sign in again, look around): kept up until Enter, then stopped
+        with chrome_session():
+            input(f"The Pilot's Chrome is up (DevTools 127.0.0.1:{PORT}). Press Enter to stop it... ")
+        return
     import fcntl   # one Pilot run at a time: the Short and the card post go out at the same minute and share one tab
     (ROOT / "logs").mkdir(exist_ok=True)
-    lock = open(ROOT / "logs" / "pilot.lock", "w")
-    fcntl.flock(lock, fcntl.LOCK_EX)
-    try:
-        if a.what == "photos":   # every positional argument is an image here
-            caps = {k: Path(f).read_text() for k, f in (("facebook", a.fb_caption), ("instagram", a.ig_caption)) if f}
-            r = photos([a.video_id, *a.images], caps)
-        else:
-            r = check() if a.what == "check" else {"youtube": youtube, "instagram": instagram, "facebook": facebook}[a.what](a.video_id)
-    finally:
-        ab("close", check=False)   # detaches; the dedicated Chrome keeps running under PM2
-        time.sleep(6)   # still holding the lock: the daemon finishes shutting down before the next run's first command
+    with chrome_session():   # taken before pilot.lock, so a run that is waiting its turn keeps Chrome up
+        lock = open(ROOT / "logs" / "pilot.lock", "w")
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            if a.what == "photos":   # every positional argument is an image here
+                caps = {k: Path(f).read_text() for k, f in (("facebook", a.fb_caption), ("instagram", a.ig_caption)) if f}
+                r = photos([a.video_id, *a.images], caps)
+            else:
+                r = check() if a.what == "check" else {"youtube": youtube, "instagram": instagram, "facebook": facebook}[a.what](a.video_id)
+        finally:
+            ab("close", check=False)   # detaches from Chrome
+            time.sleep(6)   # still holding the lock: the daemon finishes shutting down before the next run's first command
+            fcntl.flock(lock, fcntl.LOCK_UN)
+            lock.close()
     print(json.dumps(r))
 
 

@@ -20,7 +20,7 @@ An automated daily newsroom for one narrator, **Habit**. Since 28 Oct 2026 it ma
 | `betadoc/` | Betadoc site (Vite + TS, GSAP, WebGL), Vercel project `frameflow-betadoc`; concept in `betadoc/CONCEPT.md` |
 | `phasedoc/` | Build plan (`plan.py`, `plan.db`, generated `BUILDPLAN.md`) |
 | `scripts/deploy-check.sh` | Waits for the Vercel build of HEAD and probes the live site |
-| `ecosystem.config.js` | Personal PM2 apps: `frameflow-bot`, `frameflow-chrome`, `phasedoc-frameflow` |
+| `ecosystem.config.js` | Personal PM2 apps: `frameflow-bot`, `frameflow-chrome` (on demand: started per Pilot run, otherwise stopped; `python -m frameflow.pilot open` to sign in by hand), `phasedoc-frameflow` |
 | `data/`, `out/`, `logs/`, `vault/` | Local only (gitignored): SQLite, renders, logs, the Obsidian vault |
 
 ## Run
