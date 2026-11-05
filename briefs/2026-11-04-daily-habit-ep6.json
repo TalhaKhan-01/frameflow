@@ -1,0 +1,207 @@
+{
+ "topic": "The Daily Habit Ep 6: today's 7 stories (India tops ChatGPT, says OpenAI; Marvell to buy Lumentum, ~$115B; Apple's inventory jumps 154.3%; UPI tops 25 billion in a month; Karpathy's build-your-own ChatGPT; Startup funding falls 47.5%; Anthropic IPO: up to $3.5B in Japan)",
+ "angle_hint": "An episode digest carousel: slide 1 a bold hook naming the biggest story and that there are 7 stories today; then one stat, compare or fact slide per story for the first five stories in the episode's order (each with its own source); a close slide inviting people to watch the full episode for all of them.",
+ "facts": [
+  {
+   "id": "s1f2",
+   "text": "India's ChatGPT user base has doubled since January 2026, per Singh.",
+   "source": "https://inc42.com/buzz/india-becomes-chatgpts-largest-market-globally-user-base-doubles-since-january/",
+   "story": 1
+  },
+  {
+   "id": "s1f3",
+   "text": "In February 2026, Sam Altman said India had 100 million weekly active ChatGPT users, making it ChatGPT's second-largest user base after the United States.",
+   "source": "https://www.techcrunch.com/2026/02/15/india-has-100m-weekly-active-chatgpt-users-sam-altman-says/",
+   "story": 1
+  },
+  {
+   "id": "s1f4",
+   "text": "OpenAI is expanding ChatGPT ads in India to support free and lower-priced access. Early advertisers include Tanishq, Fastrack, Tata Neu and Shaadi.com.",
+   "source": "https://inc42.com/buzz/india-becomes-chatgpts-largest-market-globally-user-base-doubles-since-january/",
+   "story": 1
+  },
+  {
+   "id": "s1f5",
+   "text": "OpenAI is expected to announce UPI and payments-related features in the coming weeks.",
+   "source": "https://inc42.com/buzz/india-becomes-chatgpts-largest-market-globally-user-base-doubles-since-january/",
+   "story": 1
+  },
+  {
+   "id": "s2f1",
+   "text": "Marvell has agreed to acquire Lumentum in an all-stock deal with an enterprise value of $115 billion including debt; equity value is about $80 billion.",
+   "source": "https://techcrunch.com/2026/11/02/in-one-of-the-largest-deals-in-tech-history-marvell-buys-lumentum-for-115b/",
+   "story": 2
+  },
+  {
+   "id": "s2f2",
+   "text": "Lumentum shareholders get 4.5 Marvell shares for each Lumentum share.",
+   "source": "https://techcrunch.com/2026/11/02/in-one-of-the-largest-deals-in-tech-history-marvell-buys-lumentum-for-115b/",
+   "story": 2
+  },
+  {
+   "id": "s2f3",
+   "text": "Nvidia invested $2 billion in Lumentum in March and, later that month, $2 billion in Marvell.",
+   "source": "https://techcrunch.com/2026/11/02/in-one-of-the-largest-deals-in-tech-history-marvell-buys-lumentum-for-115b/",
+   "story": 2
+  },
+  {
+   "id": "s2f4",
+   "text": "The deal is expected to close in the first half of calendar 2028, pending shareholder and regulatory approval.",
+   "source": "https://techcrunch.com/2026/11/02/in-one-of-the-largest-deals-in-tech-history-marvell-buys-lumentum-for-115b/",
+   "story": 2
+  },
+  {
+   "id": "s2f5",
+   "text": "After closing, Marvell stockholders would own about 67% and Lumentum stockholders about 33% of the combined company on a fully diluted basis; Marvell expects line of sight to more than $1 billion in annual run-rate cost synergies.",
+   "source": "https://www.sec.gov/Archives/edgar/data/0001633978/000119312526442758/d163169dex991.htm",
+   "story": 2
+  },
+  {
+   "id": "s3f1",
+   "text": "Apple's inventory grew 154.3% year over year, from $5.72 billion in Q4 2025 to $14.54 billion in Q4 fiscal 2026.",
+   "source": "https://techcrunch.com/2026/11/02/apples-inventory-surges-154-as-memory-chip-costs-climb/",
+   "story": 3
+  },
+  {
+   "id": "s3f2",
+   "text": "Inventory rose 31.1% quarter over quarter, from $11.09 billion in Q3.",
+   "source": "https://techcrunch.com/2026/11/02/apples-inventory-surges-154-as-memory-chip-costs-climb/",
+   "story": 3
+  },
+  {
+   "id": "s3f3",
+   "text": "CEO John Ternus called memory pricing \"unprecedented\" and expects even higher memory costs in the December quarter, and rising beyond that.",
+   "source": "https://techcrunch.com/2026/11/02/apples-inventory-surges-154-as-memory-chip-costs-climb/",
+   "story": 3
+  },
+  {
+   "id": "s3f4",
+   "text": "Apple forecasts a 45% to 46% gross margin for the December quarter, mainly due to memory costs, versus 47.9% in the September quarter.",
+   "source": "https://techcrunch.com/2026/11/02/apples-inventory-surges-154-as-memory-chip-costs-climb/",
+   "story": 3
+  },
+  {
+   "id": "s3f5",
+   "text": "Apple raised prices earlier this year on some Mac and iPad models (end of June) and iPhones (September); COO Sabih Khan did not rule out further device price increases.",
+   "source": "https://techcrunch.com/2026/11/02/apples-inventory-surges-154-as-memory-chip-costs-climb/",
+   "story": 3
+  },
+  {
+   "id": "s4f1",
+   "text": "UPI processed 25.47 billion transactions in October, the first month above 25 billion, worth Rs 31.53 lakh crore (NPCI data).",
+   "source": "https://www.oneindia.com/business/upi-payments-cross-25-billion-mark-in-october-transaction-value-reaches-rs-31-53-lakh-crore-8248349.html",
+   "story": 4
+  },
+  {
+   "id": "s4f2",
+   "text": "Volume rose 23% from 20.7 billion in October last year; value rose 16%.",
+   "source": "https://www.oneindia.com/business/upi-payments-cross-25-billion-mark-in-october-transaction-value-reaches-rs-31-53-lakh-crore-8248349.html",
+   "story": 4
+  },
+  {
+   "id": "s4f3",
+   "text": "Daily average was 822 million transactions (up from 802 million in September), worth about Rs 1.01 lakh crore a day.",
+   "source": "https://www.oneindia.com/business/upi-payments-cross-25-billion-mark-in-october-transaction-value-reaches-rs-31-53-lakh-crore-8248349.html",
+   "story": 4
+  },
+  {
+   "id": "s4f4",
+   "text": "Peak day was 9 October with 873 million payments.",
+   "source": "https://www.oneindia.com/business/upi-payments-cross-25-billion-mark-in-october-transaction-value-reaches-rs-31-53-lakh-crore-8248349.html",
+   "story": 4
+  },
+  {
+   "id": "s4f5",
+   "text": "September 2026 comparison: 24.07 billion transactions worth Rs 29.37 lakh crore, per NPCI data.",
+   "source": "https://www.outlookmoney.com/banking/upi-processes-2407-billion-transactions-worth-rs-2937-lakh-crore-in-september",
+   "story": 4
+  },
+  {
+   "id": "s5f4",
+   "text": "The leaderboard's fastest 'time to GPT-2' entry is 1.65 hours (March 14, 2026, 'autoresearch round 2'). The README says the speedrun script takes ~1.5 hours to run, and the first leaderboard entry was 3.04 hours.",
+   "source": "https://github.com/karpathy/nanochat",
+   "story": 5
+  },
+  {
+   "id": "s5f5",
+   "text": "It also runs on a single GPU (you'll wait 8 times longer), and there is a CPU-only / MPS install option.",
+   "source": "https://github.com/karpathy/nanochat",
+   "story": 5
+  },
+  {
+   "id": "s6f1",
+   "text": "Indian startups raised about $678 million in October 2026, per Entrackr's tally.",
+   "source": "https://openthemagazine.com/business/quick-take-seven-things-to-know-about-why-indias-startup-funding-fell-in-october",
+   "story": 6
+  },
+  {
+   "id": "s6f2",
+   "text": "That is down about 47.5% from $1.29 billion in September.",
+   "source": "https://openthemagazine.com/business/quick-take-seven-things-to-know-about-why-indias-startup-funding-fell-in-october",
+   "story": 6
+  },
+  {
+   "id": "s6f3",
+   "text": "Year-on-year, funding fell 60.8% from $1.73 billion in October 2025.",
+   "source": "https://openthemagazine.com/business/quick-take-seven-things-to-know-about-why-indias-startup-funding-fell-in-october",
+   "story": 6
+  },
+  {
+   "id": "s6f4",
+   "text": "No startup raised $100 million or more; the biggest rounds were Tessolve ($75 million) and Even Healthcare ($50 million).",
+   "source": "https://openthemagazine.com/business/quick-take-seven-things-to-know-about-why-indias-startup-funding-fell-in-october",
+   "story": 6
+  },
+  {
+   "id": "s6f5",
+   "text": "Early-stage: 79 deals worth $263 million; growth and late-stage: 20 deals worth $414.6 million; nine deals had undisclosed amounts.",
+   "source": "https://openthemagazine.com/business/quick-take-seven-things-to-know-about-why-indias-startup-funding-fell-in-october",
+   "story": 6
+  },
+  {
+   "id": "s7f1",
+   "text": "Anthropic will sell up to 552.9 billion yen ($3.5 billion) worth of shares in Japan as part of its US public listing, a filing showed on Monday (Nov 2).",
+   "source": "https://www.investing.com/news/stock-market-news/anthropic-plans-to-sell-35-billion-of-shares-to-japan-investors-in-ipo-filing-shows-4989963",
+   "story": 7
+  },
+  {
+   "id": "s7f2",
+   "text": "The new shares sold to Japanese investors will raise working capital and fund operating expenses and capital expenditure.",
+   "source": "https://www.investing.com/news/stock-market-news/anthropic-plans-to-sell-35-billion-of-shares-to-japan-investors-in-ipo-filing-shows-4989963",
+   "story": 7
+  },
+  {
+   "id": "s7f3",
+   "text": "Mizuho Securities will manage the Japan share sale; Goldman Sachs, Mitsubishi UFJ Morgan Stanley Securities and Morgan Stanley MUFG Securities are among firms handling subscription applications.",
+   "source": "https://www.investing.com/news/stock-market-news/anthropic-plans-to-sell-35-billion-of-shares-to-japan-investors-in-ipo-filing-shows-4989963",
+   "story": 7
+  },
+  {
+   "id": "s7f4",
+   "text": "For comparison, Japanese investors got $2.2 billion of the $75 billion raised in SpaceX's June IPO, the largest ever.",
+   "source": "https://www.investing.com/news/stock-market-news/anthropic-plans-to-sell-35-billion-of-shares-to-japan-investors-in-ipo-filing-shows-4989963",
+   "story": 7
+  },
+  {
+   "id": "s7f5",
+   "text": "The filing did not state overall offering size or valuation; Reuters has reported some investors have discussed a valuation of about $1.5 trillion.",
+   "source": "https://www.investing.com/news/stock-market-news/anthropic-plans-to-sell-35-billion-of-shares-to-japan-investors-in-ipo-filing-shows-4989963",
+   "story": 7
+  }
+ ],
+ "lane": "global-tech",
+ "cautions": [
+  "The largest-market and doubling claims come from one OpenAI executive's statement via ET/Inc42. I found no independent confirmation and no exact current user number.",
+  "'Doubled' refers to the user base; the base metric isn't stated. Don't say it is 200 million weekly users.",
+  "The 100M figure is from Feb 2026 and ranked India second to the US then.",
+  "I did not open the ET original. The TechCrunch fact comes from search results, not a page I read.",
+  "$115B is enterprise value including debt; equity value is about $80B. Don't call it an $115B cheque.",
+  "A Lumentum internal email reportedly calls it about $100 billion, so say 'about $115B' and attribute it.",
+  "It's not done: closing is expected in H1 2028 and needs shareholder and regulatory approval.",
+  "Nvidia is a minority investor in both ($2B each) and isn't a party to the deal. Don't imply it brokered the deal.",
+  "The Activision ($68.7B) and Dell-EMC ($67B) comparisons come from TechCrunch, not the companies.",
+  "The SEC exhibit page was read only through a search summary, not opened in full.",
+  "Only one source (TechCrunch) was read; no independent second source was checked.",
+  "Apple has not announced new price hikes; Khan only did not rule them out."
+ ]
+}
