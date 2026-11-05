@@ -302,6 +302,45 @@
           tl.fromTo(dots.children, { opacity: 0 }, { opacity: 1, duration: 0.05, stagger: 0.01 }, t0 + 1.4);
         }
       },
+      map(g, tl, t0, d) {   // P9.5.1: countries from Natural Earth (paths embedded by the director), highlighted, and a
+        // route drawn between the first and last place with a vehicle riding it; seek-safe (everything from the tween's progress)
+        const geo = d.geo || {}; const [vx, vy, vw, vh] = geo.view || [0, 0, 720, 360];
+        if (d.title) { const tt = B(g, 540, 345, String(d.title).toUpperCase(), 40, { weight: 800, spacing: 3 }); fit(tt, 900, 40); tl.fromTo(tt, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t0); }
+        const MX = 90, MY = 380, MW = 900, MH = 480, k = Math.min(MW / vw, MH / vh), ox = MX + (MW - vw * k) / 2 - vx * k, oy = MY + (MH - vh * k) / 2 - vy * k;
+        const P = (x, y) => [ox + x * k, oy + y * k];
+        const clip = el("clipPath", { id: "mapclip" + Math.round(t0 * 100) }, g); el("rect", { x: MX, y: MY, width: MW, height: MH, rx: 14 }, clip);
+        const land = el("g", { "clip-path": `url(#${clip.id})` }, g);
+        el("rect", { x: MX, y: MY, width: MW, height: MH, fill: cfg.set === "night" ? "#0b1d33" : "#dfe9ef" }, land);
+        const inner = el("g", { transform: `translate(${ox.toFixed(2)} ${oy.toFixed(2)}) scale(${k.toFixed(4)})` }, land);
+        const hi = d.countries || [];
+        (geo.paths || []).forEach(([code, dd]) => {
+          const i = hi.indexOf(code);
+          const pth = el("path", { d: dd, fill: i < 0 ? paper : (i % 2 ? S.blue : S.red), stroke: S.ink, "stroke-width": 1.2, "vector-effect": "non-scaling-stroke" }, inner);
+          if (i >= 0) tl.fromTo(pth, { opacity: 0.25 }, { opacity: 1, duration: 0.35 }, t0 + 0.3 + i * 0.3);
+        });
+        el("rect", { x: MX, y: MY, width: MW, height: MH, rx: 14, fill: "none", stroke: S.ink, "stroke-width": 5 }, g);
+        const pts = hi.map((c) => (geo.labels || {})[c]).filter(Boolean).map(([x, y]) => P(x, y));
+        hi.forEach((c, i) => { const lp = (geo.labels || {})[c]; if (!lp) return; const [x, y] = P(lp[0], lp[1]);
+          const dot = el("circle", { cx: x, cy: y, r: 12, fill: S.ink, stroke: paper, "stroke-width": 4 }, g); piv(dot, x, y);
+          tl.fromTo(dot, { scale: 0 }, { scale: 1, duration: 0.3, ease: "back.out(2)" }, t0 + 0.4 + i * 0.3);
+          const nm = B(g, x, y - 26, String((geo.names || {})[c] || c).toUpperCase(), 30, { weight: 800, spacing: 1 }); fit(nm, 300, 30);
+          tl.fromTo(nm, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t0 + 0.5 + i * 0.3); });
+        if (d.route && pts.length >= 2) {
+          const [a, b] = [pts[0], pts[pts.length - 1]], lift = Math.min(160, Math.hypot(b[0] - a[0], b[1] - a[1]) * 0.35);
+          const cx = (a[0] + b[0]) / 2, cy = Math.min(a[1], b[1]) - lift;
+          const route = el("path", { d: `M ${a[0]} ${a[1]} Q ${cx} ${cy} ${b[0]} ${b[1]}`, fill: "none", stroke: S.ink, "stroke-width": 6, "stroke-dasharray": "16 12", "stroke-linecap": "round" }, g);
+          const len = route.getTotalLength();
+          const mask = el("path", { d: route.getAttribute("d"), fill: "none", stroke: "#fff", "stroke-width": 14 }, el("mask", { id: "rm" + Math.round(t0 * 100) }, g));
+          route.setAttribute("mask", `url(#rm${Math.round(t0 * 100)})`);
+          mask.setAttribute("stroke-dasharray", `${len} ${len}`);
+          const veh = el("g", {}, g); el("circle", { r: 18, fill: S.red, stroke: S.ink, "stroke-width": 5 }, veh); el("circle", { r: 6, fill: paper }, veh);
+          const o = { p: 0 }, at = (q) => { const pt = route.getPointAtLength(len * q); veh.setAttribute("transform", `translate(${pt.x.toFixed(2)} ${pt.y.toFixed(2)})`); mask.setAttribute("stroke-dashoffset", (len * (1 - q)).toFixed(2)); };
+          at(0); veh.setAttribute("opacity", 0);
+          tl.set(veh, { attr: { opacity: 1 } }, t0 + 0.9);
+          tl.fromTo(o, { p: 0 }, { p: 1, duration: 1.6, ease: "power1.inOut", onUpdate: () => at(o.p) }, t0 + 0.9);
+        }
+        kicker(g, tl, t0 + 1.6, d.caption, 930);
+      },
       versus(g, tl, t0, d) {
         const side = (x, item, fill, i) => {
           const c = el("g", {}, g);
@@ -535,6 +574,12 @@
     const setSvg = svgBox(cam);
     drawSetBack(setSvg, S, cfg);
     const wall = drawWall(setSvg, S, cfg);
+    // parallax (P9.5.5): the back set sits "further away", so it zooms 70% as much as Habit and the desk when the camera
+    // pushes in. An SVG transform attribute on a group (part of the SVG paint, deterministic like the left/margin moves).
+    const backG = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    Array.from(setSvg.childNodes).filter((n) => n.nodeName !== "defs").forEach((n) => backG.appendChild(n));
+    setSvg.appendChild(backG);
+    const DEPTH = 0.7;
     const rig = RIGS[cfg.look](cam);
     const deskSvg = svgBox(cam); defs(deskSvg, S);
     drawDesk(deskSvg, S, cfg);
@@ -622,6 +667,8 @@
     const frame = (t) => {
       const { f, shot, since } = frameAt(t);
       cam.style.transform = `translate(${f.tx}px, ${f.ty}px) scale(${f.s})`;
+      const sb = 1 + (f.s - 1) * DEPTH, kb = sb / f.s;   // the back layer's own scale inside the camera, about Habit's face
+      backG.setAttribute("transform", `translate(${(FACE.x * (1 - kb)).toFixed(2)} ${(FACE.y * (1 - kb)).toFixed(2)}) scale(${kb.toFixed(4)})`);
       studio.style.clipPath = `inset(${f.ct}px ${f.cr}px ${f.cb}px ${f.cl}px round ${f.rad}px)`;
       const m = `linear-gradient(to bottom, transparent ${f.ma}px, #000 ${f.mb}px)`;
       studio.style.webkitMaskImage = m; studio.style.maskImage = m;

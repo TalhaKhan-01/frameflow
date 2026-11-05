@@ -64,7 +64,12 @@ def spell(n):
 
 def norm(text):
     """Lowercase word tokens; numbers spelled out, ₹ read as rupees, spelled letters (G.S.T.) joined."""
-    text = text.lower().replace("₹", " rupees ").replace("%", " percent ")
+    text = text.lower()
+    # "$115 billion" is said "one hundred fifteen billion dollars": the currency moves after the scale word
+    text = re.sub(r"\$\s?([\d.,]+)(\s*(?:trillion|billion|million|thousand|crore|lakh))?", lambda m: f" {m.group(1)}{m.group(2) or ''} dollars ", text)
+    text = text.replace("₹", " rupees ").replace("%", " percent ")
+    # decimals are said digit by digit after "point": 154.3 -> one hundred fifty four point three (6 Nov: Ep 6 lost "point")
+    text = re.sub(r"(\d)\.(\d+)", lambda m: m.group(1) + " point " + " ".join(m.group(2)), text)
     text = re.sub(r"\b(?:[a-z]\.){2,}", lambda m: m.group(0).replace(".", ""), text)
     def number(m):
         raw = m.group(0)
@@ -79,6 +84,14 @@ def norm(text):
 def wer(reference, hypothesis):
     """Word error rate (edit distance over words) of hypothesis against reference."""
     ref, hyp = norm(reference), norm(hypothesis)
+    vocab, joined, i = set(ref), [], 0   # "chat gpt" heard for "chatgpt": a split name is the same word
+    while i < len(hyp):
+        two = hyp[i] + hyp[i + 1] if i + 1 < len(hyp) else None
+        if two and two in vocab and hyp[i] not in vocab:
+            joined.append(two); i += 2
+        else:
+            joined.append(hyp[i]); i += 1
+    hyp = joined
     prev = list(range(len(hyp) + 1))
     for i, r in enumerate(ref, 1):
         cur = [i]

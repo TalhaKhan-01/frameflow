@@ -36,7 +36,7 @@ STING = 1.5
 GAP = 0.3           # breath after each line
 END_HOLD = 2.6
 EMOTIONS = ["neutral", "excited", "surprised", "doubtful", "smug", "worried", "laughing", "serious"]
-GRAPHICS = ["headline", "stat", "versus", "bars", "quote", "list"]
+GRAPHICS = ["headline", "stat", "versus", "bars", "quote", "list", "map"]
 PATTERNS = [[(0, "split"), (0.55, "pip")], [(0, "pip"), (0.6, "split")], [(0, "split"), (0.45, "pip")], [(0, "pip"), (0.5, "split")]]   # Habit always on screen (an empty bottom half read as a dead frame, Ep 1 screening)
 
 _spec = importlib.util.spec_from_file_location("factcheck", brief.FACTCHECK)
@@ -155,7 +155,9 @@ Hard rules:
 - graphic: what fills the screen while Habit speaks. Pick the type that shows the fact best and vary types:
   stat {value, label, sub} (value like "90%", "₹225 Cr", "$16.3B", "60,000"; digits allowed in graphics),
   versus {left:{label,value}, right:{label,value}, caption}, bars {title (what is measured, with its unit, e.g. "MARKET VALUE, $ TRILLION"), items:[{label,value}] 2-4, caption},
-  headline {top, bottom, kicker}, quote {text (max 20 words, verbatim from a fact), who}, list {title, items: 3 short}.
+  headline {top, bottom, kicker}, quote {text (max 20 words, verbatim from a fact), who}, list {title, items: 3 short},
+  map {title, countries: 1-4 ISO alpha-3 codes ("IND", "USA", "CHN", "TWN"), route: true when something moves from the
+  first country to the last (a shipment, a flight, a deal, a launch), caption} for a story about places; no city-states.
   Every number in a graphic must be in the verified facts. Labels short (max 28 characters).
 Laugh (optional, at most one per episode): if a witty line truly earns it, put [chuckle] (a small laugh) or
 [laugh] right after it inside that segment's say, with emotion laughing; never in the open or the outro, and never
@@ -214,7 +216,8 @@ WRITER_SCHEMA = {"type": "object", "required": ["title", "breaking", "open", "se
                                     "sub": {"type": "string"}, "top": {"type": "string"}, "bottom": {"type": "string"},
                                     "kicker": {"type": "string"}, "text": {"type": "string"}, "who": {"type": "string"},
                                     "title": {"type": "string"}, "caption": {"type": "string"},
-                                    "left": G_ITEM, "right": G_ITEM, "items": {"type": "array", "items": {}}}},
+                                    "left": G_ITEM, "right": G_ITEM, "items": {"type": "array", "items": {}},
+                                    "countries": {"type": "array", "items": {"type": "string"}}, "route": {"type": "boolean"}}},
                                 "analogy": {"type": "object", "required": ["treatment"], "properties": {
                                     "treatment": {"type": "string", "enum": ["none", "compare", "scale", "photo", "stamp"]},
                                     "image": {"type": "string"}, "left": {"type": "string"}, "right": {"type": "string"},
@@ -238,6 +241,37 @@ TAG = re.compile(r"\[(chuckle|laugh)\]")
 
 def words(text):
     return len(re.findall(r"[A-Za-z₹$%']+|\d+", TAG.sub(" ", text)))
+
+
+_WORLD = {}
+
+
+def world():
+    """Natural Earth 1:110m countries (public domain), vendored for the map graphic: code -> {name, label, d}."""
+    if not _WORLD:
+        _WORLD.update(json.loads((ROOT / "scenes" / "_shared" / "vendor" / "world-110m.json").read_text())["countries"])
+    return _WORLD
+
+
+def map_geo(gr):
+    """A map graphic gets its geometry from the vendored data, never from the model: the view around the chosen countries
+    (padded, at least 60 x 34 map units, wider than tall like the box) and every country path inside it."""
+    if gr.get("type") != "map":
+        return gr
+    w = world()
+    codes = [c for c in gr.get("countries") or [] if c in w]
+    nums = lambda d: [tuple(map(float, xy.split())) for xy in re.findall(r"-?[\d.]+ -?[\d.]+", d)]
+    pts = [pt for c in codes for pt in nums(w[c]["d"])]
+    x0, x1 = min(p[0] for p in pts), max(p[0] for p in pts)
+    y0, y1 = min(p[1] for p in pts), max(p[1] for p in pts)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    vw = max((x1 - x0) * 1.25, 60.0, (y1 - y0) * 1.25 * 900 / 480)
+    vh = max(vw * 480 / 900, (y1 - y0) * 1.25)
+    vw = max(vw, vh * 900 / 480)
+    view = [round(cx - vw / 2, 1), round(cy - vh / 2, 1), round(vw, 1), round(vh, 1)]
+    inside = lambda d: any(view[0] <= x <= view[0] + view[2] and view[1] <= y <= view[1] + view[3] for x, y in nums(d)[::3])
+    paths = [[c, v["d"]] for c, v in w.items() if c in codes or inside(v["d"])]
+    return {**gr, "geo": {"view": view, "paths": paths, "labels": {c: w[c]["label"] for c in codes}, "names": {c: w[c]["name"] for c in codes}}}
 
 
 def lint(script, data):
@@ -276,10 +310,14 @@ def lint(script, data):
             errs.append(f"segment {g['story']}: wall over 8 characters")
         gr = g["graphic"]
         need = {"stat": ["value", "label"], "versus": ["left", "right"], "bars": ["items"], "headline": ["top", "bottom"],
-                "quote": ["text"], "list": ["title", "items"]}[gr["type"]]
+                "quote": ["text"], "list": ["title", "items"], "map": ["countries"]}[gr["type"]]
         miss = [k for k in need if not gr.get(k)]
         if miss:
             errs.append(f"segment {g['story']}: {gr['type']} graphic lacks {miss}")
+        if gr["type"] == "map":
+            bad = [c for c in gr.get("countries") or [] if c not in world()]
+            if bad or not 1 <= len(gr.get("countries") or []) <= 4:
+                errs.append(f"segment {g['story']}: map needs 1-4 country codes from the map (unknown: {bad})")
         if gr["type"] == "bars" and not 2 <= len(gr.get("items") or []) <= 4:
             errs.append(f"segment {g['story']}: bars need 2-4 items")
     errs += lint_analogies(script)
@@ -533,11 +571,44 @@ def lines_of(script):
     return out
 
 
+LEX = ROOT / "research" / "pronounce.json"
+LEX_SYSTEM = """You prepare a news script for a text-to-speech voice (Chatterbox, English). List the proper nouns and brand
+names in it that such a voice is likely to misread (unusual company, product, person or place names; not common words
+or famous brands like Apple or Google), each with a plain-English respelling that makes the voice say it right, in
+hyphenated syllables with the stressed syllable in capitals ("Anthropic" -> "an-THROP-ik", "Lumentum" -> "loo-MEN-tum",
+"Karpathy" -> "kar-PAH-thee"). Return JSON only."""
+LEX_SCHEMA = {"type": "object", "required": ["words"], "properties": {"words": {"type": "array", "items": {
+    "type": "object", "required": ["word", "say"], "properties": {"word": {"type": "string"}, "say": {"type": "string"}}}}}}
+
+
+def lexicon(script):
+    """Respellings for names the voice misreads (Ep 6: 'Anthropic' heard as 'and drop x', 'Lumentum' as 'the momentum').
+    research/pronounce.json keeps every respelling (edit it by hand to fix one); one cheap call adds the new names."""
+    lex = json.loads(LEX.read_text()) if LEX.exists() else {}
+    text = " ".join(l["say"] for l in lines_of(script))
+    try:
+        got = llm.call(text, LEX_SYSTEM, LEX_SCHEMA, model="haiku", purpose="show.pronounce", timeout=300)["words"]
+        new = {w["word"]: w["say"] for w in got if w["word"] and w["word"] not in lex and w["word"] in text}
+        if new:
+            lex.update(new)
+            LEX.write_text(json.dumps(lex, ensure_ascii=False, indent=1, sort_keys=True))
+    except Exception as e:   # the voice still runs with the saved respellings
+        print(f"pronounce: {e}", file=sys.stderr)
+    return lex
+
+
+def pronounce(say, lex):
+    """The voice's text: each listed name (and its possessive) replaced by its respelling; captions keep the real words."""
+    for word, sp in sorted(lex.items(), key=lambda kv: -len(kv[0])):
+        say = re.sub(rf"\b{re.escape(word)}(?=('s)?\b)", sp, say)
+    return say
+
+
 def narrate(script, out):
     vd = out / "voice"
     if (vd / "words.json").exists():
         return vd
-    lines = lines_of(script)
+    lines = [dict(l, say=pronounce(l["say"], lex)) for lex in [lexicon(script)] for l in lines_of(script)]
     vs = {"engine": "chatterbox", "model": "standard", "tempo": 1.0, "seed": 7, "pad": GAP, "fallback": False,
           "lines": [{"id": l["id"], "say": l["say"], "energy": ENERGY.get(l["emotion"], 0.6), "beat": "hook" if l["id"] == "open" else
                      "outro" if l["id"] == "outro" else "and", "emotion": l["emotion"]} for l in lines]}
@@ -642,7 +713,7 @@ def direct(script, data, vd, ep, day, media_by=None):
         s = stories[g["story"]]
         lo = cfg()["segment_seconds"][0]
         seg = {"topic": k, "lane": s["lane"], "headline": g["headline"], "source": s.get("source_name", ""), "shot": pat[0][1],
-               "emotion": g["emotion"], "wall": g["wall"].upper(), "wallSub": s["lane"].upper(), "g": g["graphic"]}
+               "emotion": g["emotion"], "wall": g["wall"].upper(), "wallSub": s["lane"].upper(), "g": map_geo(g["graphic"])}
         place(f"t{k}", seg, lo)
         seg["shots"] = [[round(seg["dur"] * f, 2), shot] for f, shot in pat]
         m = dict((media_by or {}).get(g["story"]) or {})
@@ -657,6 +728,7 @@ def direct(script, data, vd, ep, day, media_by=None):
         gag = gag_for(g, seg, [w for w in words if w["s"] >= seg["start"] - 0.01 and w["s"] < seg["start"] + seg["dur"]], media_by)
         if gag:
             seg["gag"] = gag
+        fill_beats(seg, c)
     c["tickerAt"] = round(t + 0.2, 3)
     place("outro", {"shot": "wide", "emotion": script["outro"]["emotion"], "wall": "SEE YOU", "wallSub": "TOMORROW"})
     c["endAt"] = round(segs[-1]["start"] + D["outro"]["seconds"] - 0.2, 3)
@@ -736,14 +808,25 @@ def mix(c, voice_at, out):
     k = int(0.15 * SR)
     talk = np.convolve(talk, np.ones(k) / k, mode="same").astype(np.float32)
     duck = 10 ** (m.get("duck_db", -7) / 20)
-    g = gain * (1 - talk * (1 - duck))
+    # energy curve (P9.4.3): the bed rises from rise_db under its level to the approved level by the last topic, drops to
+    # near-silence for dip_s before the outro (the payoff), and a hit lands as the outro starts
+    out_at = voice_at[-1][1]
+    last_topic = max((s["start"] for s in c["segments"] if s.get("topic")), default=bed_from)
+    tt = np.arange(n, dtype=np.float32) / SR
+    ramp = np.clip((tt - bed_from) / max(last_topic - bed_from, 1.0), 0, 1)
+    curve = 10 ** ((m.get("rise_db", -4.0) * (1 - ramp)) / 20)
+    dip_s = m.get("dip_s", 0.7)
+    dip = (tt >= out_at - dip_s) & (tt < out_at)
+    curve[dip] = 10 ** (m.get("dip_db", -24) / 20)
+    g = gain * curve * (1 - talk * (1 - duck))
     mtrack[i:i + len(bed)] += bed * g[i:i + len(bed), None]
     # end card: the theme's sting cut again
     j = int((c["endAt"] + 0.1) * SR)
     cut = th[-int(1.6 * SR):]
     mtrack[j:j + len(cut)] += cut[:max(n - j, 0)] * 10 ** ((m.get("theme_gain_db", -8) - 2) / 20)
     # SFX on visual events
-    sheet = [{"t": c["breakingAt"], "name": "stamp", "gain": -6}, {"t": c["stingAt"], "name": "whoosh-big", "gain": -12}]
+    sheet = [{"t": c["breakingAt"], "name": "stamp", "gain": -6}, {"t": c["stingAt"], "name": "whoosh-big", "gain": -12},
+             {"t": out_at - 0.02, "name": "slam", "gain": -14}]   # the hit after the pre-payoff silence
     for s in c["segments"]:
         if not s.get("topic"):
             continue
@@ -753,7 +836,7 @@ def mix(c, voice_at, out):
             sheet.append({"t": g0 - 0.15, "name": "whoosh", "gain": -20})
         if s.get("g"):
             sheet.append({"t": g0 + 0.2, "name": "pop", "gain": -18})
-            if s["g"]["type"] in ("stat", "versus", "bars"):
+            if s["g"]["type"] in ("stat", "versus", "bars", "map"):
                 sheet.append({"t": g0 + 1.4, "name": "ding", "gain": -22})
             if s["g"]["type"] == "headline":
                 sheet.append({"t": g0 + 0.3, "name": "slam", "gain": -16})
@@ -776,6 +859,11 @@ def mix(c, voice_at, out):
     on = talk > 0.95   # measured where Habit is speaking: the bed must sit >= 10 dB under the voice (P24.5.4)
     rms = lambda x: float(20 * np.log10(np.sqrt(np.mean(np.square(x))) + 1e-9)) if len(x) else -120.0
     level = {"voice_db": round(rms(vtrack[on]), 1), "music_under_voice_db": round(rms(mtrack[on]), 1)}
+    seg = lambda a, b: mtrack[int(a * SR):int(b * SR)]
+    third = (out_at - bed_from) / 3
+    level["energy"] = {"first_third_db": round(rms(seg(bed_from + 1, bed_from + third)), 1),
+                       "last_third_db": round(rms(seg(out_at - third, out_at - dip_s)), 1),
+                       "dip_db": round(rms(seg(out_at - dip_s, out_at)), 1), "hit_at": round(out_at, 2)}
     level["gap_db"] = round(level["voice_db"] - level["music_under_voice_db"], 1)
     open_cues = {"stamp_at": c["breakingAt"], "theme_at": round(th_at, 3), "bed_at": round(bed_from, 3),
                  "premix_peak": round(float(np.max(np.abs(stems))), 3)}   # P24.5.2: stamp -> theme -> bed, in that order
@@ -901,6 +989,55 @@ def mean_screening(runs, share):
             "pass": total >= share * mx and min(rows.values()) >= 1}
 
 
+def fill_beats(seg, c, limit=2.4):
+    """Something happens every 2.5 s (P9.2.1): a hold longer than `limit` inside a topic (usually the graphic with Habit
+    in the corner, Ep 6: eleven 3.5-4.5 s stretches) gets a framing change at its middle, pip <-> split."""
+    for _ in range(4):
+        one = {"breakingAt": -9, "stingAt": -9, "endAt": seg["start"] + seg["dur"], "segments": [seg]}
+        ev = sorted({x for x in visual_events(one) if seg["start"] - 0.01 <= x < seg["start"] + seg["dur"]} | {round(seg["start"] + seg["dur"], 2)})
+        gaps = [(a, b) for a, b in zip(ev, ev[1:]) if b - a > limit]
+        if not gaps:
+            return seg
+        a, b = max(gaps, key=lambda g: g[1] - g[0])
+        off = round((a + b) / 2 - seg["start"], 2)
+        cur = ([sh for o, sh in sorted(seg["shots"]) if o <= off] or [seg["shot"]])[-1]
+        sh = sorted(seg["shots"] + [[off, "split" if cur == "pip" else "pip"]], key=lambda s: s[0])
+        seg["shots"] = [s for k, s in enumerate(sh) if k == 0 or s[1] != sh[k - 1][1]]   # a repeat framing is no cut
+    return seg
+
+
+def visual_events(c):
+    """Picture changes the viewer sees (P9.2.1 in the show): each topic's cut-in, its shot changes, each media layer (photo,
+    page, card) and the page's highlighter, the graphic's entry and its beat (a count-up landing, a headline slam), the
+    analogy gag. Captions and the running countdown don't count: they change all the time and would hide a dead stretch."""
+    ev = [c["breakingAt"], c["stingAt"], c["endAt"]]
+    for s in c["segments"]:
+        if not s.get("topic"):
+            continue
+        a = s["start"]
+        sh = sorted(s.get("shots", []))
+        ev += [a] + [a + off for (off, f), (_, prev) in zip(sh[1:], sh) if f != prev]   # a real framing change only
+        m = s.get("media")
+        g0 = a + (m["dur"] if m else 0)
+        if m:
+            layers = [k for k in ("photo", "shot", "card") if m.get(k)]
+            step = m["dur"] / max(len(layers), 1)
+            for i, k in enumerate(layers):
+                ev += [a + i * step] + ([a + i * step + 0.5] if k in ("shot", "card") else [])
+        if s.get("g"):
+            ev += [g0 + 0.2] + ([g0 + 1.4] if s["g"]["type"] in ("stat", "versus", "bars", "map") else []) + ([g0 + 0.3] if s["g"]["type"] == "headline" else [])
+        if s.get("gag"):
+            ev.append(a + s["gag"]["at"])
+    return sorted(round(x, 2) for x in ev)
+
+
+def event_gaps(c, limit=2.5):
+    """Stretches longer than `limit` s without a visual event, between the first topic and the end card."""
+    first = min((s["start"] for s in c["segments"] if s.get("topic")), default=0.0)
+    ev = [x for x in visual_events(c) if first <= x <= c["endAt"]]
+    return [(round(a, 2), round(b - a, 2)) for a, b in zip(ev, ev[1:]) if b - a > limit]
+
+
 def check_render(final, c, script, vd, out):
     bar = json.loads((ROOT / "research" / "quality-bar.json").read_text())
     secs = media.duration(final)
@@ -916,7 +1053,9 @@ def check_render(final, c, script, vd, out):
                           "detail": f"{lufs} LUFS, peak {peak} dBFS"},
              "black": {"pass": not black, "detail": f"{len(black)} black stretches"},
              "blank": {"pass": not blank, "detail": f"{len(blank)} blank stretches"},
-             "captions": {"pass": werr <= bar["captions"]["max_word_error"], "detail": f"word error {werr:.2f}"}}
+             "captions": {"pass": werr <= bar["captions"]["max_word_error"], "detail": f"word error {werr:.2f}"},
+             "events": (lambda gaps: {"pass": not gaps, "detail": f"{len(gaps)} stretch(es) over 2.5 s without a picture change"
+                                      + (f": {', '.join(f'{d} s at {a} s' for a, d in gaps[:4])}" if gaps else "")})(event_gaps(c))}
     return {"pass": all(g["pass"] for g in gates.values()), "gates": gates, "seconds": secs}
 
 

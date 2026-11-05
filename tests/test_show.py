@@ -128,3 +128,27 @@ def test_pages_never_include_a_stale_dated_page():
 def test_laugh_tags_are_not_words_and_at_most_one():
     assert show.words("That's one way to pay rent [chuckle] today.") == 7
     assert show.TAG.sub(" ", "rent [laugh] now").split() == ["rent", "now"]
+
+
+def test_director_fills_every_hold_over_two_and_a_half_seconds():
+    c = {"breakingAt": 0.5, "stingAt": 4.0, "endAt": 30.0, "segments": [
+        {"topic": 1, "start": 6.0, "dur": 10.0, "shot": "split", "shots": [[0.0, "split"], [5.5, "pip"]],
+         "media": {"shot": {"src": "x"}, "dur": 4.5}, "g": {"type": "headline"}}]}
+    assert show.event_gaps(dict(c, endAt=16.0))
+    show.fill_beats(c["segments"][0], c)
+    assert not show.event_gaps(dict(c, endAt=16.0))
+    sh = c["segments"][0]["shots"]
+    assert all(a[1] != b[1] for a, b in zip(sh, sh[1:]))   # every listed cut changes the framing
+
+
+def test_voice_respells_names_but_captions_keep_them():
+    lex = {"Anthropic": "an-THROP-ik", "Lumentum": "loo-MEN-tum"}
+    assert show.pronounce("Anthropic's deal with Lumentum.", lex) == "an-THROP-ik's deal with loo-MEN-tum."
+    assert show.pronounce("Anthropically speaking", lex) == "Anthropically speaking"
+
+
+def test_word_error_reads_numbers_and_split_names_as_said():
+    from frameflow import captions
+    said = "Marvell pays one hundred fifteen billion dollars, up one hundred fifty-four point three percent, says ChatGPT."
+    heard = "Marvell pays $115 billion, up 154.3%, says chat GPT."
+    assert captions.wer(said, heard) == 0
