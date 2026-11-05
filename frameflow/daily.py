@@ -510,6 +510,14 @@ def weekly():
     con.execute("INSERT INTO weekly VALUES (?,?)", (week, now().isoformat()))
     con.commit()
     posted = con.execute("SELECT COUNT(*) FROM runs WHERE state='posted' AND posted_at >= ?", ((now() - dt.timedelta(days=7)).isoformat(),)).fetchone()[0]
+    try:   # the Meta token is a 60-day token: extend it every week so it never lapses (it expired unnoticed on 25 Oct)
+        r = subprocess.run(["python3", "-I", str(Path.home() / "Talha_Khan/Claude/skills/social-upload/scripts/instagram.py"),
+                            "--project", str(ROOT), "refresh"], capture_output=True, text=True, timeout=120)
+        if r.returncode:
+            telegram.send("The Meta (Instagram/Facebook) token could not be extended; it needs a new sign-in. "
+                          + (r.stderr or r.stdout)[-200:])
+    except Exception as e:
+        print(f"meta refresh: {e}", file=sys.stderr)
     st, s = coach.status(), coach.load()
     since = (now() - dt.timedelta(days=7)).isoformat()
     changes = [c for h in s["history"] if h["at"] >= since for c in h.get("changes", [])]
