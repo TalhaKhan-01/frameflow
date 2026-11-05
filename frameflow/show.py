@@ -432,9 +432,11 @@ CUE_SYSTEM = """You pick the real visuals for a fast news Short. For each story,
 it is said: main = the one person, product, place or thing the story is about (kind person | product | place | thing),
 or kind none when it is only a company or an abstract idea; wiki = that subject's exact English Wikipedia page title,
 or "" if unsure; logo = the company or brand whose logo belongs on screen ("" if none). Prefer the subject a viewer
-would recognise (Sam Altman, iPhone, Dalal Street), never a generic word. Return JSON only."""
+would recognise (Sam Altman, iPhone, Dalal Street), never a generic word. scene = 2-5 plain words for an everyday
+photo of the story's world that free photo libraries have ("UPI QR code shop", "data center servers", "cargo truck
+highway", "startup office India"): shown when the subject has no free photo. Return JSON only."""
 CUE_SCHEMA = {"type": "object", "required": ["stories"], "properties": {"stories": {"type": "array", "items": {
-    "type": "object", "required": ["story", "kind", "name", "wiki", "logo"], "properties": {
+    "type": "object", "required": ["story", "kind", "name", "wiki", "logo", "scene"], "properties": {"scene": {"type": "string"},
         "story": {"type": "integer"}, "kind": {"type": "string", "enum": ["person", "product", "place", "thing", "none"]},
         "name": {"type": "string"}, "wiki": {"type": "string"}, "logo": {"type": "string"}}}}}}
 
@@ -493,6 +495,8 @@ def visuals(script, data, out):
             if p["kind"] != "none" and p["name"]:
                 cues.append({"id": f"s{p['story']}-photo", "kind": "photo", "name": p["name"], "wiki": p["wiki"] or None,
                              "context": s["headline"]})
+            if p.get("scene"):   # P0.1.5: an open-licence everyday photo when the subject has none (Ep 6: 2 of 7 stories had a photo)
+                cues.append({"id": f"s{p['story']}-scene", "kind": "photo", "name": p["scene"], "context": f"{s['headline']} (a general scene, not a specific person)"})
             if p["logo"]:
                 cues.append({"id": f"s{p['story']}-logo", "kind": "logo", "name": p["logo"]})
             if pages_for(s, _day(out)):
@@ -529,6 +533,8 @@ def visuals(script, data, out):
                                                          "credit": f"{r['author'][:30]} · {r['licence']}"}
             continue
         story, kind = int(r["id"].split("-")[0][1:]), r["kind"]
+        if kind == "photo" and r["id"].endswith("-scene") and "photo" in by.get(story, {}):
+            continue   # the subject's own photo wins over the scene photo
         if kind == "photo":
             by.setdefault(story, {})["photo"] = {"src": src, "w": r["width"], "h": r["height"],
                                                 "credit": f"Photo: {r['author'][:40]} · {r['licence']} · {r['source']}"}
