@@ -41,7 +41,8 @@ stop a scroll and get shared. Weigh: surprise or shock, a concrete number or sta
 (jobs, phones, money, apps they use, India's place in the world), timeliness (last 24-36 h), a fun angle for a pun,
 and whether it can be shown with simple graphics (a number, a comparison, a headline, a logo-free icon).
 Rules: one entry per real-world story (merge duplicates from different outlets, keep the most original source);
-mix lanes (no more than 4 from one lane); drop gossip, deals, coupons, stock tips, tragedies, politics-only fights,
+no lane limits: anything trending anywhere in the world can make the 8 when it has a tech, money or science
+angle Habit can explain (Talha 5 Nov); drop gossip, deals, coupons, stock tips, tragedies, politics-only fights,
 anything that can't be sourced. A candidate marked UPDATE continues a story the show already aired: rank it only on
 its new development, and its headline must lead with that development. headline: at most 8 words, punchy, true. why: one short line on why it will travel.
 pun: a first idea for the witty line (can be improved later). Return JSON only."""
@@ -50,7 +51,7 @@ VIRAL_SCHEMA = {"type": "object", "required": ["stories"], "properties": {"stori
     "type": "object", "required": ["id", "virality", "headline", "why", "lane", "pun"],
     "properties": {"id": {"type": "integer"}, "virality": {"type": "integer", "minimum": 0, "maximum": 100},
                    "headline": {"type": "string"}, "why": {"type": "string"}, "pun": {"type": "string"},
-                   "lane": {"type": "string", "enum": ["Tech", "AI", "Money", "India", "Science", "Internet"]}}}}}}
+                   "lane": {"type": "string", "enum": ["Tech", "AI", "Money", "India", "Science", "Internet", "World"]}}}}}}
 
 
 def used_urls():

@@ -42,5 +42,7 @@
   "count": 10,
   "wait_minutes": 20,
   "model": "sonnet"
- }
+ },
+ "screen_runs": 2,
+ "_screen_runs": "5 Nov (Talha, P24.6.4): the screening runs twice and the bar is judged on the mean of each row (the judge varies by 1-2 points)"
 }

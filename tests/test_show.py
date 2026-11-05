@@ -93,3 +93,13 @@ def test_set_and_look_are_one_config_value_each():
     assert re.search(r"RIGS\s*=\s*\{\s*pixel:\s*rigPixel,\s*puppet:\s*rigPuppet\s*\}", js)
     src = Path(show.__file__).read_text()
     assert '"set": cfg()["set"], "look": cfg()["look"]' in src
+
+
+def test_screening_bar_is_judged_on_the_mean_of_two_runs():
+    a = {"rows": {"hook": 2, "look": 1, "pace": 2}, "fixes": ["x"]}
+    b = {"rows": {"hook": 1, "look": 1, "pace": 2}, "fixes": ["x", "y"]}
+    m = show.mean_screening([a, b], 0.8)
+    assert m["rows"] == {"hook": 1.5, "look": 1.0, "pace": 2.0} and m["total"] == 4.5 and m["max"] == 6
+    assert m["fixes"] == ["x", "y"] and len(m["runs"]) == 2
+    assert not m["pass"]                                   # 4.5 < 0.8 * 6
+    assert show.mean_screening([a, a], 0.8)["pass"]        # 5 >= 4.8, every row >= 1

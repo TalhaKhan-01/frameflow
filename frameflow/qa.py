@@ -107,57 +107,63 @@ REHOOK_BEATS = ("but", "twist", "loop", "payoff")   # the payoff is the reveal t
 
 def is_rehook(line):
     """One definition for QA, the narrator checks and the writer's lint: a but/twist/loop/payoff beat, a line marked with the
-    rehook device, or a question to the viewer (the fix text always offered "a question"; until 27 Oct no code counted one,
-    and the writer's lint left out the payoff, so fix rounds chased gaps QA didn't see)."""
-    return (line.get("beat") in REHOOK_BEATS or "rehook" in line.get("devices", [])
-            or line.get("say", "").rstrip().rstrip("\"'”’").endswith("?"))
+    rehook device, or a question to the viewer anywhere in the line (Talha 5 Nov, Review Queue item 3 option a: a story beat
+    often asks its question mid-line, "Why AI cargo, though? One rack costs..."; before, only a line ending on "?" counted)."""
+    return rehook_share(line) is not None
+
+
+def rehook_share(line):
+    """Where in the line the re-hook lands, as a share of its words (0 = the line's start), or None if it has none.
+    A marked beat or device counts from the start; otherwise the first question counts from the start of its sentence,
+    so a question spoken mid-line is measured where it's actually heard. Keep in step with shorts-writer's writer.py."""
+    if line.get("beat") in REHOOK_BEATS or "rehook" in line.get("devices", []):
+        return 0.0
+    say = line.get("say", "").strip()
+    if "?" not in say:
+        return None
+    words = say.split()
+    k = next(i for i, w in enumerate(words) if "?" in w)
+    start = k
+    while start > 0 and not re.search(r"[.!?;:]['\"”’]?$", words[start - 1]):
+        start -= 1
+    return start / max(len(words), 1)
+
+
+def _rehook_marks(out):
+    plan = json.loads((out / "plan.json").read_text())
+    dur = json.loads((out / "voice" / "durations.json").read_text())
+    starts = {l["id"]: l["start"] for l in dur["lines"]}
+    secs = {l["id"]: l.get("seconds", 0) for l in dur["lines"]}
+    lid = lambda i, s, j: f"s{i}" if len(s["lines"]) == 1 else f"s{i}.{j}"
+    end = next((starts.get(lid(i, s, 0)) for i, s in enumerate(plan["scenes"]) if s["type"] == "endcard" and s.get("lines")), None)
+    end = end if end is not None else dur["total"]
+    marks = [(0.0, "the start")]
+    for i, s in enumerate(plan["scenes"]):
+        for j, line in enumerate(s.get("lines", [])):
+            t, share = starts.get(lid(i, s, j)), rehook_share(line)
+            if t is not None and share is not None and t + share * secs.get(lid(i, s, j), 0) < end:
+                marks.append((round(t + share * secs.get(lid(i, s, j), 0), 2), f"scene {i}: \"{line.get('say', '')[:60]}\""))
+    marks.append((end, "the end card" if end < dur["total"] else "the end"))
+    marks.sort(key=lambda m: m[0])
+    inside = lambda a, b: [f"scene {i}" for i in sorted({i for i, s in enumerate(plan["scenes"]) for j, _ in enumerate(s.get("lines", []))
+                                                        if a < starts.get(lid(i, s, j), -1) < b})]
+    return marks, inside
 
 
 def rehook_stretch(out):
     """The longest stretch between re-hook moments on the real voice: (seconds, (t, where it starts), (t, where it ends),
     scenes inside). It ends where the house end card starts: the follow line is fixed and owes the viewer no re-hook
     (before 26 Oct the measurement ran to the last second, so a long ending plus the end card failed on its own)."""
-    plan = json.loads((out / "plan.json").read_text())
-    dur = json.loads((out / "voice" / "durations.json").read_text())
-    starts = {l["id"]: l["start"] for l in dur["lines"]}
-    lid = lambda i, s, j: f"s{i}" if len(s["lines"]) == 1 else f"s{i}.{j}"
-    end = next((starts.get(lid(i, s, 0)) for i, s in enumerate(plan["scenes"]) if s["type"] == "endcard" and s.get("lines")), None)
-    end = end if end is not None else dur["total"]
-    marks = [(0.0, "the start")]
-    for i, s in enumerate(plan["scenes"]):
-        for j, line in enumerate(s.get("lines", [])):
-            t = starts.get(lid(i, s, j))
-            if t is not None and t < end and is_rehook(line):
-                marks.append((t, f"scene {i}: \"{line.get('say', '')[:60]}\""))
-    marks.append((end, "the end card" if end < dur["total"] else "the end"))
+    marks, inside = _rehook_marks(out)
     gap, a, b = max(((y[0] - x[0], x, y) for x, y in zip(marks, marks[1:])), key=lambda g: g[0])
-    inside = sorted({i for i, s in enumerate(plan["scenes"]) for j, _ in enumerate(s.get("lines", []))
-                     if a[0] < starts.get(lid(i, s, j), -1) < b[0]})
-    return gap, a, b, [f"scene {i}" for i in inside]
+    return gap, a, b, inside(a[0], b[0])
 
 
 def rehook_stretches(out, limit):
     """Every stretch longer than `limit` (longest first), each as (seconds, start, end, scenes inside): a fix round sees all
     of them at once instead of one per round (27 Oct test: a 14.9 s stretch hid behind the 15.6 s one)."""
-    plan = json.loads((out / "plan.json").read_text())
-    dur = json.loads((out / "voice" / "durations.json").read_text())
-    starts = {l["id"]: l["start"] for l in dur["lines"]}
-    lid = lambda i, s, j: f"s{i}" if len(s["lines"]) == 1 else f"s{i}.{j}"
-    end = next((starts.get(lid(i, s, 0)) for i, s in enumerate(plan["scenes"]) if s["type"] == "endcard" and s.get("lines")), None)
-    end = end if end is not None else dur["total"]
-    marks = [(0.0, "the start")]
-    for i, s in enumerate(plan["scenes"]):
-        for j, line in enumerate(s.get("lines", [])):
-            t = starts.get(lid(i, s, j))
-            if t is not None and t < end and is_rehook(line):
-                marks.append((t, f"scene {i}: \"{line.get('say', '')[:60]}\""))
-    marks.append((end, "the end card" if end < dur["total"] else "the end"))
-    out_ = []
-    for x, y in zip(marks, marks[1:]):
-        if y[0] - x[0] > limit:
-            inside = sorted({i for i, s in enumerate(plan["scenes"]) for j, _ in enumerate(s.get("lines", []))
-                             if x[0] < starts.get(lid(i, s, j), -1) < y[0]})
-            out_.append((y[0] - x[0], x, y, [f"scene {i}" for i in inside]))
+    marks, inside = _rehook_marks(out)
+    out_ = [(y[0] - x[0], x, y, inside(x[0], y[0])) for x, y in zip(marks, marks[1:]) if y[0] - x[0] > limit]
     return sorted(out_, key=lambda g: -g[0])
 
 

@@ -8,7 +8,15 @@ def test_is_rehook():
     assert qa.is_rehook({"beat": "payoff", "devices": [], "say": "So the weak spot was trust."})
     assert qa.is_rehook({"beat": "ending", "devices": ["straight"], "say": "What else do we trust?"})
     assert qa.is_rehook({"beat": "and", "devices": ["rehook"], "say": "Here's the catch."})
-    assert not qa.is_rehook({"beat": "and", "devices": ["straight"], "say": "And the pickup? A real driver."})
+    # since 5 Nov (Review Queue item 3, option a) a question counts wherever it's spoken in the line
+    assert qa.is_rehook({"beat": "and", "devices": ["straight"], "say": "And the pickup? A real driver."})
+    assert not qa.is_rehook({"beat": "and", "devices": ["straight"], "say": "One rack costs a lot."})
+
+
+def test_mid_line_question_counts_where_it_is_spoken():
+    assert qa.rehook_share({"beat": "and", "devices": [], "say": "Why AI cargo, though? One rack costs a lot."}) == 0.0
+    assert qa.rehook_share({"beat": "and", "devices": [], "say": "One rack costs a lot. Why though?"}) == 5 / 7
+    assert qa.rehook_share({"beat": "but", "devices": [], "say": "One rack costs a lot."}) == 0.0
 
 
 def test_every_stretch_over_the_limit(tmp_path):

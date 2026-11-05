@@ -840,13 +840,28 @@ SCREEN_SCHEMA = {"type": "object", "required": ["rows", "fixes"], "properties": 
 
 
 def screening(sheet, times, script):
+    """The screening judge on the contact sheet. The judge varies by 1-2 points between runs, so it runs `screen_runs`
+    times (2 by default) and the bar is judged on the mean of each row (Talha 5 Nov, P24.6.4). Each run is kept in `runs`."""
     c = cfg()
-    r = llm.call(f"Contact sheet: {sheet}\nStill times (s): {', '.join(f'{t:.1f}' for t in times)}\n\nScript:\n"
-                 + "\n".join(f"- {l['id']}: {l['say']}" for l in lines_of(script)),
-                 SCREEN_SYSTEM, SCREEN_SCHEMA, model=c.get("judge_model", "opus"), tools="Read", add_dirs=[sheet.parent],
-                 purpose="show.screening", effort="medium")
-    total, mx = sum(r["rows"].values()), 2 * len(r["rows"])
-    return {**r, "total": total, "max": mx, "pass": total >= c["pass_share"] * mx and min(r["rows"].values()) >= 1}
+    ask = (f"Contact sheet: {sheet}\nStill times (s): {', '.join(f'{t:.1f}' for t in times)}\n\nScript:\n"
+           + "\n".join(f"- {l['id']}: {l['say']}" for l in lines_of(script)))
+    runs = [llm.call(ask, SCREEN_SYSTEM, SCREEN_SCHEMA, model=c.get("judge_model", "opus"), tools="Read", add_dirs=[sheet.parent],
+                     purpose="show.screening", effort="medium") for _ in range(max(1, int(c.get("screen_runs", 2))))]
+    return mean_screening(runs, c["pass_share"])
+
+
+def mean_screening(runs, share):
+    """Average several screening runs row by row; pass when the mean total reaches `share` of the maximum and every row's
+    mean is at least 1. Fixes are merged in order without repeats."""
+    rows = {k: round(sum(r["rows"][k] for r in runs) / len(runs), 2) for k in runs[0]["rows"]}
+    fixes = []
+    for r in runs:
+        for f in r.get("fixes", []):
+            if f not in fixes:
+                fixes.append(f)
+    total, mx = round(sum(rows.values()), 2), 2 * len(rows)
+    return {**runs[0], "rows": rows, "fixes": fixes, "total": total, "max": mx, "runs": [{"rows": r["rows"], "total": sum(r["rows"].values())} for r in runs],
+            "pass": total >= share * mx and min(rows.values()) >= 1}
 
 
 def check_render(final, c, script, vd, out):

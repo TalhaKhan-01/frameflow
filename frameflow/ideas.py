@@ -64,6 +64,23 @@ def parse_feed(raw, name):
     return [i for i in items if i["title"] and i["url"].startswith("http")]
 
 
+def parse_trends(raw, geo):
+    """Google Trends' daily trending RSS for one country: each trending search carries the news articles behind it
+    (ht:news_item); those articles become ideas, the search term and its traffic go in the summary."""
+    root = ET.fromstring(raw)
+    ns = {"ht": "https://trends.google.com/trending/rss"}
+    out = []
+    for it in root.iter("item"):
+        term, traffic = clean(it.findtext("title"), 80), it.findtext("ht:approx_traffic", namespaces=ns) or ""
+        for n in it.findall("ht:news_item", ns)[:2]:
+            title, url = clean(n.findtext("ht:news_item_title", namespaces=ns), 200), (n.findtext("ht:news_item_url", namespaces=ns) or "").strip()
+            if title and url.startswith("http"):
+                out.append({"source": f"Google Trends {geo}: {clean(n.findtext('ht:news_item_source', namespaces=ns), 60)}",
+                            "title": title, "url": url, "summary": f"trending search in {geo}: '{term}' ({traffic} searches)",
+                            "published": it.findtext("pubDate") or ""})
+    return out
+
+
 def lane_of(title, summary, lanes):
     """First lane whose include words appear (whole word) in the title or summary; None if none match."""
     text = f"{title} {summary}".lower()
@@ -90,6 +107,18 @@ def collect():
             found += parse_feed(fetch(url), f"Google News: {q}")[:15]
         except Exception as e:
             errors.append(f"Google News {q}: {e}")
+    for geo in src.get("google_trends", []):   # worldwide trends (Talha 5 Nov: anything trending can make the show)
+        try:
+            found += parse_trends(fetch(f"https://trends.google.com/trending/rss?geo={geo}"), geo)[:20]
+        except Exception as e:
+            errors.append(f"Google Trends {geo}: {e}")
+    for topic in src.get("google_news_topics", []):
+        for geo in src.get("google_news_geos", ["IN"]):
+            url = f"https://news.google.com/rss/headlines/section/topic/{topic}?hl=en-{geo}&gl={geo}&ceid={geo}:en"
+            try:
+                found += parse_feed(fetch(url), f"Google News {topic.title()} {geo}")[:15]
+            except Exception as e:
+                errors.append(f"Google News {topic} {geo}: {e}")
     if src.get("hacker_news_top"):
         try:
             ids = json.loads(fetch("https://hacker-news.firebaseio.com/v0/topstories.json"))[:src["hacker_news_top"]]
@@ -149,7 +178,9 @@ def collect():
 RANK_SYSTEM = """You pick topics for Frameflow, an English YouTube Shorts / Instagram Reels channel about tech, AI and money, India-first audience.
 Score each idea 0-100 for: timeliness, a concrete stake for the viewer (a number, comparison, or claim that can be proven),
 an honest India angle, and whether it can be shown with motion graphics (charts, comparisons, numbers, headlines) instead of
-someone else's footage. Drop gossip, pure opinion, deals/coupons, sensitive tragedies and anything that cannot be sourced.
+someone else's footage. Anything trending anywhere in the world can qualify (sports, films, world news, science) when it has a
+tech, money or science angle the narrator can explain; keep that angle in `angle`. Drop gossip, pure opinion, deals/coupons,
+sensitive tragedies, politics-only fights and anything that cannot be sourced. The lane is the nearest fit.
 Lanes: global-tech, india-tech, ai-news, dev-tools, ai-money, how-tech-works. Write the hook as the first spoken line:
 at most 18 words, a concrete stake, no greeting. Return JSON only."""
 
