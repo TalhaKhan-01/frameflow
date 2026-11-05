@@ -152,8 +152,20 @@ def story_of(say, script):
     """The segment a hook is about: the most shared words (4+ letters) with its headline and wall text; None if unclear."""
     words = lambda t: set(re.findall(r"[a-z0-9₹$]{4,}", t.lower()))
     said = words(say)
-    best = max(script.get("segments", []), key=lambda g: len(said & words(g["headline"] + " " + g.get("wall", ""))), default=None)
-    return best if best and len(said & words(best["headline"] + " " + best.get("wall", ""))) >= 2 else None
+    text = lambda g: " ".join(str(g.get(k) or "") for k in ("headline", "wall", "say"))   # the segment's words too (Ep 6: wall was just "154.3%")
+    best = max(script.get("segments", []), key=lambda g: len(said & words(text(g))), default=None)
+    return best if best and len(said & words(text(best))) >= 2 else None
+
+
+def fit_banner(script):
+    """The BREAKING banner names the story the open is about. Ep 6: the writer opened on Apple's iPhone prices but wrote a
+    banner about India and Marvell; the open was the writer's own (hook 1), so apply() never compared them. When the
+    open's story is clear and the banner shares no word with it, the banner becomes that story's headline."""
+    words = lambda t: set(re.findall(r"[a-z0-9₹$]{4,}", t.lower()))
+    g = story_of(script.get("open", {}).get("say", ""), script)
+    if g and not words(script.get("breaking", "")) & words(g["headline"] + " " + g.get("wall", "")):
+        script["breaking"] = g["headline"][:55]
+    return script
 
 
 def apply(script, h, out):

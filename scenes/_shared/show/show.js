@@ -91,7 +91,8 @@
       sheets.forEach(([x, y, w, h, r], i) => {
         const sg = el("g", { transform: `rotate(${r} ${x + w / 2} ${y + h / 2})` }, g);
         el("rect", { x, y, width: w, height: h, fill: "#fbf8f1" }, sg);
-        txt(sg, x + w / 2, y + 44, ["THE DAILY", "HABIT", "TECH", "TIMES"][i], { size: 34, font: S.head, fill: S.ink, weight: 800 });
+        txt(el("g", { class: "mark" }, sg), x + w / 2, y + 44, ["THE DAILY", "HABIT", "TECH", "TIMES"][i], {   // a wall label: wide shot only, or a close-up cuts it to "ILY" / "H" (Ep 6 screening)
+           size: 34, font: S.head, fill: S.ink, weight: 800 });
         for (let l = 0; l < 9; l++) el("rect", { x: x + 22, y: y + 90 + l * 30, width: w - 44 - (l % 3) * 30, height: 9, fill: "#cfc4b0" }, sg);
       });
       el("rect", { x: 150, y: 330, width: 780, height: 520, rx: 18, fill: S.ink }, g);
@@ -481,11 +482,11 @@
         const c = txt(bar, 540, BY + BH - 95, String(a.caption || "").toUpperCase(), { size: 56, font: S.head, fill: S.textOnRed, weight: 900 }); fit(c, BW - 100, 56);
         tl.fromTo(bar, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, t0 + 0.4);
       } else {   // stamp: slams over whatever is on screen
-        const st = el("g", { transform: "rotate(-4 540 940)" }, g);   // low in the box, so the number above stays clear
-        const w = Math.max(280, 42 * String(a.word).length + 60);
-        el("rect", { x: 540 - w / 2, y: 900, width: w, height: 80, rx: 14, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
-        const t = txt(st, 540, 942, String(a.word || "").toUpperCase(), { size: 58, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 50, 58);
-        gsap.set(st, { svgOrigin: "540 940" });
+        const st = el("g", { transform: "rotate(-4 540 962)" }, g);   // at the box's foot, under the graphic's kicker line (Ep 6)
+        const w = Math.max(280, 34 * String(a.word).length + 60);
+        el("rect", { x: 540 - w / 2, y: 932, width: w, height: 64, rx: 12, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
+        const t = txt(st, 540, 966, String(a.word || "").toUpperCase(), { size: 46, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 50, 46);
+        gsap.set(st, { svgOrigin: "540 962" });
         tl.fromTo(st, { scale: 3, opacity: 0 }, { scale: 1, opacity: 0.92, duration: 0.18, ease: "power4.in" }, t0);
       }
       tl.to(g, { opacity: 0, duration: 0.25 }, t0 + a.dur - 0.25);
@@ -537,7 +538,7 @@
     const rig = RIGS[cfg.look](cam);
     const deskSvg = svgBox(cam); defs(deskSvg, S);
     drawDesk(deskSvg, S, cfg);
-    const marks = Array.from(deskSvg.querySelectorAll(".mark"));
+    const marks = Array.from(document.querySelectorAll(".mark"));   // desk wordmark and wall labels
     const sweeps = Array.from(setSvg.querySelectorAll(".sweep"));
 
     const pipFrame = div(root, `position:absolute;left:${PIP.x - 8}px;top:${PIP.y - 8}px;width:${PIP.s + 16}px;height:${PIP.s + 16}px;border:8px solid ${S.red};border-radius:36px;box-sizing:border-box;opacity:0`);

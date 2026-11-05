@@ -24,7 +24,14 @@
     "amused": 0,
     "sly": -5,
     "deadpan": -6,
-    "serious": -8
+    "serious": -8,
+    "neutral": 0,
+    "excited": 6,
+    "surprised": 4,
+    "doubtful": -4,
+    "smug": -4,
+    "worried": -6,
+    "laughing": 0
   },
   "content": {
     "numbers": -10,
@@ -34,5 +41,6 @@
     "temperature": 0.95,
     "ref": "data/voice/house-ref.wav",
     "_": "lines containing a [chuckle] or [laugh] tag render on Chatterbox Turbo, cloned from the house voice; at most one per video"
-  }
+  },
+  "_emotion_show": "5 Nov: the show's 8 puppet emotions added (P9.3.4 in the show); 'serious' was already -8"
 }

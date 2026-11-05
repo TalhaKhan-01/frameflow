@@ -187,14 +187,23 @@ def tts(script_path, out_dir):
             for line, p, c in zip(script["lines"], paths, cached):
                 if line.get("cache") and not c:
                     cache_store(line, p.with_suffix(".raw.wav"), script)
+            report = []
             for line, p, x in zip(script["lines"], paths, laugh):
                 finish(p.with_suffix(".raw.wav"), p, float(script.get("tempo", 1.0)))
                 if pace and not x:   # pull the line toward its target pace (vault Docs/Voice Pace.md)
                     target = target_wpm(line, pace)
                     wpm = spoken_words(line["say"]) / seconds(p) * 60
+                    want, used = target / wpm * float(script.get("tempo", 1.0)), float(script.get("tempo", 1.0))
                     if abs(wpm / target - 1) > pace.get("tolerance", 0.04):
                         lo, hi = pace.get("tempo_range", [0.85, 1.12])
-                        finish(p.with_suffix(".raw.wav"), p, min(max(target / wpm * float(script.get("tempo", 1.0)), lo), hi))
+                        used = min(max(want, lo), hi)
+                        finish(p.with_suffix(".raw.wav"), p, used)
+                    report.append({"id": line.get("id"), "target": target, "raw_wpm": round(wpm, 1), "tempo": round(used, 3),
+                                   "wpm": round(spoken_words(line["say"]) / seconds(p) * 60, 1), "clamped": abs(used - want) > 1e-3})
+                elif x:
+                    report.append({"id": line.get("id"), "laugh": True})
+            if report:   # P9.3.4: what each line aimed at and got (a clamped line hit the tempo limit)
+                (Path(out) / "pace.json").write_text(json.dumps(report, indent=1))
         except Exception as e:   # no GPU memory, worker crash: the video still gets a voice, unless the script forbids another one
             if script.get("fallback") is False:   # the show: Habit's voice is part of the brand; stop, never swap it (Talha, 29 Oct)
                 raise RuntimeError(f"Habit's voice (Chatterbox) could not run, and the show never swaps voices: {str(e)[-300:]}") from None

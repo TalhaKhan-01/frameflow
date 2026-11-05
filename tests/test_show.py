@@ -103,3 +103,28 @@ def test_screening_bar_is_judged_on_the_mean_of_two_runs():
     assert m["fixes"] == ["x", "y"] and len(m["runs"]) == 2
     assert not m["pass"]                                   # 4.5 < 0.8 * 6
     assert show.mean_screening([a, a], 0.8)["pass"]        # 5 >= 4.8, every row >= 1
+
+
+def test_banner_follows_the_open_story():
+    from frameflow import hookpick
+    sc = {"open": {"say": "Breaking: Your next iPhone could cost more, because Apple won't rule out price hikes as memory costs climb."},
+          "breaking": "INDIA NO.1 FOR CHATGPT, SAYS OPENAI + A $115B DEAL",
+          "segments": [{"story": 1, "headline": "India tops ChatGPT, says OpenAI", "wall": "INDIA: CHATGPT'S BIGGEST MARKET"},
+                       {"story": 3, "headline": "Apple's inventory jumps 154.3%", "wall": "APPLE INVENTORY, $ BILLION memory costs"}]}
+    assert hookpick.fit_banner(sc)["breaking"] == "Apple's inventory jumps 154.3%"
+    ok = dict(sc, breaking="APPLE WARNS ON IPHONE PRICES")
+    assert hookpick.fit_banner(ok)["breaking"] == "APPLE WARNS ON IPHONE PRICES"
+
+
+def test_pages_never_include_a_stale_dated_page():
+    s = {"source_name": "Inc42", "url": "https://inc42.com/buzz/india-becomes-chatgpts-largest-market/",
+         "facts": [{"source": "https://www.techcrunch.com/2026/02/15/india-has-100m-weekly-active-chatgpt-users/"},
+                   {"source": "https://inc42.com/buzz/india-becomes-chatgpts-largest-market/"},
+                   {"source": "https://example.com/2026/11/03/fresh-take/"}]}
+    pages = show.pages_for(s, day="2026-11-04")
+    assert pages == ["https://inc42.com/buzz/india-becomes-chatgpts-largest-market/", "https://example.com/2026/11/03/fresh-take/"]
+
+
+def test_laugh_tags_are_not_words_and_at_most_one():
+    assert show.words("That's one way to pay rent [chuckle] today.") == 7
+    assert show.TAG.sub(" ", "rent [laugh] now").split() == ["rent", "now"]

@@ -157,6 +157,9 @@ Hard rules:
   versus {left:{label,value}, right:{label,value}, caption}, bars {title (what is measured, with its unit, e.g. "MARKET VALUE, $ TRILLION"), items:[{label,value}] 2-4, caption},
   headline {top, bottom, kicker}, quote {text (max 20 words, verbatim from a fact), who}, list {title, items: 3 short}.
   Every number in a graphic must be in the verified facts. Labels short (max 28 characters).
+Laugh (optional, at most one per episode): if a witty line truly earns it, put [chuckle] (a small laugh) or
+[laugh] right after it inside that segment's say, with emotion laughing; never in the open or the outro, and never
+on a serious story. The tag is voiced as a real laugh and is not a word: it doesn't count toward the 22-28 words.
 Return JSON only."""
 
 ANALOGIES = ROOT / "research" / "analogies.json"
@@ -230,8 +233,11 @@ def stories_block(data):
     return "\n".join(out)
 
 
+TAG = re.compile(r"\[(chuckle|laugh)\]")
+
+
 def words(text):
-    return len(re.findall(r"[A-Za-z₹$%']+|\d+", text))
+    return len(re.findall(r"[A-Za-z₹$%']+|\d+", TAG.sub(" ", text)))
 
 
 def lint(script, data):
@@ -248,6 +254,14 @@ def lint(script, data):
             errs.append(f"{name}: {n} words (needs {a}-{b})")
         if re.search(r"\d", say):
             errs.append(f"{name}: digits in say ({say[:60]}...): write numbers as words")
+    tags = [n for n, say, _, _ in lines for _ in TAG.finditer(say)]
+    if len(tags) > 1:
+        errs.append(f"{len(tags)} laugh tags ({', '.join(tags)}): at most one [chuckle] or [laugh] per episode")
+    if any(n in ("open", "outro") for n in tags):
+        errs.append("no laugh tag in the open or the outro")
+    for name, say, _, _ in lines:
+        if re.search(r"\[(?!chuckle\]|laugh\])[^\]]*\]", say):
+            errs.append(f"{name}: only [chuckle] or [laugh] may appear in brackets")
     if not script["open"]["say"].lower().startswith("breaking"):
         errs.append("open must start with 'Breaking:'")
     if not script["outro"]["say"].rstrip().endswith("Make learning a Habit."):
@@ -384,13 +398,32 @@ CUE_SCHEMA = {"type": "object", "required": ["stories"], "properties": {"stories
         "name": {"type": "string"}, "wiki": {"type": "string"}, "logo": {"type": "string"}}}}}}
 
 
-def pages_for(s):
-    """Pages to screenshot, in order: the facts' sources from the chip's outlet first, then the other fact sources, then the
-    story's own link (no aggregator redirects). The first that captures cleanly is used (29 Oct: 403 and failed pages)."""
+def pages_for(s, day=None, max_age=21):
+    """Pages to screenshot, in order: the facts' sources from the chip's outlet first, then the story's own link (the
+    fresh article the topic desk found), then the other fact sources (no aggregator redirects). A page whose URL carries a
+    date more than `max_age` days before the episode is never shown: Ep 6 fell back to a TechCrunch page of 15 Feb for a
+    November story and the screening caught the stale date. The first that captures cleanly is used."""
     key = re.sub(r"[^a-z0-9]", "", (s.get("source_name") or "").lower())
-    urls = [f["source"] for f in s["facts"]]
-    urls = sorted(urls, key=lambda u: not (key and key[:6] in re.sub(r"[^a-z0-9]", "", u.lower())))   # the chip's outlet first
-    return list(dict.fromkeys(u for u in urls + [s.get("url", "")] if u and "news.google.com" not in u))[:4]
+    own = lambda u: key and key[:6] in re.sub(r"[^a-z0-9]", "", u.lower())
+    facts = [f["source"] for f in s["facts"]]
+    urls = [u for u in facts if own(u)] + [s.get("url", "")] + [u for u in facts if not own(u)]
+    ref = dt.date.fromisoformat(day) if day else dt.date.today()
+
+    def fresh(u):
+        m = re.search(r"/(20\d\d)[/-](\d{1,2})(?:[/-](\d{1,2}))?(?:/|$|-)", u)
+        if not m:
+            return True
+        try:
+            d = dt.date(int(m.group(1)), int(m.group(2)), int(m.group(3) or 28))
+        except ValueError:
+            return True
+        return (ref - d).days <= max_age
+    return list(dict.fromkeys(u for u in urls if u and "news.google.com" not in u and fresh(u)))[:4]
+
+
+def _day(out):
+    """The episode's day from its folder name (2026-11-04-daily-habit-ep6), else None (today)."""
+    return out.name[:10] if re.match(r"\d{4}-\d{2}-\d{2}", out.name) else None
 
 
 def page_for(s):
@@ -421,8 +454,8 @@ def visuals(script, data, out):
                              "context": s["headline"]})
             if p["logo"]:
                 cues.append({"id": f"s{p['story']}-logo", "kind": "logo", "name": p["logo"]})
-            if pages_for(s):
-                cues.append({"id": f"s{p['story']}-shot", "kind": "screenshot", "urls": pages_for(s)})
+            if pages_for(s, _day(out)):
+                cues.append({"id": f"s{p['story']}-shot", "kind": "screenshot", "urls": pages_for(s, _day(out))})
     imgs = analogies()["images"]
     for g in script["segments"]:   # analogy images: fixed catalogue names, so the library returns the same picture
         an = g.get("analogy") or {}
@@ -576,7 +609,7 @@ def direct(script, data, vd, ep, day, media_by=None):
     stories = {s["story"]: s for s in data["stories"]}
     t, segs, voice_at, words, env = 0.3, [], [], [], []
     c = {"set": cfg()["set"], "look": cfg()["look"], "episode": ep, "topics": len(script["segments"]),
-         "date": dt.date.fromisoformat(day).strftime("%d %b").upper(), "breakingText": script["breaking"],
+         "date": dt.date.fromisoformat(day).strftime("%d %b").upper(), "breakingText": hookpick_banner(script),
          "ticker": [g["headline"].upper() for g in script["segments"]]}
 
     def place(lid, seg, min_dur=0.0):
@@ -834,7 +867,9 @@ y 1000, where the platform buttons sit), captions (readable, never covering a ke
 countdown, bug and source chip clear and not cluttered), story (each still tells its topic), habit (the narrator looks
 alive and his face fits the line). For every row under 2 give one concrete fix. Be strict and specific.
 House style, decided by the owner (never a fault): the end card shows the pixel-art Habit (the studio's mascot look) while the
-show uses the drawn Habit."""
+show uses the drawn Habit.
+Platform rule (a fact, never a fault): the bottom ~420 px of every frame are kept clear on purpose, because YouTube Shorts
+and Reels lay their caption, buttons and progress bar over that strip; don't ask to fill it or move things into it."""
 SCREEN_ROWS = ["look", "readability", "framing", "captions", "package", "story", "habit"]
 SCREEN_SCHEMA = {"type": "object", "required": ["rows", "fixes"], "properties": {
     "rows": {"type": "object", "required": SCREEN_ROWS, "properties": {k: {"type": "integer", "minimum": 0, "maximum": 2} for k in SCREEN_ROWS}},
@@ -874,7 +909,7 @@ def check_render(final, c, script, vd, out):
     blank = qa.blank_spans(final)
     lo, hi = cfg()["length"]
     heard = " ".join(w["w"] for w in json.loads((vd / "words.json").read_text()))
-    werr = captions.wer(" ".join(l["say"] for l in lines_of(script)), heard)
+    werr = captions.wer(" ".join(TAG.sub(" ", l["say"]) for l in lines_of(script)), heard)   # a laugh tag is heard, not said
     L = bar["sound"]["lufs"]
     gates = {"length": {"pass": lo - 8 <= secs <= hi + 5, "detail": f"{secs:.1f} s (target {lo}-{hi})"},
              "loudness": {"pass": lufs is not None and L[0] - 0.5 <= lufs <= L[1] + 0.5 and (peak is None or peak <= bar["sound"]["true_peak"] + 0.5),
@@ -886,6 +921,11 @@ def check_render(final, c, script, vd, out):
 
 
 # ---------- the whole episode ----------
+def hookpick_banner(script):
+    from frameflow import hookpick
+    return hookpick.fit_banner(script)["breaking"]
+
+
 def slug_for(day, ep):
     return f"{day}-daily-habit-ep{ep}"
 
