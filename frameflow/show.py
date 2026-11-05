@@ -149,6 +149,8 @@ Hard rules:
   first: worried, serious or surprised for losses, hacks, scams, layoffs and risks; excited, smug or laughing only for good
   news or the witty line (screening: a grin on a record hack read as wrong).
   Match it to the line, and vary it across the episode.
+- stress: the one or two words in the segment's say that carry its point (the number or the surprising word), copied
+  exactly as they appear in say; the captions mark them.
 - headline: the on-screen topic strip, at most 38 characters. wall: one big word or number for the studio wall, at most
   8 characters. breaking: the open's on-screen bar, at most 55 characters. title: the episode's post title, at most 60
   characters, naming the top story.
@@ -209,6 +211,7 @@ WRITER_SCHEMA = {"type": "object", "required": ["title", "breaking", "open", "se
     "segments": {"type": "array", "items": {"type": "object",
                  "required": ["story", "say", "witty", "emotion", "headline", "wall", "facts", "graphic", "analogy"],
                  "properties": {"story": {"type": "integer"}, "say": {"type": "string"}, "witty": {"type": "string"},
+                                "stress": {"type": "array", "maxItems": 2, "items": {"type": "string"}},
                                 "emotion": {"type": "string", "enum": EMOTIONS}, "headline": {"type": "string"},
                                 "wall": {"type": "string"}, "facts": {"type": "array", "items": {"type": "string"}},
                                 "graphic": {"type": "object", "required": ["type"], "properties": {
@@ -683,6 +686,9 @@ def direct(script, data, vd, ep, day, media_by=None):
          "date": dt.date.fromisoformat(day).strftime("%d %b").upper(), "breakingText": hookpick_banner(script),
          "ticker": [g["headline"].upper() for g in script["segments"]]}
 
+    stress_of = {f"t{k}": {re.sub(r"[^\w']", "", x.lower()) for s in g.get("stress") or [] for x in s.split()}
+                 for k, g in enumerate(script["segments"], 1)}
+
     def place(lid, seg, min_dur=0.0):
         nonlocal t, env
         info = D[lid]
@@ -693,7 +699,8 @@ def direct(script, data, vd, ep, day, media_by=None):
         for grp, ch in enumerate(phrase_chunks([w["w"] for w in mine])):   # caption chunks by phrase (screening: no fragments)
             for i in ch:
                 w = mine[i]
-                words.append({"w": w["w"], "s": round(t + w["s"] - info["start"], 3), "e": round(t + w["e"] - info["start"], 3), "g": f"{len(segs)}-{grp}"})
+                words.append({"w": w["w"], "s": round(t + w["s"] - info["start"], 3), "e": round(t + w["e"] - info["start"], 3), "g": f"{len(segs)}-{grp}",
+                              **({"st": 1} if re.sub(r"[^\w']", "", w["w"].lower()) in stress_of.get(lid, ()) else {})})   # P9.1.5: stressed words
         e = envelope(vd / info["file"])
         f0 = int(round(t * FPS))
         env += [0.0] * max(f0 - len(env), 0)

@@ -11,6 +11,7 @@ every fact slide carries its source; slide 1 is a bold but true claim; the last 
 import datetime as dt
 import html
 import json
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -183,6 +184,8 @@ ol li::before {{ content: attr(data-n); position: absolute; left: 0; top: -2px; 
 .foot {{ position: absolute; bottom: 60px; left: 80px; right: 80px; display: flex; justify-content: space-between; font: 500 26px Sans; color: #5d564b; }}
 .foot b {{ color: #16141c; font-weight: 700; }}
 .swipe {{ font: 700 34px Hand; color: #c8372a; text-align: right; }}
+.house {{ position: fixed; left: 80px; bottom: 120px; display: flex; align-items: flex-end; gap: 28px; }}
+.house .sign {{ background: #1B1B1B; padding: 12px 16px; line-height: 0; margin-bottom: 18px; }}
 .follow {{ align-items: center; text-align: center; }}
 .follow .ring {{ width: 230px; height: 230px; border-width: 9px; font-size: 140px; }}
 .follow .ring i {{ width: 34px; height: 34px; right: 46px; bottom: 52px; }}
@@ -202,6 +205,43 @@ def marked(text, phrases, k=0):
     return out
 
 
+def _kit():
+    """The pixel Habit, palette and 3x5 pixel font from the show kit (scenes/_shared/ff-kit.js): one source for the end
+    card and the carousel cover."""
+    js = (ROOT / "scenes" / "_shared" / "ff-kit.js").read_text()
+    grid = re.findall(r'"([.a-zA-Z]+)"', js[js.index("const HABIT_PX = ["):js.index("];", js.index("const HABIT_PX = ["))])
+    pal = dict(re.findall(r'(\w): "(#[0-9A-Fa-f]{6})"', js[js.index("const PIX = {"):js.index("};", js.index("const PIX = {"))]))
+    glyphs = js[js.index('const GLYPHS = "') + 16:js.index('";', js.index('const GLYPHS = "'))]
+    font = {g.strip().split(" ")[0]: g.strip().split(" ")[1:] for g in glyphs.split("|")}
+    return grid, pal, font
+
+
+def pixel_svg(grid, size, colors):
+    rects = []
+    for r, row in enumerate(grid):
+        c = 0
+        while c < len(row):
+            e = c + 1
+            while e < len(row) and row[e] == row[c]:
+                e += 1
+            fill = colors.get(row[c])
+            if row[c] != "." and fill:
+                rects.append(f'<rect x="{c * size}" y="{r * size}" width="{(e - c) * size}" height="{size}" fill="{fill}"/>')
+            c = e
+    w, h = max(len(x) for x in grid) * size, len(grid) * size
+    return f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" shape-rendering="crispEdges">{"".join(rects)}</svg>'
+
+
+def house_mark(credit="A Thirdspace Production", hab=10, px=5):
+    """P16.3.3: the cover's house mark: the pixel Habit beside the house sign (black plate, red pixel letters), as on the
+    reel's end card."""
+    grid, pal, font = _kit()
+    habit = pixel_svg(grid, hab, {**pal, "o": pal.get("s", "#F0B8A8")})
+    rows = [".".join((font.get(ch) or ["..."] * 5)[r] for ch in credit.upper()) for r in range(5)]
+    sign = pixel_svg([x.replace("#", "r") for x in rows], px, pal)
+    return (f'<div class="house">{habit}<div class="sign">{sign}</div></div>')
+
+
 def slide_html(s, i, n, handle, tag):
     top = (f'<div class="top"><div class="mark"><div class="ring">h<i></i></div>Habit</div>'
            f'<div class="num">{i}/{n}</div></div>')
@@ -211,7 +251,7 @@ def slide_html(s, i, n, handle, tag):
     t = s["type"]
     if t == "hook":
         inner = f'<h1 class="big">{h}</h1>' + (f'<div class="body center">{esc(s.get("body"))}</div>' if s.get("body") else "") + \
-                '<div class="swipe">swipe →</div>'
+                '<div class="swipe">swipe →</div>' + house_mark()
     elif t == "stat":
         inner = f'<h1>{h}</h1><div class="stat">{esc(s.get("stat"))}</div>' + (f'<div class="body">{esc(s.get("body"))}</div>' if s.get("body") else "")
     elif t == "compare":
