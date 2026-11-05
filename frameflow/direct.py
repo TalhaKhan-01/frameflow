@@ -186,9 +186,7 @@ def direct(brief_path, out=None, lane="how-tech-works", skip_writer=False, skip_
     out = Path(out or ROOT / "out" / slug)
     wdir, ddir = out / "writer", out / "director"
     out.mkdir(parents=True, exist_ok=True)
-    try:   # the learning loop: the current top lessons go into the writer's and director's house rules
-        from frameflow import lessons
-        (out / "lessons-used.json").write_text(json.dumps(lessons.write_files()))
+    try:
         from frameflow import profiles
         profiles.snapshot(out)   # which profile (models, rounds) this video is made with
         from frameflow import library   # proven material from past videos, offered (not imposed) to the writer and director
@@ -200,7 +198,7 @@ def direct(brief_path, out=None, lane="how-tech-works", skip_writer=False, skip_
             for m in ("material-writer.txt", "material-director.txt"):
                 (ROOT / "research" / m).write_text("")
     except Exception as e:
-        print(f"lessons: {e}")
+        print(f"profile snapshot: {e}")
     if not skip_writer:
         with progress.step("writer: hooks, story and script (shorts-writer)") as pi:
             skill([WRITER, "--project", ROOT, "run", brief_path, "--out", wdir])

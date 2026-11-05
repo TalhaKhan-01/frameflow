@@ -86,8 +86,8 @@ def write(video_id):
                                                 "FROM stats WHERE video_id=? GROUP BY platform", (video_id,))]
     except Exception:
         pass
-    from frameflow import lessons
-    taught = [l for l in lessons.load() if l["evidence"].startswith(slug) or slug in l["evidence"][:80]]
+    from frameflow import coach
+    taught = [{"text": c, "area": "coach"} for h in coach.load()["history"] if h["episode"] == slug for c in h.get("changes", [])]
     prof_file = Path(row["plan"]).parent / "profile.json"
     profile = json.loads(prof_file.read_text()).get("profile") if prof_file.exists() else None
 

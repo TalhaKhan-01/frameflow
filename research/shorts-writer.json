@@ -19,7 +19,6 @@
   "Brand names are said plainly (Wikipedia, Cloudflare); no slogans or praise of companies",
   "Spell numbers for the voice (twenty twelve, thirty-four million); digits are for the screen only"
  ],
- "lessons_file": "research/lessons-writer.txt",
  "hooks_model": "opus",
  "doctor_model": "opus",
  "doctor_rounds": 2,

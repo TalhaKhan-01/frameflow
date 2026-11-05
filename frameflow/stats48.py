@@ -1,4 +1,4 @@
-"""48-hour stats, collected automatically and sent as a Telegram card; they also score the video's lessons.
+"""48-hour stats, collected automatically and sent as a Telegram card; they also give the coach its slow signal.
 
     python -m frameflow.stats48 <video_id> [--no-send]
 
@@ -118,20 +118,15 @@ def collect(video_id, send=True):
 
 
 def score_lessons(video_id, out, views):
-    """Lessons that were in this video's prompts get credit if it beat the channel's median YouTube views so far."""
-    used_file = out.parent / "lessons-used.json"
-    if views is None or not used_file.exists():
-        return ""
+    """The coach's slow signal: the rules used in this episode get half a point of credit or blame from its YouTube
+    average % viewed against the channel's earlier videos (views when % viewed is missing)."""
     con = videos.db()
-    past = [r[0] for r in con.execute("SELECT MAX(views) FROM stats WHERE platform='youtube' AND video_id != ? GROUP BY video_id", (video_id,))
+    pct = con.execute("SELECT MAX(avg_viewed) FROM stats WHERE platform='youtube' AND video_id=?", (video_id,)).fetchone()[0]
+    metric, value, col = ("avg % viewed", pct, "avg_viewed") if pct is not None else ("views", views, "views")
+    past = [r[0] for r in con.execute(f"SELECT MAX({col}) FROM stats WHERE platform='youtube' AND video_id != ? GROUP BY video_id", (video_id,))
             if r[0] is not None]
-    if len(past) < 3:
-        return "Lessons not scored yet (need 3 earlier videos to compare)."
-    from frameflow import lessons
-    ids = [i for area in json.loads(used_file.read_text()).values() for i in area]
-    med = statistics.median(past)
-    lessons.score(ids, views >= med)
-    return f"{'Above' if views >= med else 'Below'} the channel median ({med:.0f} views): {len(ids)} lesson(s) marked {'helped' if views >= med else 'hurt'}."
+    from frameflow import coach
+    return coach.stats(video_id, out.parent if out.name.endswith(".mp4") else out, metric, value, past)
 
 
 def main():

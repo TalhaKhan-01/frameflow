@@ -42,12 +42,6 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
     status = "awaiting-approval" if q["pass"] and r["pass"] else "needs-work"
     progress.note(f"result: {status}", qa=q["pass"], review=f"{r['total']}/{r.get('max', 12)}", animatic=b["animatic_total"],
                   fix_rounds_before_render=b["rounds"], delivery_renders=1)
-    try:   # what this video teaches the next ones (frameflow.lessons)
-        from frameflow import lessons
-        with progress.step("lessons for the next videos"):
-            lessons.distill(rout)
-    except (Exception, SystemExit) as e:
-        print(f"lessons: {e}")
     con = db()   # the row first: the library looks the video up (before it, mark_used's SystemExit killed every fresh make)
     con.execute("INSERT OR REPLACE INTO videos (id, idea_id, plan, out_dir, lane, title, qa_pass, review_total, review_pass, status, note, created_at, updated_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -75,7 +69,7 @@ def make2(brief_path, lane="how-tech-works", out=None, skip_writer=False, skip_d
 
 
 def set_status(video_id, status, note="", force=False):
-    """force: Talha approves a video below the bar on purpose (its failures become lessons, see daily.approve)."""
+    """force: Talha approves a video below the bar on purpose (its weakest rows feed the coach, see daily.keep_for_next)."""
     con = db()
     row = con.execute("SELECT * FROM videos WHERE id=?", (video_id,)).fetchone()
     if not row:

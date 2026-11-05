@@ -191,9 +191,12 @@ def library():
 
 
 def lessons():
-    return [{"id": x.get("id"), "area": x.get("area"), "text": x.get("text"), "source": x.get("source"),
-             "status": x.get("status"), "seen": x.get("seen"), "helped": x.get("helped"), "hurt": x.get("hurt"),
-             "updated": x.get("updated")} for x in _jsonl(ROOT / "research" / "lessons.jsonl")]
+    """The coach's playbook in the Notice Board's old lesson shape (status: active = under test, promoted = proven)."""
+    from frameflow import coach
+    st = {"trial": "active", "champion": "promoted", "retired": "retired"}
+    return [{"id": r["id"], "area": r["desk"], "text": r["text"], "source": r["source"], "status": st[r["status"]],
+             "seen": r["trials"], "helped": round(r["alpha"] - 1, 1), "hurt": round(r["beta"] - 1, 1), "updated": r["updated"][:10]}
+            for r in coach.load()["rules"]]
 
 
 def usage():

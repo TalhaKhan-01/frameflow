@@ -334,16 +334,16 @@ def table_read(script, data):
     return {**r, "total": total, "max": mx, "pass": total >= c["pass_share"] * mx and min(r["rows"].values()) >= 1}
 
 
-def write(data, out, ep, date):
+def write(data, out, ep, date, rules=None):
     _SLUG["now"] = out.name
     path = out / "script.json"
     if path.exists():
         return json.loads(path.read_text())
     c = cfg()
-    lessons = (ROOT / "research" / "lessons-writer.txt")
+    from frameflow import coach   # the learning loop's playbook (P11): proven rules + this episode's rules under test
+    rules = coach.playbook("writer", out) if rules is None else (f"House rules (follow them where they fit):\n{rules}" if rules else "")
     ask = (f"Episode {ep} of The Daily Habit, {date}. {len(data['stories'])} stories, in this order:\n{stories_block(data)}\n\n"
-           + (f"House lessons from earlier videos (apply what fits a news rundown):\n{lessons.read_text()[:2500]}\n\n" if lessons.exists() else "")
-           + "Write the episode.")
+           + (f"{rules}\n\n" if rules else "") + "Write the episode.")
     script = llm.call(ask, writer_system(), WRITER_SCHEMA, model=c["writer_model"], purpose="show.write", effort="high", timeout=1500)
     history, best, reads = [], None, 0
     for rnd in range(2 * c["doctor_rounds"] + 2):   # a lint-only repair may follow any fix round that broke the format
@@ -408,7 +408,9 @@ def visuals(script, data, out):
     cues = json.loads(cue_path.read_text()) if cue_path.exists() else []
     stories = {s["story"]: s for s in data["stories"]}
     if not cues:
-        ask = "\n".join(f"STORY {g['story']}: {stories[g['story']]['headline']} | {g['say']}" for g in script["segments"])
+        from frameflow import coach
+        rules = coach.playbook("visuals", out)
+        ask = "\n".join(f"STORY {g['story']}: {stories[g['story']]['headline']} | {g['say']}" for g in script["segments"]) + (f"\n\n{rules}" if rules else "")
         picks = llm.call(ask, CUE_SYSTEM, CUE_SCHEMA, model=cfg().get("visuals", {}).get("model", "haiku"), purpose="show.visual-cues", timeout=600)
         for p in picks["stories"]:
             s = stories.get(p["story"])
@@ -960,6 +962,12 @@ def produce(day, ep, slug, data, script, out):
               "rows": {**{f"script {k}": v for k, v in tr["rows"].items()}, **{f"screen {k}": v for k, v in scr["rows"].items()}},
               "fixes": scr["fixes"] + tr["fixes"], "table_read": tr, "screening": scr}
     (out / "review.json").write_text(json.dumps(review, ensure_ascii=False, indent=1))
+    try:   # the learning loop scores this episode's rules and tops up new ones (frameflow.coach)
+        from frameflow import coach
+        with progress.step("coach: what this episode teaches", desk="qc") as cinfo:
+            cinfo.update({k: v for k, v in coach.record(out).items() if k in ("scored", "changes", "new", "tickets")})
+    except Exception as e:
+        print(f"coach: {e}", file=sys.stderr)
     (out / "qa.json").write_text(json.dumps(q, ensure_ascii=False, indent=1))
     cover_at = c["stingAt"] + 0.7
     media.ffmpeg("-ss", f"{cover_at:.2f}", "-i", str(final), "-frames:v", "1", str(out / "cover.png"))

@@ -135,12 +135,6 @@ def on_callback(cb):
             f.write(json.dumps({"video": video, "chose": chosen_v, "at": daily.now().isoformat()}) + "\n")
         telegram.clear_buttons(cb["message"]["message_id"])
         return telegram.send(f"You picked the {'final (v2)' if chosen_v == 'v2' else 'first draft (v1)'} script. Noted.")
-    if kind in ("promote", "keep"):   # weekly lesson promotion
-        from frameflow import lessons
-        if kind == "promote":
-            r = lessons.promote(rest)
-            return telegram.send(f"Lesson {r['id']} is now a permanent {r['area']} house rule.")
-        return telegram.send(f"Keeping {rest} under test.")
     day = rest.split(":")[0]
     run = daily.get(day)
     if not run:
@@ -244,18 +238,13 @@ def on_text(text):
         active = profiles.pipeline().get("profile")
         lines = [f"{'▶ ' if n == active else '  '}{n}: {json.loads((profiles.PROFILES / (n + '.json')).read_text()).get('_about', '')}" for n in profiles.names()]
         return telegram.send("Profiles (/profile <name> to switch):\n" + "\n".join(lines))
-    if cmd == "/feedback":   # Talha's notes on the latest posted (or made) video -> lessons for every next video
+    if cmd == "/feedback":   # Talha's notes on the latest posted (or made) video -> the coach turns them into rules to test
         words = t[len("/feedback"):].strip()
         if not words:
             return telegram.send("Write it after the command, e.g. /feedback the hook was slow and the music too loud.")
-        from frameflow import lessons, videos
-        row = videos.db().execute("SELECT id, out_dir FROM videos WHERE status IN ('posted','approved','awaiting-approval') "
-                                  "ORDER BY updated_at DESC LIMIT 1").fetchone()
-        if not row:
-            return telegram.send("No video to attach that to yet.")
-        r = lessons.distill(row["out_dir"], notes=words, source=f"{row['id']} (Talha's feedback)", owner_only=True)
-        new = "\n".join(f"- {x['text']}" for x in r.get("new", [])) or "(it matched lessons already in the ledger; they got stronger)"
-        return telegram.send(f"Thanks. From your feedback on {row['id']}:\n{new}\nThese go into every next script and storyboard.")
+        from frameflow import coach
+        new = "\n".join(f"- {x['text']} ({x['desk']}, aims at {x['row']})" for x in coach.note(words, "Talha's /feedback")) or "(nothing new: the playbook already covers it)"
+        return telegram.send(f"Thanks. The coach turned it into rules to test on the next episodes:\n{new}")
     if cmd == "/log":   # the latest run's step-by-step log and the last lines of its current job
         run = (latest(("topic-sent", "picked", "making", "video-sent", "awaiting-notes", "queued", "posting", "failed", "posted")) or {})
         if not run:
@@ -298,11 +287,10 @@ def on_text(text):
     if rejected and not (rejected["notes"] or "").startswith("REJECT:"):
         daily.update(rejected["day"], notes="REJECT: " + t, note="reject reason kept")
         try:
-            from frameflow import lessons, videos
-            row = videos.db().execute("SELECT out_dir FROM videos WHERE id=?", (rejected["video_id"],)).fetchone()
-            lessons.distill(row["out_dir"], notes=t, source=f"{rejected['video_id']} (rejected)")
+            from frameflow import coach
+            coach.note(t, f"{rejected['video_id']} (rejected)")
         except Exception as e:
-            print(f"lessons: {e}", file=sys.stderr)
+            print(f"coach: {e}", file=sys.stderr)
         return telegram.send("Thanks, noted for the next videos.")
     telegram.send("I didn't catch that. /help shows what I can do.")
 

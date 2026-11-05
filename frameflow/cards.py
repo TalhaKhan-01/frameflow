@@ -138,7 +138,6 @@ def brief_for(run):
 
 def write_slides(brief, notes=""):
     facts = "\n".join(f"[{f['id']}] {f['text']} (source: {f['source']})" for f in brief["facts"])
-    from frameflow import lessons
     prompt = (f"TOPIC: {brief['topic']}\nANGLE: {brief.get('angle_hint', '')}\nFACTS:\n{facts}\nCAUTIONS:\n"
               + "\n".join(f"- {c}" for c in brief.get("cautions", []))
               + (f"\n\nTHE OWNER ASKS FOR THESE CHANGES:\n{notes}" if notes else "") + "\n\nDesign the carousel.")

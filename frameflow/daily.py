@@ -383,20 +383,15 @@ def approve(day):
 
 
 def keep_for_next(day, render_dir):
-    """Approved anyway: the failed checks and the reviewer's notes become lessons for the next videos."""
+    """Approved anyway: the coach already scored the episode; Talha's approval below the bar goes in as an owner note."""
     try:
-        from frameflow import lessons
-        r = lessons.distill(render_dir, source=f"{get(day)['video_id']} (approved anyway)",
-                            notes="Talha approved this video anyway although it is below the bar. "
-                                  "Make its failed checks and the reviewer's notes into lessons so the next videos avoid them.")
-        rows = {x["id"]: x for x in lessons.load()}
-        kept = [f"- {rows[i]['text']}" for i in r.get("reinforce", []) if i in rows]
-        kept += [f"- {x['text']}" for x in r.get("new", [])]
-        update(day, note=f"approved anyway: {len(r.get('new', []))} new lessons, {len(r.get('reinforce', []))} reinforced")
-        telegram.send("Kept for the next video:\n" + ("\n".join(kept)[:3500] or "- nothing new (already covered by existing lessons)"))
+        from frameflow import coach
+        new = coach.note("Talha approved this episode although it is below the bar: aim the new rules at its weakest rows.",
+                         f"{get(day)['video_id']} (approved anyway)")
+        update(day, note=f"approved anyway: {len(new)} new rules under test")
+        telegram.send("Kept for the next episodes (rules under test):\n" + ("\n".join(f"- {x['text']}" for x in new)[:3500] or "- nothing new"))
     except Exception as e:
-        update(day, note=f"approved anyway, but saving lessons failed: {e}")
-        telegram.send(f"Approved, but I couldn't save its notes as lessons ({str(e)[:200]}). /retry won't redo this; tell me in chat.")
+        update(day, note=f"approved anyway, but the coach failed: {e}")
 
 
 # ---- post ----
@@ -506,22 +501,21 @@ def stats_due():
 
 
 def weekly():
-    """Sunday evening: lessons that held for 3+ videos are offered for promotion; stale ones retire; a short report."""
-    from frameflow import lessons
+    """Sunday evening: the coach's week: score trend, rules promoted or retired, open template tickets."""
+    from frameflow import coach
     week = now().strftime("%G-W%V")
     con = db()
     if con.execute("SELECT 1 FROM weekly WHERE week=?", (week,)).fetchone():
         return
     con.execute("INSERT INTO weekly VALUES (?,?)", (week, now().isoformat()))
     con.commit()
-    gone = lessons.retire_stale()
     posted = con.execute("SELECT COUNT(*) FROM runs WHERE state='posted' AND posted_at >= ?", ((now() - dt.timedelta(days=7)).isoformat(),)).fetchone()[0]
-    rows = lessons.load()
-    telegram.send(f"Week {week}: {posted} video(s) posted. Lessons: {sum(r['status'] == 'active' for r in rows)} active, "
-                  f"{sum(r['status'] == 'promoted' for r in rows)} made permanent" + (f", {len(gone)} retired ({', '.join(gone)})." if gone else "."))
-    for r in lessons.promotable():
-        telegram.send(f"Lesson {r['id']} ({r['area']}) helped in {r['helped']} videos:\n\"{r['text']}\"\nMake it a permanent house rule?",
-                      [[("✅ Make permanent", f"promote:{r['id']}"), ("Keep testing", f"keep:{r['id']}")]])
+    st, s = coach.status(), coach.load()
+    since = (now() - dt.timedelta(days=7)).isoformat()
+    changes = [c for h in s["history"] if h["at"] >= since for c in h.get("changes", [])]
+    telegram.send(f"Week {week}: {posted} episode(s) posted. Review totals (latest last): {st['totals']}.\n"
+                  f"Coach: {sum(r['status'] == 'champion' for r in st['rules'])} proven rules, {sum(r['status'] == 'trial' for r in st['rules'])} under test, "
+                  f"{st['retired']} retired." + ("\n" + "\n".join(changes)[:2500] if changes else ""))
 
 
 def limit_reset(message):
