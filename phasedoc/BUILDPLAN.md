@@ -830,3 +830,4 @@
       _Acceptance:_ skill tests pass; one real post and its 48 h stats go through it
     - [ ] **P25.7.3** Docs: architecture page 17 -> 12 desks, decision note, Standard Process, Handoff  
       _Acceptance:_ walk clean on both Vercel sites; production SHA = HEAD
+      _Note 2026-11-06:_ 6 Nov: architecture page now shows the 12 desks with a status tag per desk (skill / half skill / still code: 1 / 4 / 7 today); tick when every desk is a skill and the tags say so
