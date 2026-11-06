@@ -25,7 +25,7 @@
       <p class="lede">Frameflow runs on one laptop. A Telegram bot ticks every 30 seconds and moves each posting day through a small state machine. Long steps run as their own processes. Every day it makes one episode of <b>The Daily Habit</b>: eight stories in about 85 seconds, read by Habit. Every step is <b>a desk with a gate</b>, and the gates sit before the one expensive step, the render. The model calls go through Claude Code inside a subscription, so there is no API key and no API bill. This page follows the stories from the wire to the feed, and then back into the next episode through the coach, a learning loop that tests rules and keeps the ones that raise the scores.</p>
       <dl class="a-stats">
         <div><dt>Python modules</dt><dd>47</dd></div>
-        <div><dt>desks (1 skill · 4 half · 7 code)</dt><dd>12</dd></div>
+        <div><dt>desks (2 skills · 4 half · 6 code)</dt><dd>12</dd></div>
         <div><dt>renders per episode</dt><dd>1</dd></div>
         <div><dt>ideas collected</dt><dd data-live="ideas">–</dd></div>
         <div><dt>rules the coach is testing</dt><dd data-live="rules">–</dd></div>
@@ -193,7 +193,7 @@
         <div class="board-head">
           <p class="eyebrow">04 · The desks of a daily make</p>
           <h2 id="board-t">Twelve desks, <em>one render</em>.</h2>
-          <p class="lede small">On 29 October the old 17 desks were folded into <b>12 desks, each meant to be a reusable skill</b> that works outside Frameflow too; the owner's cards stay in Frameflow. The move is under way: today <b>1 desk is fully a skill, 4 are half and 7 still run as code</b> inside <code>show.py</code>. Each card says which. A make goes desk by desk, fixes happen only while they are text, and after the render nothing loops.</p>
+          <p class="lede small">On 29 October the old 17 desks were folded into <b>12 desks, each meant to be a reusable skill</b> that works outside Frameflow too; the owner's cards stay in Frameflow. The move is under way: today <b>2 desks are fully skills, 4 are half and 6 still run as code</b> inside <code>show.py</code>. Each card says which. A make goes desk by desk, fixes happen only while they are text, and after the render nothing loops.</p>
           <div class="cost" aria-live="off"><span>cost of a fix here</span><div class="cost-bar"><i id="cost-fill"></i></div><b id="cost-label">a text edit</b></div>
         </div>
         <div class="belt-view">
@@ -203,7 +203,7 @@
             <li><small>02 · show.py · Sonnet + web</small><b>Researcher</b><i class="st cd">still code</i><span>One per story, four at a time: facts that each carry the URL behind them. Planned as its own skill.</span></li>
             <li><small>03 · shorts-factcheck + qa.py</small><b>Integrity gate</b><i class="st hf">half skill</i><span>Now: every fact re-read from its page (skill). After the render: QC gates, licences, fresh pages and the banner check (code). Plan: one video-integrity skill.</span></li>
             <li class="loop"><small>04 · show.py · Opus</small><b>Script writer</b><i class="st cd">still code</i><span>The open, one segment per story with a witty line, a graphic and Habit's face, then the outro; reads the coach's playbook. The shorts-writer skill serves single Shorts only.</span><em>↺ lints in code, up to 2 doctor rounds</em></li>
-            <li class="loop"><small>05 · show.py · Opus</small><b>Critic</b><i class="st cd">still code</i><span>The table read before the voice, the screening (twice, averaged) after the render. The shorts-editor and shorts-screening skills exist for single Shorts; the merged video-critic skill is planned.</span><em>↺ below 80% → doctor (text only)</em></li>
+            <li class="loop"><small>05 · video-critic · Opus</small><b>Critic</b><i class="st sk">skill</i><span>One rubric, two modes: the table read before the voice (text) and the screening after the render (stills, twice, averaged), with the row "do we see what we hear". Moved 6 Nov; on Ep 2 it scored within 1 point of the old desks.</span><em>↺ below 80% → doctor (text only)</em></li>
             <li><small>06 · social-caption + hookpick.py</small><b>Packaging</b><i class="st hf">half skill</i><span>Ten ranked opens for the hook card (code), then the post text, title and tags per platform (skill).</span></li>
             <li><small>07 · visual-sourcing + show.js</small><b>Motion designer</b><i class="st hf">half skill</i><span>Real visuals: logos, photos, scene photos, fresh headline captures, licensed (skill). Graphics, maps and gags in the show template (code).</span></li>
             <li><small>08 · voice.py · Chatterbox</small><b>Narrator</b><i class="st cd">still code</i><span>Habit's voice, a pace target per line, names respelled, Whisper word timing. Planned as the voice-narrate skill.</span></li>
@@ -215,7 +215,7 @@
             <li><small>12 · social-upload + publish.py + stats48</small><b>Publisher + analyst</b><i class="st hf">half skill</i><span>Uploads by API or The Pilot (skill + code); 48 h later, results tied to the decisions behind them. Plan: one social-publisher skill.</span></li>
           </ol>
         </div>
-        <p class="note board-note">Why one render: in October the pipeline rendered, reviewed, rewrote and rendered again; the second render cost as much as the first and scored worse (14/22 → 13/22). The order of the skill moves (P25): critic and integrity gate first, then script writer, director and sound director, narrator and video editor, motion designer, publisher. The older single-story maker (<code>board.py</code>, 17 desks) stays for one-off Shorts.</p>
+        <p class="note board-note">Why one render: in October the pipeline rendered, reviewed, rewrote and rendered again; the second render cost as much as the first and scored worse (14/22 → 13/22). The order of the skill moves (P25): critic (done 6 Nov) and integrity gate first, then script writer, director and sound director, narrator and video editor, motion designer, publisher. The older single-story maker (<code>board.py</code>, 17 desks) stays for one-off Shorts.</p>
       </div>
     </section>
 

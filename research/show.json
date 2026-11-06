@@ -43,6 +43,5 @@
   "wait_minutes": 20,
   "model": "sonnet"
  },
- "screen_runs": 2,
- "_screen_runs": "5 Nov (Talha, P24.6.4): the screening runs twice and the bar is judged on the mean of each row (the judge varies by 1-2 points)"
+ "_critic": "6 Nov: the table read and the screening are the video-critic skill (research/video-critic.json holds rows, runs, models)"
 }

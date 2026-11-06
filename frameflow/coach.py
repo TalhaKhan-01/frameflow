@@ -47,7 +47,7 @@ TICKETS = ROOT / "research" / "coach-tickets.jsonl"
 DESKS = {
     "writer": ["script hook", "script clarity", "script wit", "script flow", "script accuracy", "script variety",
                "script ending", "screen story"],
-    "visuals": ["screen readability", "screen package", "screen story"],
+    "visuals": ["screen readability", "screen package", "screen story", "screen seen_heard"],
 }
 TEMPLATE_ROWS = ["screen look", "screen framing", "screen captions", "screen habit"]
 EMA = 0.4                # weight of the newest episode in a row's baseline

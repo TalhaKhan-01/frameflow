@@ -1,0 +1,46 @@
+{
+ "_about": "Frameflow config for the video-critic skill (~/Talha_Khan/Claude/skills/video-critic): the critic desk of the 12-desk plan (P25.7.1), the table read (text) and the screening (stills) of The Daily Habit in one rubric. Rows and wording carried over from show.JUDGE_SYSTEM and show.SCREEN_SYSTEM on 6 Nov.",
+ "show": "The Daily Habit, a fast daily news show for YouTube Shorts and Instagram Reels (1080x1920): 8 stories in about 85 seconds, read aloud by the narrator Habit for Indians aged 18-30",
+ "text": {
+  "rows": {
+   "hook": "the open stops a scroll",
+   "clarity": "each story is understood in one listen, no jargon",
+   "wit": "the few witty lines land naturally; any forced or cringe joke scores 0 for this row; no joke is better than a forced one",
+   "flow": "handoffs make it one show, not a list",
+   "accuracy": "every claim is in the facts, nothing overstated, cautions respected",
+   "variety": "emotions and graphics fit and vary",
+   "ending": "the outro lands"
+  }
+ },
+ "stills": {
+  "rows": {
+   "look": "polished, consistent, on-brand",
+   "readability": "graphic text and numbers readable at phone size, nothing cut off or overlapping",
+   "framing": "Habit and graphics placed well; nothing important in the bottom 420 px or the right 180 px below y 1000, where the platform buttons sit",
+   "captions": "readable, never covering a key graphic",
+   "package": "topic strip, countdown, bug and source chip clear and not cluttered",
+   "story": "each still tells its topic",
+   "habit": "the narrator looks alive and his face fits the line"
+  },
+  "seen_heard": true
+ },
+ "format_notes": [
+  "the open starts with \"Breaking:\" (10-20 words)",
+  "every segment is 22-28 spoken words",
+  "numbers are spoken as words",
+  "the outro ends with \"Make learning a Habit.\""
+ ],
+ "house_facts": [
+  "the end card shows the pixel-art Habit (the studio's mascot look) while the show uses the drawn Habit",
+  "the bottom ~420 px of every frame are kept clear on purpose: YouTube Shorts and Reels lay their caption, buttons and progress bar over that strip; don't ask to fill it or move things into it"
+ ],
+ "model": "opus",
+ "effort": "medium",
+ "runs": {
+  "text": 1,
+  "stills": 2
+ },
+ "pass_share": 0.8,
+ "min_row": 1,
+ "usage_log": "data/llm-usage.jsonl"
+}

@@ -365,28 +365,25 @@ def lint_analogies(script):
     return errs
 
 
-JUDGE_SYSTEM = """You are the independent script editor (table read) for The Daily Habit, a fast daily news show (8 stories
-in about 85 seconds) read aloud by Habit for Indians aged 18-30. Read the script aloud in your head, against the verified
-facts. Score each row 0-2 (2 = ready to air, 1 = mixed, 0 = broken):
-hook (the open stops a scroll), clarity (each story is understood in one listen, no jargon), wit (the few witty lines
-land naturally; any forced or cringe joke scores 0 for this row; no joke is better than a forced one), flow (handoffs make it one show, not a list), accuracy (every claim is
-in the facts, nothing overstated, cautions respected), variety (emotions and graphics fit and vary), ending (the outro lands).
-For every row under 2 give one concrete fix naming the segment. Be strict: 2 means a professional editor would air it.
-The format is fixed; never suggest changing it: the open starts with "Breaking:" (10-20 words), every segment is 22-28
-spoken words, numbers are spoken as words, the outro ends with "Make learning a Habit." Fixes must keep within it."""
+CRITIC = Path.home() / "Talha_Khan" / "Claude" / "skills" / "video-critic" / "scripts" / "critic.py"
 
-JUDGE_SCHEMA = {"type": "object", "required": ["rows", "fixes"], "properties": {
-    "rows": {"type": "object", "required": ["hook", "clarity", "wit", "flow", "accuracy", "variety", "ending"],
-             "properties": {k: {"type": "integer", "minimum": 0, "maximum": 2} for k in ["hook", "clarity", "wit", "flow", "accuracy", "variety", "ending"]}},
-    "fixes": {"type": "array", "items": {"type": "object", "required": ["row", "fix"], "properties": {"row": {"type": "string"}, "fix": {"type": "string"}}}}}}
+
+def critic(cmd, inp, timeout=3000):
+    """The critic desk (P25.7.1): the video-critic skill, table read (read) or screening (screen), rows and runs from
+    research/video-critic.json. Returns {rows, fixes, total, max, pass, runs}."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        f = Path(d) / "input.json"
+        f.write_text(json.dumps(inp, ensure_ascii=False))
+        r = subprocess.run(["python3", "-I", str(CRITIC), "--project", str(ROOT), cmd, str(f), "--out", str(Path(d) / "out.json")],
+                           capture_output=True, text=True, timeout=timeout)
+        if r.returncode:
+            raise RuntimeError(f"video-critic {cmd}: {(r.stderr or r.stdout)[-400:]}")
+        return json.loads((Path(d) / "out.json").read_text())
 
 
 def table_read(script, data):
-    c = cfg()
-    r = llm.call(f"VERIFIED FACTS\n{stories_block(data)}\n\nSCRIPT\n{json.dumps(script, ensure_ascii=False, indent=1)}",
-                 JUDGE_SYSTEM, JUDGE_SCHEMA, model=c.get("judge_model", "opus"), purpose="show.tableread", effort="medium")
-    total, mx = sum(r["rows"].values()), 2 * len(r["rows"])
-    return {**r, "total": total, "max": mx, "pass": total >= c["pass_share"] * mx and min(r["rows"].values()) >= 1}
+    return critic("read", {"script": json.dumps(script, ensure_ascii=False, indent=1), "facts": stories_block(data), "purpose": "show.tableread"})
 
 
 def write(data, out, ep, date, rules=None):
@@ -959,47 +956,11 @@ def stills(video, times, out, name):
     return sheet
 
 
-SCREEN_SYSTEM = """You are the screening editor of The Daily Habit, a vertical news show (1080x1920) for YouTube Shorts and
-Instagram Reels. You get a contact sheet of stills (left to right, top to bottom, with their times) and the script.
-Open the image with the Read tool and look closely. Score each row 0-2 (2 = ready to air):
-look (polished, consistent, on-brand), readability (graphic text and numbers readable at phone size, nothing cut off or
-overlapping), framing (Habit and graphics placed well; nothing important in the bottom 420 px or the right 180 px below
-y 1000, where the platform buttons sit), captions (readable, never covering a key graphic), package (topic strip,
-countdown, bug and source chip clear and not cluttered), story (each still tells its topic), habit (the narrator looks
-alive and his face fits the line). For every row under 2 give one concrete fix. Be strict and specific.
-House style, decided by the owner (never a fault): the end card shows the pixel-art Habit (the studio's mascot look) while the
-show uses the drawn Habit.
-Platform rule (a fact, never a fault): the bottom ~420 px of every frame are kept clear on purpose, because YouTube Shorts
-and Reels lay their caption, buttons and progress bar over that strip; don't ask to fill it or move things into it."""
-SCREEN_ROWS = ["look", "readability", "framing", "captions", "package", "story", "habit"]
-SCREEN_SCHEMA = {"type": "object", "required": ["rows", "fixes"], "properties": {
-    "rows": {"type": "object", "required": SCREEN_ROWS, "properties": {k: {"type": "integer", "minimum": 0, "maximum": 2} for k in SCREEN_ROWS}},
-    "fixes": {"type": "array", "items": {"type": "object", "required": ["row", "fix"], "properties": {"row": {"type": "string"}, "fix": {"type": "string"}}}}}}
-
-
 def screening(sheet, times, script):
-    """The screening judge on the contact sheet. The judge varies by 1-2 points between runs, so it runs `screen_runs`
-    times (2 by default) and the bar is judged on the mean of each row (Talha 5 Nov, P24.6.4). Each run is kept in `runs`."""
-    c = cfg()
-    ask = (f"Contact sheet: {sheet}\nStill times (s): {', '.join(f'{t:.1f}' for t in times)}\n\nScript:\n"
-           + "\n".join(f"- {l['id']}: {l['say']}" for l in lines_of(script)))
-    runs = [llm.call(ask, SCREEN_SYSTEM, SCREEN_SCHEMA, model=c.get("judge_model", "opus"), tools="Read", add_dirs=[sheet.parent],
-                     purpose="show.screening", effort="medium") for _ in range(max(1, int(c.get("screen_runs", 2))))]
-    return mean_screening(runs, c["pass_share"])
-
-
-def mean_screening(runs, share):
-    """Average several screening runs row by row; pass when the mean total reaches `share` of the maximum and every row's
-    mean is at least 1. Fixes are merged in order without repeats."""
-    rows = {k: round(sum(r["rows"][k] for r in runs) / len(runs), 2) for k in runs[0]["rows"]}
-    fixes = []
-    for r in runs:
-        for f in r.get("fixes", []):
-            if f not in fixes:
-                fixes.append(f)
-    total, mx = round(sum(rows.values()), 2), 2 * len(rows)
-    return {**runs[0], "rows": rows, "fixes": fixes, "total": total, "max": mx, "runs": [{"rows": r["rows"], "total": sum(r["rows"].values())} for r in runs],
-            "pass": total >= share * mx and min(rows.values()) >= 1}
+    """The critic desk's stills mode (video-critic skill): the contact sheet scored row by row, run twice and averaged
+    (the judge varies by 1-2 points between runs; Talha 5 Nov, P24.6.4), with the row "do we see what we hear"."""
+    return critic("screen", {"sheet": str(sheet), "times": [round(x, 2) for x in times],
+                             "script": "\n".join(f"- {l['id']}: {l['say']}" for l in lines_of(script)), "purpose": "show.screening"})
 
 
 def fill_beats(seg, c, limit=2.4):
