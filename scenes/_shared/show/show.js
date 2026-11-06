@@ -91,7 +91,7 @@
       sheets.forEach(([x, y, w, h, r], i) => {
         const sg = el("g", { transform: `rotate(${r} ${x + w / 2} ${y + h / 2})` }, g);
         el("rect", { x, y, width: w, height: h, fill: "#fbf8f1" }, sg);
-        txt(el("g", { class: "mark" }, sg), x + w / 2, y + 44, ["THE DAILY", "HABIT", "TECH", "TIMES"][i], {   // a wall label: wide shot only, or a close-up cuts it to "ILY" / "H" (Ep 6 screening)
+        if (i < 2) txt(el("g", { class: "mark" }, sg), x + w / 2, y + 44, ["THE DAILY", "HABIT"][i], {   // the two edge sheets stay unlabelled: they sit half off-frame ("ES", "T")   // a wall label: wide shot only, or a close-up cuts it to "ILY" / "H" (Ep 6 screening)
            size: 34, font: S.head, fill: S.ink, weight: 800 });
         for (let l = 0; l < 9; l++) el("rect", { x: x + 22, y: y + 90 + l * 30, width: w - 44 - (l % 3) * 30, height: 9, fill: "#cfc4b0" }, sg);
       });
@@ -728,7 +728,7 @@
       else {
         const grp = words.filter((x) => x.g === words[w].g);
         cap.innerHTML = `<span style="display:inline-block;text-wrap:balance;max-width:100%;width:fit-content;box-sizing:border-box;background:${S.bg};padding:8px 20px;border-radius:${cfg.set === "riso" ? 0 : 14}px;box-shadow:0 0 0 3px ${S.text}">` +
-          grp.map((x) => `<span style="color:${x === words[w] ? S.red : S.text}">${esc(x.w)}</span>`).join(" ") + "</span>";
+          grp.map((x) => `<span style="color:${x === words[w] ? S.red : x.st ? S.blue : S.text}${x.st ? ";font-weight:900" : ""}">${esc(x.w)}</span>`).join(" ")   // spoken word red, stressed words blue (P9.1.5) + "</span>";
         const c = capStyle(shot);
         Object.assign(cap.style, { left: c.left + "px", width: c.width + "px", top: c.top + "px", textAlign: c.align, display: "block", fontSize: (c.size || 62) + "px" });
       }

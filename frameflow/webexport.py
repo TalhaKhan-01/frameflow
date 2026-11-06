@@ -257,6 +257,8 @@ def live(data):
     return {"generated": data["generated"], "ideas": data["ideas"], "videos_made": len(data["videos"]),
             "videos_posted": len(posted), "card_posts": sum(c["state"] == "posted" for c in data["cards"]),
             "lessons": sum(x["status"] == "active" for x in data["lessons"]),
+            "rules": sum(x["status"] in ("active", "promoted") for x in data["lessons"]),   # the coach's playbook (P11)
+            "episodes": sum(1 for v in data["videos"] if "daily-habit" in str(v.get("id", ""))),
             "library": sum(data["library"]["counts"].values()),
             "leaves_done": sum(p["done"] for p in pd), "leaves_partial": sum(p["partial"] for p in pd),
             "leaves_total": sum(p["total"] for p in pd),

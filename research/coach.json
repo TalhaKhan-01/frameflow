@@ -35,12 +35,14 @@
    "text": "State each claim only as strongly as the source facts support: attribute reported reasons with 'reportedly' or 'according to', never turn a correlation into a cause, avoid absolutes like 'no names' when caveats exist, and name the real speaker.",
    "source": "fixes up to 2026-11-04-daily-habit-ep6",
    "status": "trial",
-   "alpha": 1.0,
-   "beta": 1.0,
-   "trials": 0,
+   "alpha": 1.5,
+   "beta": 1.5,
+   "trials": 1,
    "created": "2026-11-05T12:12:18",
-   "updated": "2026-11-05T12:12:18",
-   "log": []
+   "updated": "2026-11-05T12:26:38",
+   "log": [
+    "2026-11-05 practice on 2026-11-04-daily-habit-ep6: accuracy 1 with vs 1 without"
+   ]
   },
   {
    "id": "R4",

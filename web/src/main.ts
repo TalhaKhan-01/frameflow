@@ -203,7 +203,7 @@ function today() {
         <div><b>${data.videos.length}</b><span>videos made</span></div>
         <div><b>${data.cards.length}</b><span>carousels made</span></div>
         <div><b>${posted}</b><span>posted</span></div>
-        <div><b>${active}</b><span>active lessons</span></div>
+        <div><b>${active}</b><span>rules on test</span></div>
       </div>
     </section>
     ${body || '<p class="meta">No daily runs yet.</p>'}`);
@@ -211,7 +211,7 @@ function today() {
     .map((v: Any) => ({ id: v.id, title: v.yt_title || v.title, timeline: v.timeline, href: `#/video/${encodeURIComponent(v.id)}` }));
   house = mountHouse(document.getElementById("house")!, {
     makes,
-    stats: [`${data.ideas} ideas collected so far.`, `${data.videos.length} videos made, ${posted} posted.`, `${active} lessons the desks read before each make.`],
+    stats: [`${data.ideas} ideas collected so far.`, `${data.videos.length} videos made, ${posted} posted.`, `${active} rules the coach is testing on the next episodes.`],
     links: { library: "#/library", lessons: "#/lessons", videos: "#/videos" },
   });
 }
@@ -403,14 +403,14 @@ function lessons() {
       ${l.status === "retired" ? '<span class="rk-stamp fix">RETIRED</span>' : ""}
     </li>`).join("");
   shell("lessons", `
-    ${roomHead({ sign: "NOTICE BOARD", floor: "R", resident: "analyst", title: "What each video *taught* the next.",
-      intro: "After every video, its review, its failed checks and the owner's notes are distilled into general lessons. The 48-hour results then score each lesson by the videos it shaped.",
+    ${roomHead({ sign: "NOTICE BOARD", floor: "R", resident: "analyst", title: "Every episode *is an experiment*.",
+      intro: "The coach keeps a playbook of rules for the writer and the visual desk. Each episode tests the proven rules plus two on trial; the review decides which help, and the 48-hour results re-weight them.",
       spec: [
-        ["Module", "`frameflow/lessons.py` (distil, rank, write the prompt files)"],
-        ["Ledger", "`research/lessons.jsonl`: area, text, evidence, source, status, seen / helped / hurt"],
-        ["Output", "the top 8 active lessons per area in `research/lessons-writer.txt` and `lessons-director.txt`, read by the writer and director as house rules"],
-        ["Scoring", "`frameflow/stats48.py` ties 48 h views and engagement back to the lessons a video used"],
-        ["Lifecycle", "active → promoted into a skill's rules, or retired when it stops helping"],
+        ["Module", "`frameflow/coach.py` (playbook, record, practice, note, status)"],
+        ["Playbook", "`research/coach.json`: each rule's desk, the review row it aims at, and its Beta belief (helped / hurt below)"],
+        ["Into the make", "the proven rules plus two rules on trial, drawn by Thompson sampling, go into the writer's and the visual desk's prompts"],
+        ["Scoring", "each rule's row against that row's running average after the review; 48 h % watched (`stats48.py`) adds half a point"],
+        ["Lifecycle", "on test (shown as active) → proven at 85% after 3 trials, retired at 25% or after 6; rows the words can't move become template tickets"],
       ] })}
     <div class="rk-tabs" role="group" aria-label="Filter by area"><button data-a="" aria-pressed="true">All ${all.length}</button>${areas.map((a) =>
       `<button data-a="${esc(a)}" aria-pressed="false">${esc(a)}</button>`).join("")}</div>

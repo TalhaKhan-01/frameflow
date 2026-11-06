@@ -5,7 +5,7 @@
       <li><a href="#clock">01 Clock</a></li>
       <li><a href="#intake">02 Intake</a></li>
       <li><a href="#brief">03 Brief</a></li>
-      <li><a href="#board">04 Board</a></li>
+      <li><a href="#board">04 Desks</a></li>
       <li><a href="#show">05 Show</a></li>
       <li><a href="#render">06 Render</a></li>
       <li><a href="#gates">07 Gates</a></li>
@@ -22,19 +22,19 @@
     <section class="a-hero" id="map" aria-labelledby="a-title">
       <p class="eyebrow">Architecture · the complete technical flow</p>
       <h1 id="a-title"><span class="line">The newsroom,</span><span class="line"><em>opened up</em>.</span></h1>
-      <p class="lede">Frameflow runs on one laptop. A Telegram bot ticks every 30 seconds and moves each posting day through a small state machine. Long steps run as their own processes. Every step is <b>a desk with a gate</b>, and the gates sit before the one expensive step, the render. The model calls go through Claude Code inside a subscription, so there is no API key and no API bill. This page follows one story from the wire to the feed, and then back into the next video as lessons.</p>
+      <p class="lede">Frameflow runs on one laptop. A Telegram bot ticks every 30 seconds and moves each posting day through a small state machine. Long steps run as their own processes. Every day it makes one episode of <b>The Daily Habit</b>: eight stories in about 85 seconds, read by Habit. Every step is <b>a desk with a gate</b>, and the gates sit before the one expensive step, the render. The model calls go through Claude Code inside a subscription, so there is no API key and no API bill. This page follows the stories from the wire to the feed, and then back into the next episode through the coach, a learning loop that tests rules and keeps the ones that raise the scores.</p>
       <dl class="a-stats">
-        <div><dt>Python modules</dt><dd>46</dd></div>
-        <div><dt>desks on the board</dt><dd>17</dd></div>
-        <div><dt>delivery renders per video</dt><dd>1</dd></div>
+        <div><dt>Python modules</dt><dd>47</dd></div>
+        <div><dt>desks in a daily make</dt><dd>18</dd></div>
+        <div><dt>renders per episode</dt><dd>1</dd></div>
         <div><dt>ideas collected</dt><dd data-live="ideas">–</dd></div>
-        <div><dt>lessons in the ledger</dt><dd data-live="lessons">–</dd></div>
+        <div><dt>rules the coach is testing</dt><dd data-live="rules">–</dd></div>
       </dl>
 
       <div class="a-panel map-panel">
         <p class="swipe" aria-hidden="true">swipe →</p>
         <svg class="map" viewBox="0 0 1100 600" role="img" aria-labelledby="map-t">
-          <title id="map-t">System map. News sources feed the laptop. On the laptop the bot's tick drives the daily state machine, the studio board makes the video, and SQLite plus the research folder hold the state. Model calls go out to Claude through claude -p. Video cards go to the owner's Telegram; an approval sends the video to YouTube, Instagram and Facebook. A web export is pushed to GitHub, and Vercel builds the Studio and this site. Stats come back from the platforms after 48 hours and become lessons.</title>
+          <title id="map-t">System map. News sources feed the laptop. On the laptop the bot's tick drives the daily state machine, the studio board makes the video, and SQLite plus the research folder hold the state. Model calls go out to Claude through claude -p. Video cards go to the owner's Telegram; an approval sends the video to YouTube, Instagram and Facebook. A web export is pushed to GitHub, and Vercel builds the Studio and this site. Stats come back from the platforms after 48 hours and feed the coach.</title>
           <defs>
             <marker id="m-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
             <linearGradient id="g-lap" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="oklch(0.27 0.026 275)"/><stop offset="1" stop-color="oklch(0.2 0.024 275)"/></linearGradient>
@@ -48,17 +48,17 @@
           <g class="zone"><rect x="18" y="380" width="200" height="200" rx="16"/><text x="118" y="410" class="z-t">The web</text></g>
 
           <!-- nodes -->
-          <g class="mn" id="n-src"><rect x="38" y="92" width="160" height="56" rx="10"/><text x="118" y="116">RSS + Google News</text><text x="118" y="135" class="s">HN · GitHub · YouTube</text></g>
+          <g class="mn" id="n-src"><rect x="38" y="92" width="160" height="56" rx="10"/><text x="118" y="116">RSS · News · Trends</text><text x="118" y="135" class="s">6 countries · HN · GitHub</text></g>
           <g class="mn" id="n-web"><rect x="38" y="170" width="160" height="56" rx="10"/><text x="118" y="194">Source pages</text><text x="118" y="213" class="s">re-fetched for facts</text></g>
           <g class="mn" id="n-stock"><rect x="38" y="248" width="160" height="56" rx="10"/><text x="118" y="272">Free media</text><text x="118" y="291" class="s">CC0 · PD · CC BY</text></g>
 
           <g class="mn hot" id="n-bot"><rect x="300" y="92" width="200" height="64" rx="10"/><text x="400" y="118">frameflow-bot</text><text x="400" y="138" class="s">long poll · tick 30 s</text></g>
-          <g class="mn" id="n-daily"><rect x="560" y="92" width="200" height="64" rx="10"/><text x="660" y="118">daily state machine</text><text x="660" y="138" class="s">daily.py · show.py</text></g>
-          <g class="mn hot" id="n-board"><rect x="300" y="190" width="460" height="86" rx="12"/><text x="530" y="222">The studio board</text><text x="530" y="244" class="s">17 desks · gates before the render · fix loops on text</text><text x="530" y="262" class="s">board.py · 7 craft skills</text></g>
+          <g class="mn" id="n-daily"><rect x="560" y="92" width="200" height="64" rx="10"/><text x="660" y="118">daily state machine</text><text x="660" y="138" class="s">daily.py · showdesk.py</text></g>
+          <g class="mn hot" id="n-board"><rect x="300" y="190" width="460" height="86" rx="12"/><text x="530" y="222">The daily make: The Daily Habit</text><text x="530" y="244" class="s">18 desks · gates before the render · fixes only in text</text><text x="530" y="262" class="s">show.py · 6 craft skills · the coach</text></g>
           <g class="mn" id="n-render"><rect x="300" y="306" width="220" height="64" rx="10"/><text x="410" y="332">HyperFrames render</text><text x="410" y="352" class="s">deterministic · 1080×1920</text></g>
           <g class="mn" id="n-voice"><rect x="540" y="306" width="220" height="64" rx="10"/><text x="650" y="332">Voice + captions</text><text x="650" y="352" class="s">Chatterbox · Whisper</text></g>
-          <g class="mn lamp" id="n-db"><rect x="300" y="392" width="220" height="50" rx="10"/><text x="410" y="414">SQLite + research/</text><text x="410" y="431" class="s">runs · ideas · lessons</text></g>
-          <g class="mn" id="n-pilot"><rect x="540" y="392" width="220" height="50" rx="10"/><text x="650" y="414">The Pilot's Chrome</text><text x="650" y="431" class="s">signed-in uploads</text></g>
+          <g class="mn lamp" id="n-db"><rect x="300" y="392" width="220" height="50" rx="10"/><text x="410" y="414">SQLite + research/</text><text x="410" y="431" class="s">runs · ideas · coach</text></g>
+          <g class="mn" id="n-pilot"><rect x="540" y="392" width="220" height="50" rx="10"/><text x="650" y="414">The Pilot's Chrome</text><text x="650" y="431" class="s">on demand · signed in</text></g>
 
           <g class="mn" id="n-claude"><rect x="860" y="92" width="202" height="68" rx="10"/><text x="961" y="118">claude -p</text><text x="961" y="138" class="s">Opus · Sonnet · Haiku</text><text x="961" y="153" class="s">JSON out · usage logged</text></g>
           <g class="mn lamp" id="n-tg"><rect x="860" y="256" width="202" height="56" rx="10"/><text x="961" y="280">Telegram</text><text x="961" y="299" class="s">one chat · buttons</text></g>
@@ -95,7 +95,7 @@
           </g>
         </svg>
       </div>
-      <p class="note">Read it left to right: the world comes in, the laptop works, the models think, the owner decides and the platforms publish. The dashed line along the bottom is the loop that makes the next video better than this one.</p>
+      <p class="note">Read it left to right: the world comes in, the laptop works, the models think, the owner decides and the platforms publish. The dashed line along the bottom is the loop that makes the next episode better than this one.</p>
     </section>
 
     <!-- 01 CLOCK -->
@@ -108,14 +108,14 @@
           <ol class="states" id="states">
             <li data-s="0"><b>topic-sent</b><span>14:00 · 15 candidates on the topic card</span></li>
             <li data-s="1"><b>picked</b><span>owner ticks 5–8, or the top 8 at 15:00</span></li>
-            <li data-s="2"><b>making</b><span><code>daily make</code> spawned: brief → board → render</span></li>
+            <li data-s="2"><b>making</b><span><code>daily make</code>: research → rundown → hook card → visuals → voice → one render</span></li>
             <li data-s="3"><b>video-sent</b><span>video card: Approve · Revise · Reject</span></li>
             <li data-s="4"><b>queued</b><span>approved; waits for the 11:30 slot</span></li>
             <li data-s="5"><b>posting</b><span>pack → YouTube, Instagram, Facebook</span></li>
             <li data-s="6"><b>posted</b><span>links back to Telegram, Studio refreshed</span></li>
-            <li data-s="7"><b>+48 h stats</b><span>stats → lessons → library → cleanup</span></li>
+            <li data-s="7"><b>+48 h stats</b><span>stats → coach → library → cleanup</span></li>
           </ol>
-          <p class="side-states"><span>side exits:</span> <i>revising → making</i> (at most 2) · <i>skipped</i> · <i>rejected</i> (reason kept as a lesson) · <i>failed</i> (<code>/retry</code> re-runs the step)</p>
+          <p class="side-states"><span>side exits:</span> <i>revising → making</i> (at most 2) · <i>skipped</i> · <i>rejected</i> (the reason goes to the coach) · <i>waiting-limit</i> (a usage limit: re-run after the reset) · <i>failed</i> (<code>/retry</code>)</p>
         </div>
         <div class="dial-wrap">
           <svg class="dial" viewBox="0 0 400 400" role="img" aria-labelledby="dial-t">
@@ -137,13 +137,13 @@
     <section class="intake" id="intake" aria-labelledby="intake-t">
       <p class="eyebrow">02 · Intake</p>
       <h2 id="intake-t">Hundreds of headlines, <em>one ranked card</em>.</h2>
-      <p class="lede small"><code>ideas collect</code> pulls five kinds of sources (<code>research/sources.json</code>) into <code>data/frameflow.db</code>, deduplicated by URL. <code>ideas rank</code> scores every fresh, unranked idea in <b>one batched model call</b> (score, lane, angle, hook), so ranking a day's wire costs about as much as one paragraph. The show's topic desk then ranks the day's candidates by virality and sends 15 to Telegram as toggles.</p>
+      <p class="lede small"><code>ideas collect</code> pulls the wire (<code>research/sources.json</code>) into <code>data/frameflow.db</code>, deduplicated by URL: tech feeds, Google News searches and topic pages, and <b>Google Trends</b> for India, the US, the UK, Singapore, the UAE and Australia. There are no lane limits: anything trending anywhere can make the show if it has a tech, money or science angle Habit can explain. <code>ideas rank</code> scores every fresh idea in <b>one batched model call</b>. Topic memory then drops any story aired in the last 14 days (by meaning, not by link), and the topic desk ranks the rest by virality and sends 15 to Telegram as toggles.</p>
       <div class="a-panel">
         <p class="swipe" aria-hidden="true">swipe →</p>
         <svg class="funnel" viewBox="0 0 1000 380" role="img" aria-labelledby="fun-t">
           <title id="fun-t">Five source kinds stream items into a funnel, into SQLite, through one ranking call, and out as fifteen ranked candidates on the topic card.</title>
           <g class="f-src">
-            <text x="20" y="62">RSS feeds</text><text x="20" y="122">Google News</text><text x="20" y="182">Hacker News top</text><text x="20" y="242">GitHub trending</text><text x="20" y="302">YouTube most popular</text>
+            <text x="20" y="62">RSS feeds</text><text x="20" y="122">Google News + Trends</text><text x="20" y="182">Hacker News top</text><text x="20" y="242">GitHub trending</text><text x="20" y="302">YouTube most popular</text>
           </g>
           <g class="f-lanes">
             <path id="fl0" d="M190 58 C 280 58, 300 170, 380 182"/>
@@ -169,10 +169,10 @@
       <h2 id="brief-t">Nothing unsourced <em>reaches the script</em>.</h2>
       <div class="brief-grid">
         <div>
-          <p class="lede small">The researcher (<code>brief.py</code>) works with web search and fetch and returns facts that each carry the URL that supports them. Then code takes over, because a model can be confidently wrong:</p>
+          <p class="lede small">One researcher per story (four at a time) works with web search and fetch and returns facts that each carry the URL that supports them. Then code takes over, because a model can be confidently wrong:</p>
           <ol class="checks">
             <li><b>Re-fetch.</b> Every source is loaded again. A fact whose page doesn't load is dropped.</li>
-            <li><b>Floor.</b> A brief with fewer than 8 sourced facts is refused.</li>
+            <li><b>Fresh pages.</b> A page whose link is dated more than 21 days before the episode is never shown on screen.</li>
             <li><b>Independent check.</b> The <code>shorts-factcheck</code> skill re-reads each page as text and rules on each fact from that text alone: <i class="ok">supported</i>, <i class="part">partly</i> (with corrected wording), <i class="no">unsupported</i> (dropped) or <i class="no">unreachable</i>.</li>
             <li><b>Numbers in code.</b> Later, every number the script says, in digits or in words, must be in the verified facts.</li>
           </ol>
@@ -191,56 +191,59 @@
     <section class="board-sec" id="board" aria-labelledby="board-t">
       <div class="board-pin">
         <div class="board-head">
-          <p class="eyebrow">04 · The studio board</p>
-          <h2 id="board-t">Seventeen desks, <em>one render</em>.</h2>
-          <p class="lede small">A make goes desk by desk, and each desk's gate must pass before the next desk starts. Fix loops are allowed only while a fix is still a text edit. After the delivery render nothing loops: the result goes to the owner with its honest numbers.</p>
+          <p class="eyebrow">04 · The desks of a daily make</p>
+          <h2 id="board-t">Eighteen desks, <em>one render</em>.</h2>
+          <p class="lede small">A make goes desk by desk, and each desk's gate must pass before the next one starts. Fixes are allowed only while a fix is still a text edit. After the render nothing loops: the episode goes to the owner with its honest numbers, and the coach takes its lessons.</p>
           <div class="cost" aria-live="off"><span>cost of a fix here</span><div class="cost-bar"><i id="cost-fill"></i></div><b id="cost-label">a text edit</b></div>
         </div>
         <div class="belt-view">
           <ol class="belt" id="belt">
-            <li><small>01 · producer.py</small><b>Showrunner</b><span>Writes the run sheet. On Revise, turns the owner's own words into a change order (Go / Change it / Cancel) that re-runs only the stages it needs.</span></li>
-            <li><small>02 · brief.py</small><b>Researcher</b><span>Web search and fetch; at least 8 facts, each with a URL that is loaded again in code.</span></li>
-            <li><small>03 · shorts-factcheck</small><b>Fact-checker</b><span>Re-reads every source as text; supported, partly, unsupported or unreachable.</span></li>
-            <li><small>04 · social-caption</small><b>Packaging</b><span>Decides the promise first: title, cover line and a hook that names one stake. The script must deliver it.</span></li>
-            <li><small>05 · shorts-writer</small><b>Writer</b><span>A 20-hook room across 10 families, a judge keeps 3; an And-But-Therefore story with a re-hook every 10 s, in Habit's voice; an AI-slop linter.</span></li>
-            <li><small>06 · shorts-director</small><b>Director</b><span>One visual metaphor per idea, motion timed to the spoken words, something new every 2.5 s, transitions by meaning, the SFX cue sheet.</span></li>
-            <li class="loop"><small>07 · voice.py + precheck.py</small><b>Narrator</b><span>Records the real voice, times every word, then checks re-hook gaps, caption accuracy, length and voice start on it.</span><em>↺ fails → one writer/director fix, re-voice (local, free)</em></li>
-            <li><small>08 · shorts-editor</small><b>Script editor</b><span>An independent table read: hook, story, flow, voice, sound, sources, honesty, ending, 0–2 each.</span></li>
-            <li><small>09 · standards.py</small><b>Standards</b><span>In code: invented replies carry a "re-enactment" label, every image is licensed, every number on screen is said or sourced.</span></li>
-            <li><small>10 · animatic.py</small><b>Animatic</b><span>A 12 fps draft of the whole video. On a test video: 58 s instead of 148 s, and 138 drawn events against the final's 140.</span></li>
-            <li><small>11 · artdirect.py</small><b>Art director</b><span>Measures the draft: no empty paper for a second, no black stretches, every still on the house palette.</span></li>
-            <li class="loop"><small>12 · shorts-screening</small><b>Screening</b><span>A strict first viewer scores a contact sheet of the draft, row by row, and names where a viewer would swipe away.</span><em>↺ below the bar → fix → back through the narrator</em></li>
-            <li class="hot"><small>13 · build.py + pipeline.py</small><b>Render, once</b><span>The delivery render: HyperFrames frames, the voice, captions, music ducked under the voice, loudness to −14 LUFS.</span></li>
-            <li><small>14 · qa.py</small><b>QC</b><span>The measurable rows of the Quality Bar as pass/fail gates on the file itself.</span></li>
-            <li class="lamp"><small>15 · bot.py</small><b>Owner</b><span>The video card on Telegram. Nothing is published without the owner's tap.</span></li>
-            <li><small>16 · publish.py + pilot.py</small><b>Publisher</b><span>Captions per platform; Meta Graph API and The Pilot; links back to the card.</span></li>
-            <li><small>17 · analyst.py</small><b>Analyst</b><span>48 h later, ties every result to the decision that caused it: hook family, ending, length, package.</span></li>
+            <li><small>01 · showdesk.py + shorts-producer</small><b>Topic desk</b><span>Ranks the day's wire and world trends by virality, drops anything aired in the last 14 days, marks real follow-ups as Update, and sends 15 candidates.</span></li>
+            <li class="lamp"><small>02 · Telegram</small><b>Owner's pick</b><span>The owner ticks 5–8 stories. With no tap by 15:00, the top 8 are taken.</span></li>
+            <li><small>03 · show.py · Sonnet + web</small><b>Researchers</b><span>One per story, four at a time: facts that each carry the URL behind them.</span></li>
+            <li><small>04 · shorts-factcheck</small><b>Fact-checker</b><span>Re-reads every page as text; a story without enough supported facts is dropped from the episode.</span></li>
+            <li class="loop"><small>05 · show.py · Opus</small><b>Writer</b><span>The open ("Breaking: …"), one 20–32 word segment per story with a witty line, a graphic, a face for Habit and up to one laugh, then the outro. It reads the coach's playbook first.</span><em>↺ lints in code: words, numbers vs facts, graphics</em></li>
+            <li class="loop"><small>06 · show.py · Opus</small><b>Table read</b><span>An independent editor scores hook, clarity, wit, flow, accuracy, variety and ending, 0–2 each.</span><em>↺ below 80% → up to 2 doctor rounds</em></li>
+            <li class="lamp"><small>07 · hookpick.py</small><b>Hook card</b><span>Ten ranked opens on Telegram: tap one, improve one in your own words, or write your own. After 20 minutes, hook 1. The BREAKING banner follows the open's story.</span></li>
+            <li><small>08 · visual-sourcing</small><b>Visuals</b><span>Logos, a photo of each subject or an everyday scene, and a fresh capture of the source's headline, all judged by a vision model and licensed: free (CC0, PD, CC BY) or editorial, never unknown.</span></li>
+            <li><small>09 · voice.py · Chatterbox</small><b>Narrator</b><span>Habit's voice on the GPU, every line pulled to its target pace, names respelled from a pronunciation list, Whisper word timing for the captions.</span></li>
+            <li><small>10 · show.py (code)</small><b>Director</b><span>A framing per topic (split, picture-in-picture), a cut wherever 2.5 s would pass with nothing new, graphics (stats, bars, versus, maps with routes), analogy gags and Habit's faces.</span></li>
+            <li><small>11 · show.py · sound.py</small><b>Sound</b><span>A stamp on BREAKING, the original theme, a bed that rises through the show, ducks under the voice and dips before the outro, and a fixed SFX vocabulary.</span></li>
+            <li class="hot"><small>12 · HyperFrames</small><b>Render, once</b><span>One deterministic composition at 1080×1920: two renders of the same plan give identical frames.</span></li>
+            <li><small>13 · show.py · qa.py</small><b>QC</b><span>Length, loudness, black and blank frames, a picture change every 2.5 s, captions against the voice, layout check.</span></li>
+            <li><small>14 · show.py · Opus × 2</small><b>Screening</b><span>A strict first viewer scores a contact sheet on look, readability, framing, captions, package, story and Habit. It runs twice and the bar uses the mean.</span></li>
+            <li><small>15 · coach.py</small><b>Coach</b><span>Credits or blames the rules this episode tested, promotes or retires them, writes new ones for the weakest rows, and files template faults as tickets.</span></li>
+            <li class="lamp"><small>16 · bot.py</small><b>Owner's card</b><span>The video card and the carousel on Telegram: Approve, Revise in your own words, or Reject. Nothing is published without the tap.</span></li>
+            <li><small>17 · publish.py + pilot.py</small><b>Publisher</b><span>Post text per platform; YouTube, Instagram and Facebook at 11:30, by API or by The Pilot's Chrome, started only for the upload.</span></li>
+            <li><small>18 · stats48.py + analyst.py</small><b>Analyst</b><span>48 h later: views and % watched per platform, tied to the decisions behind them; the coach takes it as its slow signal.</span></li>
           </ol>
         </div>
-        <p class="note board-note">Why one render: before 26 Oct the pipeline rendered, reviewed, rewrote and rendered again. The second render cost as much as the first and scored worse (14/22 → 13/22). Fix rounds are bounded by the active profile (<code>timing_fix_rounds</code>, <code>animatic_fix_rounds</code>, 1 each on <code>lean</code>).</p>
+        <p class="note board-note">Why one render: in October the pipeline rendered, reviewed, rewrote and rendered again; the second render cost as much as the first and scored worse (14/22 → 13/22). The older single-story maker (<code>board.py</code>, 17 desks with an animatic) is still in the code for one-off Shorts; the daily make is the show.</p>
       </div>
     </section>
 
     <!-- 05 SHOW -->
     <section class="show" id="show" aria-labelledby="show-t">
-      <p class="eyebrow">05 · The Daily Habit show mode</p>
+      <p class="eyebrow">05 · The Daily Habit</p>
       <h2 id="show-t">Eight stories, <em>one episode</em>.</h2>
-      <p class="lede small">With <code>research/show.json</code> <code>enabled: true</code>, the daily make runs <code>show.py</code> instead of one single-story Short. It uses the same desks in a rundown shape: one researcher per story (4 in parallel), a fact-checker per story, a writer for the open, one 20–32 word segment per story with a witty line, and the outro. Then come lints in code and an independent table read, with up to 2 doctor rounds. A director in code picks a framing pattern per topic and adds the countdown, graphics and Habit's emotions. One render follows.</p>
+      <p class="lede small">An episode is an open, up to eight segments of 7.5–10.5 seconds and an outro, 75–100 seconds in all. Each segment starts on its real visuals (the subject's photo, then the source's headline zooming in under a highlighter) and moves to its graphic, with Habit in a split shot or in the corner, a countdown into the next story, and the topic strip and source chip on top. The look is one asset swap: the paper desk set and the drawn Habit by default, the pixel Habit on the end card.</p>
       <div class="rundown" aria-label="Episode rundown: open, eight 7.5 to 10.5 second segments, outro; 75 to 100 seconds in all">
         <div class="rd open"><b>Open</b><span>stamp + theme</span></div>
-        <div class="rd seg"><b>1</b><span>wide</span></div><div class="rd seg"><b>2</b><span>split</span></div><div class="rd seg"><b>3</b><span>PiP</span></div><div class="rd seg"><b>4</b><span>close</span></div>
-        <div class="rd seg"><b>5</b><span>wide</span></div><div class="rd seg"><b>6</b><span>split</span></div><div class="rd seg"><b>7</b><span>PiP</span></div><div class="rd seg"><b>8</b><span>close</span></div>
+        <div class="rd seg"><b>1</b><span>split</span></div><div class="rd seg"><b>2</b><span>PiP</span></div><div class="rd seg"><b>3</b><span>split</span></div><div class="rd seg"><b>4</b><span>PiP</span></div>
+        <div class="rd seg"><b>5</b><span>split</span></div><div class="rd seg"><b>6</b><span>PiP</span></div><div class="rd seg"><b>7</b><span>split</span></div><div class="rd seg"><b>8</b><span>PiP</span></div>
         <div class="rd outro"><b>Outro</b><span>end card</span></div>
         <i class="rd-head" aria-hidden="true"></i>
       </div>
-      <p class="rd-scale"><span>0 s</span><span>segments 7.5–10.5 s · countdown on screen</span><span>75–100 s</span></p>
-      <h3 class="p25-h">New in P25 (29 Oct): the desks become skills</h3>
+      <p class="rd-scale"><span>0 s</span><span>segments 7.5–10.5 s · a cut at least every 2.5 s</span><span>75–100 s</span></p>
+      <h3 class="p25-h">What changed in November</h3>
       <ul class="p25">
-        <li><b>Topic memory.</b> Before the card, the showrunner (<code>shorts-producer</code> <code>topics.py</code>) compares every candidate with what aired in the last 14 days, by meaning and not by link, so the same story from another outlet is dropped and a real follow-up comes back marked <i>Update</i>.</li>
-        <li><b>Hook card.</b> After the script, ten ranked opens go to Telegram. The owner taps one, improves one in their own words, or writes their own; the make waits on <code>hooks.json</code> for 20 minutes, then takes hook 1.</li>
-        <li><b>Real visuals.</b> The <code>visual-sourcing</code> skill finds each story's logo, a photo of its subject and the source's headline (a Playwright capture cropped to the masthead). A vision judge rejects the wrong <i>Free Fire</i> or <i>Genie</i>; every file has a licence tier and a credit; approved pictures are kept in a library, so a subject always gets the same picture. On screen: logo badge, photo with a slow push-in, the headline zooming in under a highlighter, then the data graphic.</li>
-        <li><b>Analogy gags.</b> The writer may add up to three from a fixed catalogue: <i>compare</i> (a chip the size of a rice grain), <i>scale</i> (one picture twelve times with the multiplier), <i>photo</i> with a punchline, or a <i>stamp</i>. Each has one recipe and one sound, so the same choice always looks the same, timed to the witty line.</li>
-        <li><b>The plan.</b> Seventeen desks become twelve reusable skills: showrunner, researcher, packaging, script writer, director, narrator, motion designer, sound director, video editor, critic, integrity gate, publisher + analyst; the owner card stays in Frameflow.</li>
+        <li><b>The coach.</b> The old lessons ledger is gone. The coach treats every episode as an experiment: the proven rules plus two rules under test go into the writer's and the visual desk's prompts, and the review decides which survive (chapter 09).</li>
+        <li><b>World trends, no lanes.</b> Google Trends from six countries joins the wire; any trending story with a tech, money or science angle can make the eight.</li>
+        <li><b>A fairer bar.</b> The screening judge varies by a point or two between runs, so it runs twice and the bar uses the mean.</li>
+        <li><b>Honest pictures.</b> The BREAKING banner always names the story the open is about; a page dated weeks before the episode is never shown; poster text is hidden when a close-up would cut it.</li>
+        <li><b>New graphics and depth.</b> Maps from Natural Earth (public domain) with a route and a vehicle riding it; the back set moves slower than Habit when the camera pushes in.</li>
+        <li><b>The voice.</b> A pace target per line, names respelled for the voice only, and at most one real laugh an episode.</li>
+        <li><b>Still from October:</b> topic memory, the hook card, real visuals with licences, and analogy gags from a fixed catalogue (a chip the size of a rice grain, one picture twelve times, a photo punchline, a stamp).</li>
       </ul>
       <h3 class="gantt-h">The latest make, timed <small id="gantt-sum">(live from the last export)</small></h3>
       <div class="gantt" id="gantt"><p class="note">The desk-by-desk timings appear here after the next export.</p></div>
@@ -252,22 +255,21 @@
         <div>
           <p class="eyebrow">06 · The render engine</p>
           <h2 id="render-t">Six layers <em>become one frame</em>.</h2>
-          <p class="lede small">A video is a <b>scene plan</b>: JSON naming a template from 18 scene types for every line, the data it shows and the sources behind it. <code>build.py</code> turns the plan into a HyperFrames project (a root composition at 1080×1920 with one sub-composition per scene), and the renderer steps it frame by frame. Nothing depends on the wall clock, so the same plan gives the same file.</p>
+          <p class="lede small">An episode is a <b>show plan</b>: JSON with every segment's start, shots, graphic, media, gag and Habit's face, plus the word timings. <code>show.py</code> puts it into one HyperFrames composition (<code>scenes/_shared/show/</code>, 1080×1920, GSAP) and the renderer steps it frame by frame. Nothing depends on the wall clock, and everything that moves is placed by position or an SVG transform, so two renders of the same plan give identical frames.</p>
           <ol class="layers-key" id="layers-key">
-            <li><b>Scene plan</b><span><code>scene_plan.py</code> validates the contract; errors go back to the director's doctor once.</span></li>
-            <li><b>Compositions</b><span><code>index.html</code> + <code>compositions/s&lt;N&gt;.html</code>, GSAP, bundled OFL fonts, the house theme.</span></li>
-            <li><b>Voice</b><span>Chatterbox "lively" on the GPU (seeded, so it can be repeated); Kokoro as the fallback. Each line's energy sets its expression.</span></li>
-            <li><b>Captions</b><span>Local Whisper word timestamps → chunks of up to 3 words, each word lit as it is spoken.</span></li>
-            <li><b>Sound</b><span>A fixed SFX vocabulary on the cue sheet, a music bed ducked 7 dB under the voice.</span></li>
+            <li><b>Show plan</b><span>The director's JSON; <code>hyperframes check</code> must report 0 layout errors.</span></li>
+            <li><b>Composition</b><span>The paper desk set, the drawn Habit (8 faces, mouth from the voice), graphics, the parallax back set, bundled OFL fonts.</span></li>
+            <li><b>Voice</b><span>Chatterbox on the GPU, seeded; the show never swaps voices. Each line's emotion sets its expression and its pace.</span></li>
+            <li><b>Captions</b><span>Whisper word timings → phrase chunks; the spoken word in red, the stressed words in blue.</span></li>
+            <li><b>Sound</b><span>Stamp, theme, a bed that rises and ducks under the voice, a dip and a hit before the outro, the SFX cue sheet.</span></li>
             <li><b>Master</b><span>Loudness to −14 LUFS, true peak under −1 dBTP; an asset ledger row per file.</span></li>
           </ol>
         </div>
         <div class="stack-wrap">
           <div class="stack" id="stack" aria-hidden="true">
-            <div class="ly l1"><pre>{ "type": "stat-counter",
-  "say": "…",
-  "data": { "to": 40 },
-  "sources": ["https://…"] }</pre></div>
+            <div class="ly l1"><pre>{ "topic": 3, "shots": [[0,"split"],[4.7,"pip"]],
+  "g": { "type": "stat", "value": "25B+" },
+  "media": { "shot": "s3-shot.png" } }</pre></div>
             <div class="ly l2"><span class="g"></span><span class="g"></span><span class="g"></span><span class="g wide"></span></div>
             <div class="ly l3"><svg viewBox="0 0 200 60" class="wave v"></svg></div>
             <div class="ly l4"><span class="cap">explains <b>how</b> it</span></div>
@@ -279,7 +281,7 @@
       </div>
       <div class="a-panel duck-panel">
         <svg class="duck" viewBox="0 0 1000 200" role="img" aria-labelledby="duck-t">
-          <title id="duck-t">Two audio tracks over time: the voice in bursts, and the music bed dipping by 7 dB whenever the voice speaks.</title>
+          <title id="duck-t">Two audio tracks over time: the voice in bursts, and the music bed dipping by 7 dB whenever the voice speaks, rising across the show.</title>
           <text x="10" y="40" class="s">voice</text><text x="10" y="140" class="s">music bed</text>
           <g class="v-bars"></g><path class="bed" d=""/><line class="ph" x1="100" y1="10" x2="100" y2="190"/>
         </svg>
@@ -290,26 +292,26 @@
     <section class="gates-sec" id="gates" aria-labelledby="gates-t">
       <p class="eyebrow">07 · Quality gates</p>
       <h2 id="gates-t">The file is <em>measured</em>, not admired.</h2>
-      <p class="lede small">One file, <code>research/quality-bar.json</code>, holds every number, and every desk reads it, so no two desks aim at different targets. <code>bar calibrate</code> re-measures the voice's real speed (2.89 words a second today) after each video and copies it to the writer and director. Below, a scanner passes over 12 real frames of the latest Short while the gates resolve.</p>
+      <p class="lede small">One file, <code>research/quality-bar.json</code>, holds every number, and every desk reads it, so no two desks aim at different targets. <code>bar calibrate</code> re-measures the voice's real speed (2.89 words a second today) after each video and copies it to the writer and director. Below, a scanner passes over 12 real frames of the latest episode while the gates resolve.</p>
       <div class="scan">
         <div class="strip" id="strip"></div>
         <i class="scanner" id="scanner" aria-hidden="true"></i>
       </div>
       <ul class="gate-grid" id="gate-grid">
-        <li><b>Length</b><span>≤ 95 s · target 75–90</span></li>
+        <li><b>Length</b><span>75–100 s</span></li>
         <li><b>Size</b><span>1080 × 1920</span></li>
         <li><b>Loudness</b><span>−15 to −13 LUFS</span></li>
         <li><b>True peak</b><span>≤ −1.0 dBTP</span></li>
         <li><b>Black</b><span>no stretch &gt; 0.5 s</span></li>
         <li><b>Blank</b><span>no near-empty frame ≥ 1 s</span></li>
         <li><b>Events</b><span>something new every ≤ 2.5 s</span></li>
-        <li><b>Re-hooks</b><span>every ≤ 10.5 s</span></li>
-        <li><b>Captions</b><span>word error &lt; 10%</span></li>
-        <li><b>Voice start</b><span>first word by 0.3 s</span></li>
+        <li><b>Captions</b><span>word error &lt; 10%, numbers read as said</span></li>
+        <li><b>Layout</b><span>0 check errors, nothing over text</span></li>
         <li><b>Licences</b><span>a ledger row for every asset</span></li>
-        <li><b>Cover</b><span>only numbers the script says</span></li>
+        <li><b>Fresh</b><span>no page dated &gt; 21 days</span></li>
+        <li><b>Banner</b><span>names the open's story</span></li>
       </ul>
-      <p class="note">Then the judgement rows: hook, story, flow, persona and humour, visual storytelling, pacing, sound, captions, sources, honesty and ending, 0–2 each, by a model that sees stills and the script but never wrote them. The show passes at 80% of each maximum. A miss is not hidden: the card says what failed, and "Approve anyway" turns the failures into lessons.</p>
+      <p class="note">Then the judgement rows, 0–2 each, by models that never wrote the episode: the table read (hook, clarity, wit, flow, accuracy, variety, ending) and the screening of the stills (look, readability, framing, captions, package, story, Habit), run twice and averaged. The bar is 80% of 28 with no row under 1. A miss is not hidden: the card says what failed, "Approve anyway" is the owner's call, and the coach aims its next rules at the weakest rows.</p>
     </section>
 
     <!-- 08 PUBLISH -->
@@ -331,8 +333,8 @@
           <g class="fan-dots"></g>
         </svg>
         <ul class="plats">
-          <li><b>YouTube Shorts</b><span>Uploaded by <b>The Pilot</b> (agent-browser) in a dedicated, signed-in Chrome under the process manager, until the YouTube API audit passes.</span></li>
-          <li><b>Instagram Reels</b><span>Meta Graph API. If the token is dead, The Pilot posts it through the app instead.</span></li>
+          <li><b>YouTube Shorts</b><span>Uploaded by <b>The Pilot</b> (agent-browser) in a dedicated, signed-in Chrome that starts for the upload and stops after it; the pinned comment goes up through the YouTube API.</span></li>
+          <li><b>Instagram Reels</b><span>Meta Graph API, its token extended every week. If it fails, The Pilot posts through the app instead.</span></li>
           <li><b>Facebook Page</b><span>Meta Graph API as the Page, with the same fallback. Carousels go the same way.</span></li>
         </ul>
       </div>
@@ -341,28 +343,29 @@
 
     <!-- 09 LEARN -->
     <section class="learn" id="learn" aria-labelledby="learn-t">
-      <p class="eyebrow">09 · The learning loop</p>
-      <h2 id="learn-t">Every video <em>teaches the next</em>.</h2>
+      <p class="eyebrow">09 · The learning loop: the coach</p>
+      <h2 id="learn-t">Every episode <em>is an experiment</em>.</h2>
       <div class="learn-grid">
         <svg class="orbit" viewBox="0 0 600 600" role="img" aria-labelledby="orbit-t">
-          <title id="orbit-t">A loop: the posted video, 48-hour stats, the analyst, the lessons ledger, and the prompts of the next make. In the centre, the asset library feeds the researcher and writer.</title>
+          <title id="orbit-t">A loop: the playbook goes into the next make, the review scores the episode, the coach credits or blames the rules under test, the posted episode's 48-hour stats re-weight them, and new rules come from the weakest rows. In the centre, the asset library.</title>
           <circle id="orbit-path" cx="300" cy="300" r="210" class="o-ring"/>
-          <g class="o-node" transform="translate(300 90)"><circle r="64"/><text y="-4">Posted</text><text y="18" class="s">3 platforms</text></g>
-          <g class="o-node" transform="translate(500 235)"><circle r="64"/><text y="-4">+48 h</text><text y="18" class="s">stats48.py</text></g>
-          <g class="o-node" transform="translate(423 470)"><circle r="64"/><text y="-4">Analyst</text><text y="18" class="s">decision → result</text></g>
-          <g class="o-node hot" transform="translate(177 470)"><circle r="64"/><text y="-4">Lessons</text><text y="18" class="s">lessons.jsonl</text></g>
-          <g class="o-node" transform="translate(100 235)"><circle r="64"/><text y="-4">Next make</text><text y="18" class="s">top 8 per area</text></g>
-          <g class="o-core"><circle cx="300" cy="300" r="78"/><text x="300" y="292">Library</text><text x="300" y="314" class="s">hooks · facts</text><text x="300" y="332" class="s">analogies · scenes</text></g>
+          <g class="o-node" transform="translate(300 90)"><circle r="64"/><text y="-4">Next make</text><text y="18" class="s">2 rules on test</text></g>
+          <g class="o-node" transform="translate(500 235)"><circle r="64"/><text y="-4">Review</text><text y="18" class="s">14 rows · 0–2</text></g>
+          <g class="o-node hot" transform="translate(423 470)"><circle r="64"/><text y="-4">Coach</text><text y="18" class="s">coach.json</text></g>
+          <g class="o-node" transform="translate(177 470)"><circle r="64"/><text y="-4">+48 h</text><text y="18" class="s">% watched</text></g>
+          <g class="o-node" transform="translate(100 235)"><circle r="64"/><text y="-4">New rules</text><text y="18" class="s">weakest rows</text></g>
+          <g class="o-core"><circle cx="300" cy="300" r="78"/><text x="300" y="292">Library</text><text x="300" y="314" class="s">pictures · facts</text><text x="300" y="332" class="s">hooks · analogies</text></g>
           <circle class="o-dot" r="10" cx="300" cy="90"/>
         </svg>
         <div>
           <ul class="learn-list">
-            <li><b>Sources of lessons.</b> Review rows, failed gates, the owner's <code>/feedback</code> and Reject reasons, and the 48 h stats.</li>
-            <li><b>The ledger.</b> <code>research/lessons.jsonl</code>: one general lesson per line, with area (writer or director), evidence, and the counts seen, helped and hurt. Status is active, promoted or retired.</li>
-            <li><b>Into the prompts.</b> The top 8 active lessons per area are written to <code>lessons-writer.txt</code> and <code>lessons-director.txt</code>, which the skills read as house rules.</li>
-            <li><b>Promotion.</b> On Sunday, lessons that helped three or more videos are offered as permanent house rules.</li>
-            <li><b>The library.</b> After the stats, <code>library.py</code> keeps what a video made but didn't use (spare hooks with scores, sourced facts, analogies, scene ideas). The researcher starts from it and re-checks every fact. Then <code>cleanup.py</code> frees the bulky files.</li>
-            <li><b>The analyst.</b> One row per video in <code>data/analyst.jsonl</code>, grouped by decision (hook family, ending, lane, length, package), so the next make can see what actually worked.</li>
+            <li><b>Rules, not lessons.</b> The playbook (<code>research/coach.json</code>) holds short, general rules for the writer and the visual desk. Each one aims at one review row (accuracy, readability, story…) and carries a belief that it helps, a Beta distribution that starts at 50/50.</li>
+            <li><b>Thompson sampling.</b> Before a make, the proven rules and two rules under test go into the prompts. The two are drawn from their beliefs, so promising rules get tried more and weak ones less.</li>
+            <li><b>Credit against a baseline.</b> After the review, each rule's row is compared with that row's running average over earlier episodes. Above it: credit. Below: blame. Within a quarter point: half of each.</li>
+            <li><b>Promote and retire.</b> After three or more trials, a rule that helps with 85% confidence becomes proven; one at 25% or less, or still unclear after six trials, is retired. A proven rule that stops working goes back under test.</li>
+            <li><b>Two speeds.</b> The review is the fast signal; 48 h later, the episode's % watched against the channel's median gives its rules half a point more. The owner's words (Revise, Reject, <code>/feedback</code>) become new rules with a head start.</li>
+            <li><b>Practice between makes.</b> <code>coach practice</code> re-writes a past episode with and without a rule under test and table-reads both: a cheap extra trial with no render.</li>
+            <li><b>Tickets.</b> Rows the words can't move (look, framing, captions, Habit) become engineering tickets for the template, never prompt rules.</li>
           </ul>
         </div>
       </div>
@@ -372,11 +375,11 @@
     <section class="models" id="models" aria-labelledby="models-t">
       <p class="eyebrow">10 · Model routing</p>
       <h2 id="models-t">The big model only <em>where quality is decided</em>.</h2>
-      <p class="lede small">Every call goes through <code>llm.py</code>: <code>claude -p</code> with no tools unless asked, no project settings, a short system prompt and structured JSON out. Token usage is appended to <code>data/llm-usage.jsonl</code>, so the cost of every video can be measured. Presets live in <code>research/profiles/</code> (<code>diet</code>, <code>lean</code>, <code>quality</code>); <code>frameflow profile use</code> switches them and can be undone. This is <code>lean</code>, the one in use:</p>
+      <p class="lede small">Every call goes through <code>llm.py</code>: <code>claude -p</code> with no tools unless asked, no project settings, a short system prompt and structured JSON out. Token usage is appended to <code>data/llm-usage.jsonl</code>, so the cost of every video can be measured. The show's routing is in <code>research/show.json</code>:</p>
       <div class="route" id="route">
-        <div class="col opus"><h3>Opus <small>high effort</small></h3><ul><li>script draft</li><li>storyboard</li><li>animatic screening</li><li>show writer + judge</li></ul></div>
-        <div class="col sonnet"><h3>Sonnet <small>medium effort</small></h3><ul><li>research brief</li><li>hook room + judge</li><li>every fix round</li><li>post captions</li><li>show research + virality</li></ul></div>
-        <div class="col haiku"><h3>Haiku <small>small jobs</small></h3><ul><li>idea ranking</li><li>cover title</li><li>lesson distilling</li><li>card post text</li></ul></div>
+        <div class="col opus"><h3>Opus <small>where quality is decided</small></h3><ul><li>the rundown writer + doctor</li><li>the table read</li><li>the screening (× 2)</li></ul></div>
+        <div class="col sonnet"><h3>Sonnet <small>medium effort</small></h3><ul><li>research per story</li><li>virality ranking</li><li>the hook room</li><li>the coach's new rules</li><li>post captions</li></ul></div>
+        <div class="col haiku"><h3>Haiku <small>small jobs</small></h3><ul><li>idea ranking</li><li>visual cues</li><li>pronunciation list</li><li>card post text</li></ul></div>
       </div>
       <p class="note">Measured, not guessed: most of a fix round's output was the model thinking (60k tokens to change a few scenes), so fixes moved to Sonnet at medium effort. A usage limit pauses the step and re-runs it after the reset.</p>
     </section>
@@ -384,18 +387,18 @@
     <!-- 11 INFRA -->
     <section class="infra" id="infra" aria-labelledby="infra-t">
       <p class="eyebrow">11 · Infrastructure</p>
-      <h2 id="infra-t">Four processes, <em>two static sites</em>.</h2>
+      <h2 id="infra-t">Three processes and one on call, <em>two static sites</em>.</h2>
       <div class="procs">
         <article><i class="beat"></i><b>frameflow-bot</b><span>Telegram long polling (no webhook, so no public URL) and the 30 s daily tick. Spawns every long step as its own process.</span></article>
-        <article><i class="beat"></i><b>frameflow-chrome</b><span>The Pilot's dedicated Chrome, signed in to the platforms, DevTools on localhost only; waits for the display at boot.</span></article>
+        <article><i class="beat"></i><b>frameflow-chrome</b><span>The Pilot's dedicated Chrome, signed in to the platforms, DevTools on localhost only. Started for an upload and stopped after it (a lock keeps two posts from closing it under each other), so its 1.4 GB stay free the rest of the day.</span></article>
         <article><i class="beat"></i><b>frameflow-control</b><span>A local control panel with the same functions as the bot, plus a live Making panel fed by <code>progress.py</code>.</span></article>
         <article><i class="beat"></i><b>phasedoc-frameflow</b><span>The build cockpit: every task in the plan with an acceptance test that has actually run.</span></article>
       </div>
-      <p class="note">All four run under a process manager that restores them at boot and restarts them after a crash. Python runs in one <code>uv</code> environment; Chatterbox runs in a throwaway environment of its own because PyTorch is too heavy for the project. Secrets live in one mode-600 file outside the repository.</p>
+      <p class="note">All four are registered with a process manager that restores them at boot and restarts them after a crash; Chrome is kept stopped between posts. Python runs in one <code>uv</code> environment; Chatterbox runs in a throwaway environment of its own because PyTorch is too heavy for the project. Secrets live in one mode-600 file outside the repository.</p>
 
       <h3 class="deploy-h">From the laptop to the web</h3>
       <ol class="chain" id="chain">
-        <li><b>web export</b><span>snapshot of runs, videos, lessons, library, build</span></li>
+        <li><b>web export</b><span>snapshot of runs, episodes, the coach, library, build</span></li>
         <li><b>open | lock</b><span>plain <code>studio.json</code>, or AES-GCM <code>studio.enc</code> (PBKDF2-SHA256, 600,000 rounds)</span></li>
         <li><b>git push</b><span>only <code>web/public</code> and <code>betadoc/public</code></span></li>
         <li><b>Vercel × 2</b><span>Studio + this betadoc, built on every push</span></li>
@@ -413,13 +416,14 @@
         <table>
           <thead><tr><th scope="col">Layer</th><th scope="col">Modules</th><th scope="col">Job</th></tr></thead>
           <tbody>
-            <tr><td>Schedule</td><td><code>bot</code> <code>daily</code> <code>telegram</code> <code>showdesk</code> <code>show</code> <code>hookpick</code></td><td>The tick, the state machine, the cards, the show maker, the hook card</td></tr>
+            <tr><td>Schedule</td><td><code>bot</code> <code>daily</code> <code>telegram</code></td><td>The tick, the state machine, the Telegram cards</td></tr>
             <tr><td>Intake</td><td><code>ideas</code> <code>brief</code> <code>assets</code> <code>capture</code></td><td>Sources, ranking, sourced briefs, licensed media, page snapshots</td></tr>
-            <tr><td>Board</td><td><code>board</code> <code>boardview</code> <code>direct</code> <code>precheck</code> <code>standards</code> <code>animatic</code> <code>artdirect</code> <code>review</code> <code>producer</code></td><td>The desks, their gates and the fix loops</td></tr>
+            <tr><td>Show</td><td><code>show</code> <code>showdesk</code> <code>hookpick</code></td><td>Research, rundown, visuals, voice, director, sound, render, QA and screening for the daily episode</td></tr>
+            <tr><td>Single Shorts</td><td><code>board</code> <code>boardview</code> <code>direct</code> <code>precheck</code> <code>standards</code> <code>animatic</code> <code>artdirect</code> <code>review</code> <code>producer</code></td><td>The older 17-desk maker for one-story Shorts, and the change orders</td></tr>
             <tr><td>Render</td><td><code>scene_plan</code> <code>build</code> <code>pipeline</code> <code>voice</code> <code>chatterbox_worker</code> <code>captions</code> <code>music</code> <code>sound</code> <code>cover</code> <code>media</code></td><td>Plan → project → frames → voice, captions, sound → master</td></tr>
             <tr><td>Checks</td><td><code>bar</code> <code>qa</code> <code>profiles</code></td><td>The one Quality Bar, the gates, the presets</td></tr>
             <tr><td>Out</td><td><code>publish</code> <code>pilot</code> <code>cards</code> <code>videos</code></td><td>Approval register, platform posts, carousels</td></tr>
-            <tr><td>Learning</td><td><code>stats48</code> <code>analyst</code> <code>lessons</code> <code>library</code> <code>cleanup</code> <code>vaultnote</code></td><td>Results, lessons, reuse, disk</td></tr>
+            <tr><td>Learning</td><td><code>coach</code> <code>stats48</code> <code>analyst</code> <code>library</code> <code>cleanup</code> <code>vaultnote</code></td><td>The coach's playbook, results, reuse, disk</td></tr>
             <tr><td>Glue</td><td><code>llm</code> <code>progress</code> <code>secrets</code> <code>webexport</code> <code>cli</code></td><td>Model calls, progress events, secrets, the web snapshot</td></tr>
           </tbody>
         </table>
