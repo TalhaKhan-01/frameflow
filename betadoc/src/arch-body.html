@@ -25,7 +25,7 @@
       <p class="lede">Frameflow runs on one laptop. A Telegram bot ticks every 30 seconds and moves each posting day through a small state machine. Long steps run as their own processes. Every day it makes one episode of <b>The Daily Habit</b>: eight stories in about 85 seconds, read by Habit. Every step is <b>a desk with a gate</b>, and the gates sit before the one expensive step, the render. The model calls go through Claude Code inside a subscription, so there is no API key and no API bill. This page follows the stories from the wire to the feed, and then back into the next episode through the coach, a learning loop that tests rules and keeps the ones that raise the scores.</p>
       <dl class="a-stats">
         <div><dt>Python modules</dt><dd>47</dd></div>
-        <div><dt>desks in a daily make</dt><dd>18</dd></div>
+        <div><dt>desks (1 skill · 4 half · 7 code)</dt><dd>12</dd></div>
         <div><dt>renders per episode</dt><dd>1</dd></div>
         <div><dt>ideas collected</dt><dd data-live="ideas">–</dd></div>
         <div><dt>rules the coach is testing</dt><dd data-live="rules">–</dd></div>
@@ -54,7 +54,7 @@
 
           <g class="mn hot" id="n-bot"><rect x="300" y="92" width="200" height="64" rx="10"/><text x="400" y="118">frameflow-bot</text><text x="400" y="138" class="s">long poll · tick 30 s</text></g>
           <g class="mn" id="n-daily"><rect x="560" y="92" width="200" height="64" rx="10"/><text x="660" y="118">daily state machine</text><text x="660" y="138" class="s">daily.py · showdesk.py</text></g>
-          <g class="mn hot" id="n-board"><rect x="300" y="190" width="460" height="86" rx="12"/><text x="530" y="222">The daily make: The Daily Habit</text><text x="530" y="244" class="s">18 desks · gates before the render · fixes only in text</text><text x="530" y="262" class="s">show.py · 6 craft skills · the coach</text></g>
+          <g class="mn hot" id="n-board"><rect x="300" y="190" width="460" height="86" rx="12"/><text x="530" y="222">The daily make: The Daily Habit</text><text x="530" y="244" class="s">12 desks · gates before the render · fixes only in text</text><text x="530" y="262" class="s">show.py · 6 craft skills · the coach</text></g>
           <g class="mn" id="n-render"><rect x="300" y="306" width="220" height="64" rx="10"/><text x="410" y="332">HyperFrames render</text><text x="410" y="352" class="s">deterministic · 1080×1920</text></g>
           <g class="mn" id="n-voice"><rect x="540" y="306" width="220" height="64" rx="10"/><text x="650" y="332">Voice + captions</text><text x="650" y="352" class="s">Chatterbox · Whisper</text></g>
           <g class="mn lamp" id="n-db"><rect x="300" y="392" width="220" height="50" rx="10"/><text x="410" y="414">SQLite + research/</text><text x="410" y="431" class="s">runs · ideas · coach</text></g>
@@ -192,33 +192,30 @@
       <div class="board-pin">
         <div class="board-head">
           <p class="eyebrow">04 · The desks of a daily make</p>
-          <h2 id="board-t">Eighteen desks, <em>one render</em>.</h2>
-          <p class="lede small">A make goes desk by desk, and each desk's gate must pass before the next one starts. Fixes are allowed only while a fix is still a text edit. After the render nothing loops: the episode goes to the owner with its honest numbers, and the coach takes its lessons.</p>
+          <h2 id="board-t">Twelve desks, <em>one render</em>.</h2>
+          <p class="lede small">On 29 October the old 17 desks were folded into <b>12 desks, each meant to be a reusable skill</b> that works outside Frameflow too; the owner's cards stay in Frameflow. The move is under way: today <b>1 desk is fully a skill, 4 are half and 7 still run as code</b> inside <code>show.py</code>. Each card says which. A make goes desk by desk, fixes happen only while they are text, and after the render nothing loops.</p>
           <div class="cost" aria-live="off"><span>cost of a fix here</span><div class="cost-bar"><i id="cost-fill"></i></div><b id="cost-label">a text edit</b></div>
         </div>
         <div class="belt-view">
           <ol class="belt" id="belt">
-            <li><small>01 · showdesk.py + shorts-producer</small><b>Topic desk</b><span>Ranks the day's wire and world trends by virality, drops anything aired in the last 14 days, marks real follow-ups as Update, and sends 15 candidates.</span></li>
-            <li class="lamp"><small>02 · Telegram</small><b>Owner's pick</b><span>The owner ticks 5–8 stories. With no tap by 15:00, the top 8 are taken.</span></li>
-            <li><small>03 · show.py · Sonnet + web</small><b>Researchers</b><span>One per story, four at a time: facts that each carry the URL behind them.</span></li>
-            <li><small>04 · shorts-factcheck</small><b>Fact-checker</b><span>Re-reads every page as text; a story without enough supported facts is dropped from the episode.</span></li>
-            <li class="loop"><small>05 · show.py · Opus</small><b>Writer</b><span>The open ("Breaking: …"), one 20–32 word segment per story with a witty line, a graphic, a face for Habit and up to one laugh, then the outro. It reads the coach's playbook first.</span><em>↺ lints in code: words, numbers vs facts, graphics</em></li>
-            <li class="loop"><small>06 · show.py · Opus</small><b>Table read</b><span>An independent editor scores hook, clarity, wit, flow, accuracy, variety and ending, 0–2 each.</span><em>↺ below 80% → up to 2 doctor rounds</em></li>
-            <li class="lamp"><small>07 · hookpick.py</small><b>Hook card</b><span>Ten ranked opens on Telegram: tap one, improve one in your own words, or write your own. After 20 minutes, hook 1. The BREAKING banner follows the open's story.</span></li>
-            <li><small>08 · visual-sourcing</small><b>Visuals</b><span>Logos, a photo of each subject or an everyday scene, and a fresh capture of the source's headline, all judged by a vision model and licensed: free (CC0, PD, CC BY) or editorial, never unknown.</span></li>
-            <li><small>09 · voice.py · Chatterbox</small><b>Narrator</b><span>Habit's voice on the GPU, every line pulled to its target pace, names respelled from a pronunciation list, Whisper word timing for the captions.</span></li>
-            <li><small>10 · show.py (code)</small><b>Director</b><span>A framing per topic (split, picture-in-picture), a cut wherever 2.5 s would pass with nothing new, graphics (stats, bars, versus, maps with routes), analogy gags and Habit's faces.</span></li>
-            <li><small>11 · show.py · sound.py</small><b>Sound</b><span>A stamp on BREAKING, the original theme, a bed that rises through the show, ducks under the voice and dips before the outro, and a fixed SFX vocabulary.</span></li>
-            <li class="hot"><small>12 · HyperFrames</small><b>Render, once</b><span>One deterministic composition at 1080×1920: two renders of the same plan give identical frames.</span></li>
-            <li><small>13 · show.py · qa.py</small><b>QC</b><span>Length, loudness, black and blank frames, a picture change every 2.5 s, captions against the voice, layout check.</span></li>
-            <li><small>14 · show.py · Opus × 2</small><b>Screening</b><span>A strict first viewer scores a contact sheet on look, readability, framing, captions, package, story and Habit. It runs twice and the bar uses the mean.</span></li>
-            <li><small>15 · coach.py</small><b>Coach</b><span>Credits or blames the rules this episode tested, promotes or retires them, writes new ones for the weakest rows, and files template faults as tickets.</span></li>
-            <li class="lamp"><small>16 · bot.py</small><b>Owner's card</b><span>The video card and the carousel on Telegram: Approve, Revise in your own words, or Reject. Nothing is published without the tap.</span></li>
-            <li><small>17 · publish.py + pilot.py</small><b>Publisher</b><span>Post text per platform; YouTube, Instagram and Facebook at 11:30, by API or by The Pilot's Chrome, started only for the upload.</span></li>
-            <li><small>18 · stats48.py + analyst.py</small><b>Analyst</b><span>48 h later: views and % watched per platform, tied to the decisions behind them; the coach takes it as its slow signal.</span></li>
+            <li><small>01 · shorts-producer</small><b>Showrunner</b><i class="st sk">skill</i><span>Ranks the day's wire and world trends, drops anything aired in the last 14 days, marks real follow-ups as Update and sends 15 candidates. On Revise, turns your own words into a change order.</span></li>
+            <li class="lamp"><small>— · Telegram</small><b>Owner's pick</b><i class="st ff">stays in Frameflow</i><span>You tick 5–8 stories; with no tap by 15:00 the top 8 are taken.</span></li>
+            <li><small>02 · show.py · Sonnet + web</small><b>Researcher</b><i class="st cd">still code</i><span>One per story, four at a time: facts that each carry the URL behind them. Planned as its own skill.</span></li>
+            <li><small>03 · shorts-factcheck + qa.py</small><b>Integrity gate</b><i class="st hf">half skill</i><span>Now: every fact re-read from its page (skill). After the render: QC gates, licences, fresh pages and the banner check (code). Plan: one video-integrity skill.</span></li>
+            <li class="loop"><small>04 · show.py · Opus</small><b>Script writer</b><i class="st cd">still code</i><span>The open, one segment per story with a witty line, a graphic and Habit's face, then the outro; reads the coach's playbook. The shorts-writer skill serves single Shorts only.</span><em>↺ lints in code, up to 2 doctor rounds</em></li>
+            <li class="loop"><small>05 · show.py · Opus</small><b>Critic</b><i class="st cd">still code</i><span>The table read before the voice, the screening (twice, averaged) after the render. The shorts-editor and shorts-screening skills exist for single Shorts; the merged video-critic skill is planned.</span><em>↺ below 80% → doctor (text only)</em></li>
+            <li><small>06 · social-caption + hookpick.py</small><b>Packaging</b><i class="st hf">half skill</i><span>Ten ranked opens for the hook card (code), then the post text, title and tags per platform (skill).</span></li>
+            <li><small>07 · visual-sourcing + show.js</small><b>Motion designer</b><i class="st hf">half skill</i><span>Real visuals: logos, photos, scene photos, fresh headline captures, licensed (skill). Graphics, maps and gags in the show template (code).</span></li>
+            <li><small>08 · voice.py · Chatterbox</small><b>Narrator</b><i class="st cd">still code</i><span>Habit's voice, a pace target per line, names respelled, Whisper word timing. Planned as the voice-narrate skill.</span></li>
+            <li><small>09 · show.py (code)</small><b>Director</b><i class="st cd">still code</i><span>A framing per topic, a cut wherever 2.5 s would pass with nothing new, which graphic and gag where, Habit's faces. Planned as the video-director skill.</span></li>
+            <li><small>10 · show.py · sound.py</small><b>Sound director</b><i class="st cd">still code</i><span>Stamp, theme, a bed that rises and ducks under the voice, a dip and a hit before the outro, the SFX cue sheet. Planned as its own skill.</span></li>
+            <li class="hot"><small>11 · HyperFrames · captions.py</small><b>Video editor</b><i class="st cd">still code</i><span>One deterministic render, captions, end card, cover, the 720p preview. Planned as the video-editor skill.</span></li>
+            <li><small>— · coach.py</small><b>Coach</b><i class="st nw">new · code</i><span>Scores the rules this episode tested, promotes or retires them, writes new ones, files template tickets. Added 5 Nov, after the 12-desk plan.</span></li>
+            <li class="lamp"><small>— · bot.py</small><b>Owner's card</b><i class="st ff">stays in Frameflow</i><span>The video card and carousel: Approve, Revise in your own words, or Reject. Nothing posts without the tap.</span></li>
+            <li><small>12 · social-upload + publish.py + stats48</small><b>Publisher + analyst</b><i class="st hf">half skill</i><span>Uploads by API or The Pilot (skill + code); 48 h later, results tied to the decisions behind them. Plan: one social-publisher skill.</span></li>
           </ol>
         </div>
-        <p class="note board-note">Why one render: in October the pipeline rendered, reviewed, rewrote and rendered again; the second render cost as much as the first and scored worse (14/22 → 13/22). The older single-story maker (<code>board.py</code>, 17 desks with an animatic) is still in the code for one-off Shorts; the daily make is the show.</p>
+        <p class="note board-note">Why one render: in October the pipeline rendered, reviewed, rewrote and rendered again; the second render cost as much as the first and scored worse (14/22 → 13/22). The order of the skill moves (P25): critic and integrity gate first, then script writer, director and sound director, narrator and video editor, motion designer, publisher. The older single-story maker (<code>board.py</code>, 17 desks) stays for one-off Shorts.</p>
       </div>
     </section>
 

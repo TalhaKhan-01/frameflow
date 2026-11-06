@@ -114,6 +114,11 @@ svg .s { fill: var(--muted); font: 11.5px var(--mono); }
 .belt li small { display: block; font: .7rem var(--mono); color: var(--muted); margin-bottom: 8px; }
 .belt li b { display: block; font: 650 1.35rem/1.1 var(--serif); margin-bottom: 8px; }
 .belt li span { color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.belt li .st { display: table; margin: 0 0 10px; padding: 3px 9px; border-radius: 999px; font: 600 .68rem var(--mono); letter-spacing: .04em; font-style: normal; }
+.belt li .st.sk { background: oklch(0.72 0.14 150 / .18); color: oklch(0.84 0.13 150); }
+.belt li .st.hf { background: oklch(0.82 0.13 85 / .16); color: var(--lamp); }
+.belt li .st.cd { background: oklch(1 0 0 / .07); color: var(--muted); }
+.belt li .st.ff, .belt li .st.nw { background: oklch(0.64 0.2 29 / .14); color: oklch(0.8 0.12 29); }
 .belt li em { display: block; margin-top: 10px; font: italic 500 .8rem var(--mono); color: var(--lamp); }
 .belt li.past { opacity: .8; transform: none; }
 .belt li.on { opacity: 1; transform: translateY(-6px); border-color: var(--paper); box-shadow: 0 20px 50px oklch(0 0 0 / .45); }
