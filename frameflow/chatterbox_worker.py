@@ -39,6 +39,7 @@ def main():
         model = ChatterboxTTS.from_pretrained(device=device)
         if job.get("ref"):
             model.prepare_conditionals(job["ref"], exaggeration=job["lines"][0].get("exaggeration", 0.5))
+    print(json.dumps({"device": device}), flush=True)   # the Making view shows cuda or cpu (cpu = hours, not minutes)
     done = []
     for line in job["lines"]:
         seed_all(int(line.get("seed", 7)))

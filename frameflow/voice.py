@@ -64,8 +64,64 @@ def expression(energy):
     return {"exaggeration": round(0.4 + 0.4 * e + (HOUSE["exaggeration"] - 0.64), 3), "cfg_weight": HOUSE["cfg_weight"]}
 
 
+LOCK = Path("~/.cache/frameflow/chatterbox.lock").expanduser()
+STALL = 240        # seconds without a finished line (after the model loaded) before the worker counts as hung
+LOAD_STALL = 420   # the first line also waits for the model to load
+
+
+def run_worker(job_file, n, timeout, label="voice"):
+    """One worker run, watched (9 Nov, Talha's go): its own process group, so a kill takes the real Python worker and
+    not just the uv wrapper (an orphan held the 4 GB GPU on 6 Nov); a stall watchdog (no finished line for STALL s, or
+    LOAD_STALL for the first) instead of waiting out the whole timeout; each finished line and the device go to the
+    Making view. Returns (returncode, output tail, why) with why in (None, "stall", "timeout")."""
+    import queue
+    import signal
+    import threading
+    from frameflow import progress
+    err = tempfile.TemporaryFile(mode="w+")
+    proc = subprocess.Popen(CHATTERBOX + [str(job_file)], stdout=subprocess.PIPE, stderr=err, text=True, start_new_session=True,
+                            env=dict(os.environ, HF_HOME=str(Path("~/.cache/frameflow/hf").expanduser()),
+                                     PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"))
+    q = queue.Queue()
+    threading.Thread(target=lambda: [q.put(l) for l in proc.stdout] + [q.put(None)], daemon=True).start()
+    t0 = last = time.time()
+    done, why, out = 0, None, []
+    while True:
+        try:
+            line = q.get(timeout=5)
+        except queue.Empty:
+            line = ""
+        if line is None:
+            break
+        if line:
+            out.append(line)
+            try:
+                msg = json.loads(line)
+            except ValueError:
+                msg = {}
+            if "device" in msg:
+                progress.note(f"{label}: model loaded on {msg['device']}", device=msg["device"])
+            if "done" in msg:
+                done, last = done + 1, time.time()
+                progress.note(f"{label}: line {done}/{n}", seconds=round(time.time() - t0, 1))
+        idle = time.time() - last
+        if idle > (LOAD_STALL if done == 0 else STALL) or time.time() - t0 > timeout:
+            why = "stall" if time.time() - t0 <= timeout else "timeout"
+            os.killpg(proc.pid, signal.SIGKILL)   # the whole tree: uv and the Python worker under it
+            break
+    proc.wait()
+    err.seek(0)
+    tail = (err.read()[-1200:] + "".join(out)[-400:])
+    if why:
+        progress.note(f"{label}: worker {why} after {done}/{n} lines, killed", seconds=round(time.time() - t0, 1))
+    return proc.returncode, tail, why
+
+
 def chatterbox_lines(lines, out, seed=7, model="standard", ref=None, timeout=1800, temperature=None, job_name="chatterbox-job.json"):
-    """Raw Chatterbox WAVs for lines [(text, energy, path)] in one worker run (the model loads once)."""
+    """Raw Chatterbox WAVs for lines [(text, energy, path)] in one worker run (the model loads once). One worker at a
+    time on this machine (a file lock: two makes started minutes apart on 6 Nov fought over the 4 GB GPU, and one
+    voiced zero lines in 30 minutes)."""
+    import fcntl
     if not lines:
         return []
     extra = {"temperature": temperature} if temperature is not None else {}
@@ -73,18 +129,28 @@ def chatterbox_lines(lines, out, seed=7, model="standard", ref=None, timeout=180
            "lines": [{"text": text, "out": str(path), "seed": seed + i, **expression(energy), **extra} for i, (text, energy, path) in enumerate(lines)]}
     job_file = Path(out) / job_name
     job_file.write_text(json.dumps(job, ensure_ascii=False, indent=1))
-    # out of GPU memory is usually another process holding the 4 GB card for a moment: wait and try again (29 Oct: Ep 3
-    # fell back to Kokoro, a different voice, on the first OOM)
-    for attempt in range(3):
-        r = subprocess.run(CHATTERBOX + [str(job_file)], capture_output=True, text=True, timeout=timeout,
-                           env=dict(os.environ, HF_HOME=str(Path("~/.cache/frameflow/hf").expanduser()),
-                                    PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"))
-        if not r.returncode and all(Path(p).exists() for _, _, p in lines):
-            return [p for _, _, p in lines]
-        if "out of memory" not in (r.stderr or r.stdout).lower() or attempt == 2:
-            break
-        time.sleep(30 * (attempt + 1))
-    raise RuntimeError(f"chatterbox worker failed: {(r.stderr or r.stdout)[-1200:]}")
+    LOCK.parent.mkdir(parents=True, exist_ok=True)
+    with LOCK.open("w") as lk:
+        try:
+            fcntl.flock(lk, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            from frameflow import progress
+            progress.note("voice: another make is using Chatterbox, waiting for it")
+            fcntl.flock(lk, fcntl.LOCK_EX)
+        # out of GPU memory is usually another process holding the 4 GB card for a moment: wait and try again (29 Oct:
+        # Ep 3 fell back to Kokoro, a different voice, on the first OOM). A stall is retried once.
+        stalls = 0
+        for attempt in range(3):
+            code, tail, why = run_worker(job_file, len(lines), timeout, "voice" if model == "standard" else f"voice ({model})")
+            if not code and not why and all(Path(p).exists() for _, _, p in lines):
+                return [p for _, _, p in lines]
+            if why == "stall" and stalls == 0 and attempt < 2:
+                stalls += 1
+                continue
+            if "out of memory" not in tail.lower() or attempt == 2:
+                break
+            time.sleep(30 * (attempt + 1))
+    raise RuntimeError(f"chatterbox worker failed ({why or 'exit ' + str(code)}): {tail[-1200:]}")
 
 
 ROOT = Path(__file__).resolve().parent.parent

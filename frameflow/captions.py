@@ -77,13 +77,33 @@ def norm(text):
         if "," not in raw and 1900 <= n <= 2099:   # years are said "twenty twenty-seven", not "two thousand ..."
             return f" {spell(n // 100)} {spell(n % 100) if n % 100 else 'hundred'} "
         return " " + spell(n) + " "
+    ORD = {"one": "first", "two": "second", "three": "third", "five": "fifth", "eight": "eighth", "nine": "ninth", "twelve": "twelfth"}
+    def ordinal(m):   # "18th" is said "eighteenth" (9 Nov: Whisper's "18th" came out "eighteen th")
+        ws = number(re.match(r"\d+", m.group(0))).split()
+        last = ws[-1]
+        ws[-1] = ORD.get(last) or (last[:-1] + "ieth" if last.endswith("y") else last + "th")
+        return " " + " ".join(ws) + " "
+    text = re.sub(r"\b\d+(?:st|nd|rd|th)\b", ordinal, text)
     text = re.sub(r"\d[\d,]*", number, text)
     return re.findall(r"[a-z]+", text)
 
 
-def wer(reference, hypothesis):
-    """Word error rate (edit distance over words) of hypothesis against reference."""
+def wer(reference, hypothesis, respelled=()):
+    """Word error rate (edit distance over words) of hypothesis against reference. `respelled`: words the voice is told
+    to say another way (the pronunciation lexicon: "Binance" voiced as "BYE-nans"). A stretch where every script word
+    is one of them costs nothing, because Whisper writes the respelling it heard ("byenance"): those words are checked
+    by ear, and counting them failed the gate on every episode (9 Nov: Ep 7, 0.125 of which ~0.06 were respellings)."""
     ref, hyp = norm(reference), norm(hypothesis)
+    names = {t for w in respelled for t in norm(w)}
+    if names:
+        import difflib
+        keep_r, keep_h = [], []
+        for op, a, b, c, d in difflib.SequenceMatcher(a=ref, b=hyp, autojunk=False).get_opcodes():
+            if op == "replace" and all(t in names for t in ref[a:b]):
+                continue   # a respelled name heard as its respelling
+            keep_r += ref[a:b]
+            keep_h += hyp[c:d]
+        ref, hyp = keep_r, keep_h
     vocab, joined, i = set(ref), [], 0   # "chat gpt" heard for "chatgpt": a split name is the same word
     while i < len(hyp):
         two = hyp[i] + hyp[i + 1] if i + 1 < len(hyp) else None
