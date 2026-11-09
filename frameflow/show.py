@@ -175,6 +175,7 @@ What the table read marks down most (Ep 1-7), so write it right the first time:
 - Flow: every handoff points at the next story's subject ("Next, money at home:", "From chips to your wallet:"),
   never a bare unrelated sentence.
 - Face: the open's emotion fits its stake (worried or serious for a price rise, a hack, a loss; never a grin on bad news).
+- Dates: never "today", "tomorrow" or "yesterday" (the episode airs on another day than it is written): say the date.
 - Hook: the open rounds its numbers ("over six billion dollars"); the exact figure belongs in the segment. No "point" in the open.
 - Flow: vary the handoffs. At most two may start with a stock word (Now, Next, Finally, Meanwhile, Lastly, Last up); the
   rest bridge by meaning ("From stolen crypto to a falling rupee:", "Speaking of quitting:").
@@ -354,13 +355,16 @@ def lint(script, data):
             if not any(q in norm(facts[i]["text"]) for i in g.get("facts", []) if i in facts) and not any(q in norm(f["text"]) for f in facts.values()):
                 errs.append(f"segment {g['story']}: quote text is not verbatim in a fact; use the fact's exact words in quotes, or another graphic")
     for g in script["segments"]:   # the face fits the news (screening: a grin on a heist, a smile on job cuts)
-        if g["emotion"] in ("excited", "smug", "laughing") and BAD_NEWS.search(g["say"]) and not g["witty"].strip():
+        if (g["emotion"] in ("excited", "smug") or (g["emotion"] == "laughing" and not g["witty"].strip())) and BAD_NEWS.search(g["say"]):
             errs.append(f"segment {g['story']}: emotion {g['emotion']} on bad news ({BAD_NEWS.search(g['say']).group(0)}): "
                         "use worried, serious, surprised or doubtful")
         gr = g["graphic"]
         for k in ("sub", "caption", "kicker", "label", "title"):   # long lines wrapped and shrank on a phone (9 Nov)
             if len(str(gr.get(k) or "")) > 34:
                 errs.append(f"segment {g['story']}: graphic {k} is {len(str(gr[k]))} characters (at most 34)")
+    for name, say, _, _ in lines:   # "tomorrow" is wrong the day it airs, and against the dated sting (9 Nov)
+        if re.search(r"\b(today|tomorrow|yesterday|tonight|this morning|last night)\b", re.sub(r"see you tomorrow", "", say, flags=re.I), re.I):   # the sign-off is fine
+            errs.append(f"{name}: no relative days (today/tomorrow/yesterday): say the date ('November tenth')")
     if re.search(r"\bpoint\b", script["open"]["say"], re.I):   # a decimal in the open is hard to say and to hear (table read, 9 Nov)
         errs.append("open: round its number (\"over six billion\"); the exact figure goes in the segment")
     stock = [g["story"] for g in script["segments"][:-1] if (h := handoff_text(g["say"])) and
@@ -632,7 +636,7 @@ def gag_for(g, seg, mine_words, media_by):
 
 # ---------- narrator ----------
 SOMBRE = ("worried", "serious", "surprised", "doubtful")
-BAD_NEWS = re.compile(r"\b(hack\w*|heist|stole\w*|stolen|scam\w*|fraud|layoffs?|laid off|job cuts?|cuts?|fired|exit packages?|"
+BAD_NEWS = re.compile(r"\b(hack\w*|heist|steal\w*|theft|thie\w+|stole\w*|stolen|scam\w*|fraud|layoffs?|laid off|job cuts?|cuts?|fired|exit packages?|"
                       r"loss(es)?|lost|crash\w*|plunge\w*|fell|falls?|slump\w*|slips?|slipped|breach\w*|died|death|killed|"
                       r"bankrupt\w*|fine[ds]?|penalt\w+|ban(ned|s)?|probe|lawsuit|sued|outage|recall\w*|warning)\b", re.I)
 ENERGY = {"neutral": 0.55, "excited": 0.75, "surprised": 0.7, "doubtful": 0.5, "smug": 0.6, "worried": 0.5, "laughing": 0.75, "serious": 0.45}
@@ -769,7 +773,7 @@ def chyron(say, most=46):
     t = re.split(r"[,;.!?]| and | but | while ", t)[0].strip()
     if len(t) > most:
         t = t[:most].rsplit(" ", 1)[0]
-    return (t[:1].upper() + t[1:]) if len(t) >= 12 else ""
+    return (t[:1].upper() + t[1:]) if len(t) >= 24 else ""   # shorter says too little ("Fake job interviews"): the headline instead
 
 
 NUMWORD = re.compile(r"^(\d|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|"
@@ -811,7 +815,7 @@ def outlet_name(source):
     if not source or "." not in source:
         return source or ""
     key = re.sub(r"^(www|m|amp)\.", "", source.lower()).split(".")[0]
-    return OUTLETS.get(key, key.capitalize())
+    return OUTLETS.get(key, " ".join(w.capitalize() for w in key.split("-")))   # gulf-times -> Gulf Times
 
 
 def credited(say, cited, page):
@@ -923,7 +927,9 @@ def direct(script, data, vd, ep, day, media_by=None):
     # third "BREAKING" beside the bar and the desk (Ep 6 screening: the brand three times in the open)
     c["openMedia"] = open_media((media_by or {}).get(lead["story"]) or {}, lead)
     open_face = lead["emotion"] if lead["emotion"] in SOMBRE else script["open"]["emotion"]   # no grin on a heist (9 Nov)
-    place("open", {"shot": "wide", "emotion": open_face, "wall": lead["wall"].upper(), "wallSub": lead["headline"].upper()[:30]})
+    if open_face in ("excited", "smug", "laughing", "neutral") and BAD_NEWS.search(script["open"]["say"]):
+        open_face = "serious"
+    place("open", {"shot": "wide", "emotion": open_face, "wall": lead["wall"].upper(), "wallSub": lead["headline"].upper()})
     c["breakingDur"] = D["open"]["seconds"]
     c["stingAt"] = round(t, 3)
     segs.append({"start": round(t, 3), "dur": STING, "shot": "wide", "wall": "EP " + str(ep), "emotion": "excited"})

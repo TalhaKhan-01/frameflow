@@ -306,12 +306,12 @@
         const num = H1(g, 540, 520, "", 300, { fill: S.red });
         countUp(tl, num, d.value, t0 + 0.1, 0.7, 900);   // 90 px side margins; 9 Nov: done by 0.8 s (stills caught a half-rolled number)
         const l1 = B(g, 540, 720, String(d.label || "").toUpperCase(), 46, { weight: 800, spacing: 1 }); fit(l1, 960, 46);
-        tl.fromTo(l1, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35 }, t0 + 0.8);
+        tl.fromTo(l1, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.3 }, t0 + 0.5);   // 9 Nov: all text settled by 1.15 s (stills caught grey half-faded lines)
         if (d.sub) {   // one or two lines at >= 40 px in ink (a long sub shrank to ~22 px in blue)
           const ws = String(d.sub).split(/\s+/), two = String(d.sub).length > 30, half = Math.ceil(ws.length / 2);
           (two ? [ws.slice(0, half).join(" "), ws.slice(half).join(" ")] : [d.sub]).forEach((line, i) => {
             const l2 = B(g, 540, (two ? 790 : 810) + i * 50, line, 42, { weight: 700 }); fit(l2, 900, 42);
-            tl.fromTo(l2, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35 }, t0 + 1.15 + i * 0.1);
+            tl.fromTo(l2, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.3 }, t0 + 0.7 + i * 0.1);
           });
         }
         const p = parseNum(d.value);
@@ -429,7 +429,7 @@
       const sh = m.shot, L = el("g", {}, g);
       const [hx, hy, hw, hh] = sh.head || [0, 0, sh.w, Math.min(sh.h, sh.w * 0.4)];
       const pad = Math.max(10, hh * 0.08);
-      const cx0 = Math.max(0, hx - pad), cy0 = Math.max(0, hy - pad);
+      const cx0 = Math.max(0, hx - pad), cy0 = Math.max(0, hy - 4);   // 4 px above: more cut letters of a logo over it (9 Nov)
       const cw = Math.min(sh.w, hx + hw + pad) - cx0, ch = Math.min(sh.h, hy + hh + pad) - cy0;
       const k = Math.min(900 / cw, 480 / ch), w = cw * k, h = ch * k;
       const x = 540 - w / 2, y = BY + (BH - h) / 2;   // no outlet heading: the chip names it (9 Nov: "the source appears twice")
@@ -673,7 +673,7 @@
     tickTag.textContent = "TODAY";
     const tickText = div(ticker, `position:absolute;left:0;top:0;height:64px;white-space:nowrap;color:${S.bg};font:700 30px/64px ${S.body};letter-spacing:2px`);
     tickText.textContent = ((cfg.ticker || []).join("   ◆   ") + "   ◆   ").repeat(3);
-    const breaking = div(pkg, `position:absolute;left:0;top:1290px;width:1080px;padding-right:200px;box-sizing:border-box;opacity:0;display:flex;align-items:stretch`);   // 9 Nov: y 1236 -> 1290 (it cut Habit at the chin); text ends by x 880 (buttons)
+    const breaking = div(pkg, `position:absolute;left:0;top:836px;width:1080px;padding-right:200px;box-sizing:border-box;opacity:0;display:flex;align-items:stretch`);   // 9 Nov: y 836, between the wall and the headphones (at 1236/1290 it cut Habit at the neck); text ends by x 880
     breaking.innerHTML = `<div style="background:${S.red};color:${S.textOnRed};font:900 44px/1 ${q(S.head)};padding:20px 22px 16px 48px;letter-spacing:3px;white-space:nowrap">BREAKING</div>
       <div style="flex:1;background:${S.ink};color:${S.bg};font:700 32px/1.15 ${q(S.body)};padding:14px 24px;display:flex;align-items:center">${esc(cfg.breakingText)}</div>`;
 
@@ -823,7 +823,7 @@
       else {
         const grp = words.filter((x) => x.g === words[w].g);
         cap.innerHTML = `<span style="display:inline-block;text-wrap:balance;max-width:100%;width:fit-content;box-sizing:border-box;background:${S.bg};padding:8px 20px;border-radius:${cfg.set === "riso" ? 0 : 14}px;box-shadow:0 0 0 3px ${S.text}">` +
-          grp.map((x) => `<span style="color:${x === words[w] ? S.red : x.st ? S.blue : S.text}${x.st ? ";font-weight:900" : ""}">${esc(String(x.w).replace(/[;:,]+$/, ""))}</span>`).join(" ")   // spoken word red, stressed words blue (P9.1.5) + "</span>";
+          grp.map((x) => `<span style="color:${x === words[w] ? S.red : x.st ? S.blue : S.text}${x.st ? ";font-weight:900" : ""}">${esc(String(x.w).replace(/[;:,]+$/, "").replace(/-/g, "\u2011"))}</span>`).join(" ")   // spoken word red, stressed words blue (P9.1.5) + "</span>";
         const c = capStyle(seen);
         Object.assign(cap.style, { left: c.left + "px", width: c.width + "px", top: c.top + "px", textAlign: c.align, display: "block", fontSize: (c.size || 62) + "px" });
         if (seen !== "pip") {   // one line: shrink to fit (9 Nov: "to three point five billion dollars" wrapped onto the headphones)

@@ -10,7 +10,7 @@ DATA = {"stories": [
 SEG = "The story here is short and simple, and it keeps going with plain words, because sixteen point three billion dollars is a lot of money, honestly."
 SCRIPT = {
     "title": "Ep", "breaking": "x",
-    "open": {"say": "Breaking: a giant AI lab opens its books, and a payments app suddenly prints money today.", "emotion": "excited"},
+    "open": {"say": "Breaking: a giant AI lab opens its books, and a payments app suddenly prints money at last.", "emotion": "excited"},
     "outro": {"say": "That's the show, from big books to tiny profits. See you tomorrow. Make learning a Habit.", "emotion": "smug"},
     "segments": [
         {"story": 1, "say": SEG, "witty": "honestly", "emotion": "surprised", "headline": "AI lab opens its books", "wall": "$16.3B",
@@ -194,7 +194,7 @@ def test_handoff_is_the_last_short_sentence():
 
 def test_breaking_bar_says_what_the_open_says():
     assert show.chyron("Breaking: your next iPhone could cost more, and Marvell buys Lumentum.") == "Your next iPhone could cost more"
-    assert show.chyron("Breaking: hi.") == ""
+    assert show.chyron("Breaking: hi.") == "" and show.chyron("Breaking: fake job interviews, and more.") == ""
 
 
 def test_caption_error_ignores_respelled_names_but_not_slips():
@@ -232,3 +232,10 @@ def test_open_rounds_and_handoffs_vary():
     assert "round its number" in " | ".join(errs(s))
     assert show.handoff_text("Big news today. Next, money at home.") == "Next, money at home."
     assert show.handoff_text("One long sentence only.") == ""
+
+
+def test_no_relative_days_and_outlet_names_read_well():
+    s = copy.deepcopy(SCRIPT)
+    s["outro"]["say"] = "That's the show; the pre-load opens tomorrow, so clear some space. Make learning a Habit."
+    assert "no relative days" in " | ".join(errs(s))
+    assert show.outlet_name("www.gulf-times.com") == "Gulf Times"
