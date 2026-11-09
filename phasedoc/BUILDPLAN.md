@@ -406,6 +406,7 @@
     _Note 2026-11-05:_ 5 Nov: coach practice on Ep 6 with R3 (accuracy): with vs without both table-read accuracy 1 -> a tie, R3 alpha/beta +0.5 each, trial logged (out/coach-practice-r3.log)
   - [ ] **P11.9** The review keeps rising: the coach lifts the stalled 17-18/28  
     _Acceptance:_ mean review total of the last 3 episodes made with the coach is at least 2 points above the pre-coach baseline (17.5/28)
+    _Note 2026-11-09:_ 9 Nov: the lift past 17-18/28 came from the template, writer lints and the screening input (not yet the coach): Ep 7 test 24.5/30. Coach effect still unmeasured.
 - **P12 Reuse: asset library, cleanup, Habit cards** (3/4)
   - [x] **P12.1** Asset library  
     _Acceptance:_ passing videos feed research/assets (knowledge cards, unused hooks, analogies, scene recipes) with origin and scores; the researcher, writer and director are offered matching items with variety windows and freshness flags; a profile switch turns it off; tests pass
@@ -538,6 +539,7 @@
       _Note 2026-10-27:_ 26 Oct night test ended on the usage limit in the last screening (37 min); board.make now resumes after the plan (645e1bb). Live proof moves to the 27 Oct 15:00 make
       _Note 2026-10-27:_ 28 Oct test make (started by hand, lean): every desk's gate recorded, one render, animatic 14 = final 14; 29.7 min; 405k tokens vs ~835k; still to do: one real Revise from loose words
       _Note 2026-10-27:_ deferred by Talha (27 Oct): after the visual redesign
+      _Note 2026-11-09:_ 9 Nov: voice step hardened (Talha's go): Chatterbox lock, whole-tree kill, stall watchdog, line progress; Ep 7 voice 255 s.
     - [x] **P15.6.6** Lean profile: model and effort per job, measured on a real make  
       _Acceptance:_ frameflow profile use lean sets Opus/high only for draft, storyboard and animatic screening, Sonnet/medium for hooks and fix rounds, Haiku for card text; the next board make's tokens per desk (llm-usage + skill usage logs) are written in vault Docs/Token Budget.md and come in under the 26 Oct diet make
       _Note 2026-10-27:_ built 04923b7 (skills: hooks_effort/doctor_effort keys; cards_model); lean active; measurement pending on the 28 Oct test make
@@ -789,6 +791,7 @@
       _Note 2026-10-27:_ 27 Oct 22:04: Ep 1 revised once (music bed, fewer jokes) and approved on Telegram; card post approved 22:08; both queued for 28 Oct 11:30
       _Note 2026-10-28:_ 28 Oct 10:32-10:39: Ep 1 + card post posted on YouTube, Instagram, Facebook (Talha's 10:32 test time, not 11:30); stays partial: approved below the bar (screening 7/14), so the acceptance is not met
       _Note 2026-11-03:_ 3 Nov: Ep 3 (30 Oct), Ep 4 (31 Oct) posted, Ep 5 queued 3 Nov 11:30, all made unattended, QA pass, review 17/28 each (bar 80%): approved below the bar, so still partial. 1-2 Nov no episode: Claude weekly limit at the 14:00 scout
+      _Note 2026-11-09:_ 9 Nov: quality bar pass (5 rounds, test renders only, nothing posted): Ep 7 end to end (new writer, fresh voice, current template) 24.5/30 = 82% (script 12/14, screening 12.5/16 with full-size stills). The screening alone is 78% (its own pass needs 12.8). Still partial: needs a real unattended make, Talha's approval and the post (automation paused).
 - **P25 Fewer, stronger desks as reusable skills; real visuals; 10-hook pick; topic memory** (3/15)
   - **P25.1 Quick wins: topic memory and the hook pick** (1/2)
     - [x] **P25.1.1** Showrunner topic memory: shorts-producer topics.py (record/filter), ledger research/assets/topics.jsonl, wired into the 14:00 card  
