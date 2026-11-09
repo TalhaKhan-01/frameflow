@@ -835,14 +835,18 @@ def still_times(c, settle=0.7):
     within `settle` s of a framing change or the media -> graphic handoff moves to the nearest settled moment in its
     topic: a still frozen mid-wipe showed half a PiP, a stray wall word and a caption on Habit's face, faults no viewer
     sees in motion (9 Nov)."""
-    times = [c["breakingAt"] + 1.0, c["stingAt"] + 0.7]
+    t_open = c["breakingAt"] + 1.0
+    while (t_open + 0.7) % 3.7 < 0.25:   # not on a blink
+        t_open += 0.1
+    times = [round(t_open, 2), c["stingAt"] + 0.7]
     for s in c["segments"]:
         if not s.get("topic"):
             continue
         a, b = s["start"], s["start"] + s["dur"]
         cuts = [a + off for off, _ in (s.get("shots") or [])[1:]] + ([a + s["nextAt"]] if s.get("nextAt") is not None else [])
         g0 = a + 0.15 + (s["media"]["dur"] if s.get("media") else 0)   # the graphic enters; its numbers settle by +1.2 s
-        ok = lambda x: a + 0.6 <= x <= b - 0.4 and all(abs(x - k) >= settle for k in cuts) and not (g0 - settle <= x < g0 + 1.3)
+        blink = lambda x: (x + 0.7) % 3.7 < 0.25   # show.js blinkAt: a still on a blink read as "sleepy" (9 Nov)
+        ok = lambda x: a + 0.6 <= x <= b - 0.4 and all(abs(x - k) >= settle for k in cuts) and not (g0 - settle <= x < g0 + 1.3) and not blink(x)
         for f in (0.3, 0.8):
             want = a + s["dur"] * f
             cand = [want + d / 10 for d in range(0, 40)] + [want - d / 10 for d in range(1, 40)]

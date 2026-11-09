@@ -432,7 +432,9 @@
       const cx0 = Math.max(0, hx - pad), cy0 = Math.max(0, hy - 4);   // 4 px above: more cut letters of a logo over it (9 Nov)
       const cw = Math.min(sh.w, hx + hw + pad) - cx0, ch = Math.min(sh.h, hy + hh + pad) - cy0;
       const k = Math.min(900 / cw, 480 / ch), w = cw * k, h = ch * k;
-      const x = 540 - w / 2, y = BY + (BH - h) / 2;   // no outlet heading: the chip names it (9 Nov: "the source appears twice")
+      const x = 540 - w / 2, y = BY + (BH - h) / 2 + 30;   // the outlet label over it, like the drawn card (one card style)
+      const out = txt(L, x - 20, y - 66, String(m.outlet || "").toUpperCase(), { size: 34, font: S.body, fill: S.red, weight: 800, anchor: "start", spacing: 3 });
+      fit(out, w + 40, 34);
       const card = el("g", {}, L);
       el("rect", { x: x - 20, y: y - 20, width: w + 40, height: h + 40, fill: "#ffffff", stroke: S.ink, "stroke-width": 5 }, card);
       const crop = el("svg", { x, y, width: w, height: h, viewBox: `${cx0} ${cy0} ${cw} ${ch}`, preserveAspectRatio: "xMidYMid meet", overflow: "hidden" }, card);
@@ -441,7 +443,7 @@
       gsap.set(hl, { svgOrigin: `${hx - 6} ${hy + hh / 2}` });
       gsap.set(card, { svgOrigin: `540 ${y + h / 2}` });
       tl.fromTo(L, { opacity: 0 }, { opacity: 1, duration: 0.25 }, t0);
-      tl.fromTo(card, { scale: 0.92, rotation: -2 }, { scale: 1, rotation: -0.8, duration: m.dur - 0.25, ease: "power1.out" }, t0);
+      tl.fromTo(card, { scale: 0.94 }, { scale: 1, duration: m.dur - 0.25, ease: "power1.out" }, t0);   // no tilt: the drawn card has none
       tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, t0 + 0.5);
       tl.to(L, { opacity: 0, y: -40, duration: 0.3, ease: "power2.in" }, t0 + m.dur - 0.25);
     }
@@ -826,10 +828,13 @@
           grp.map((x) => `<span style="color:${x === words[w] ? S.red : x.st ? S.blue : S.text}${x.st ? ";font-weight:900" : ""}">${esc(String(x.w).replace(/[;:,]+$/, "").replace(/-/g, "\u2011"))}</span>`).join(" ")   // spoken word red, stressed words blue (P9.1.5) + "</span>";
         const c = capStyle(seen);
         Object.assign(cap.style, { left: c.left + "px", width: c.width + "px", top: c.top + "px", textAlign: c.align, display: "block", fontSize: (c.size || 62) + "px" });
+        const pill = cap.firstElementChild;
         if (seen !== "pip") {   // one line: shrink to fit (9 Nov: "to three point five billion dollars" wrapped onto the headphones)
-          const pill = cap.firstElementChild; pill.style.whiteSpace = "nowrap";
+          pill.style.whiteSpace = "nowrap";
           pill.style.maxWidth = "none";   // measure the real line (max-width capped offsetWidth, so it never shrank)
           let fs = c.size || 62; while (pill.scrollWidth > c.width && fs > 38) { fs -= 2; cap.style.fontSize = fs + "px"; }
+        } else {   // beside the PiP: wrap, but no word may overflow the box ("trillion-parameter" ran into the buttons)
+          let fs = c.size || 52; while (pill.scrollWidth > pill.clientWidth + 1 && fs > 34) { fs -= 2; cap.style.fontSize = fs + "px"; }
         }
       }
     };
