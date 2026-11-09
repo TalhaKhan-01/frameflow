@@ -224,3 +224,11 @@ def test_thin_or_narrow_clippings_become_drawn_cards():
     assert not show.clipping_ok({"w": 1080, "h": 600, "head": [32, 260, 1016, 138]})      # two desktop lines: 139 px, a thin strip
     assert not show.clipping_ok({"w": 1080, "h": 600, "head": [66, 260, 300, 60]})        # one word ("nanochat")
     assert not show.clipping_ok({"w": 2006, "h": 936, "head": [124, 520, 1760, 70]})      # a hairline one-liner
+
+
+def test_open_rounds_and_handoffs_vary():
+    s = copy.deepcopy(SCRIPT)
+    s["open"]["say"] = "Breaking: hackers stole six point three four billion dollars, and a payments app prints money."
+    assert "round its number" in " | ".join(errs(s))
+    assert show.handoff_text("Big news today. Next, money at home.") == "Next, money at home."
+    assert show.handoff_text("One long sentence only.") == ""

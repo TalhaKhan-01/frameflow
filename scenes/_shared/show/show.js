@@ -137,7 +137,7 @@
     return { set(main, small, showPic) {
       const on = !!(m && showPic);
       pic.setAttribute("opacity", on ? 1 : 0); label.setAttribute("opacity", on ? 0 : 1); sub.setAttribute("opacity", on ? 0 : 1);
-      if (label.textContent !== main) { label.textContent = main; fit(label, 720, 150); } sub.textContent = small || ""; } };
+      if (label.textContent !== main) { label.textContent = main; fit(label, 720, 150); } if (sub.textContent !== (small || "")) { sub.textContent = small || ""; fit(sub, 700, 40); } } };   // 9 Nov: a long sub ran off the wall
   }
 
   function drawDesk(svg, S, cfg) {
@@ -235,6 +235,7 @@
       mouthO.setAttribute("opacity", m > 0.08 ? 1 : 0); tongue.setAttribute("opacity", h > 0.5 ? 1 : 0); tongue.setAttribute("cy", y + 4 + 26 * h);
       smile.setAttribute("opacity", m > 0.08 ? 0 : 1);
       head.setAttribute("transform", `rotate(${p.lookX * 4 + p.tilt} 180 330) translate(0 ${p.bob * 0.6})`);
+      misreg.setAttribute("transform", `translate(3 2) rotate(${p.lookX * 4 + p.tilt} 180 330) translate(0 ${p.bob * 0.6})`);   // the second ink turns with the head (9 Nov: an off-centre outline in the PiP)
       box.style.marginTop = `${p.bob * 0.4}px`;   // margin, not a transform (render determinism, 3 Nov)
     } };
   }
@@ -501,13 +502,14 @@
       if (m.card) {   // no capture: the story's real headline as a press clipping, highlighter over it, before any photo (9 Nov)
         const L = el("g", {}, inner);
         el("rect", { x: BX, y: BY, width: BW, height: BH, fill: "#fbf8f1" }, L);
-        const out = txt(L, BX + 60, BY + 90, String(m.card.outlet || "").toUpperCase(), { size: 34, font: S.body, fill: S.red, weight: 800, anchor: "start", spacing: 3 });
-        fit(out, BW - 120, 34);
-        el("rect", { x: BX + 60, y: BY + 120, width: BW - 120, height: 4, fill: S.ink }, L);
         const words = String(m.card.title || "").split(/\s+/); const lines = []; let cur = "";
         words.forEach((w) => { if ((cur + " " + w).trim().length > 26 && cur) { lines.push(cur); cur = w; } else cur = (cur + " " + w).trim(); });
         if (cur) lines.push(cur);
-        const shown = lines.slice(0, 5), lh = 74, y0 = BY + 210;
+        const shown = lines.slice(0, 5), lh = 74, y0 = BY + Math.max(210, (BH - shown.length * lh) / 2 + 60);   // centred (9 Nov: a short headline left the card half empty)
+        const out = txt(L, BX + 60, y0 - 120, String(m.card.outlet || "").toUpperCase(), { size: 34, font: S.body, fill: S.red, weight: 800, anchor: "start", spacing: 3 });
+        fit(out, BW - 120, 34);
+        el("rect", { x: BX + 60, y: y0 - 90, width: BW - 120, height: 4, fill: S.ink }, L);
+
         const hl = el("rect", { x: BX + 52, y: y0 - 50, width: BW - 104, height: lh * Math.min(2, shown.length) + 14, fill: "#ffe14d", opacity: 0.5, style: "mix-blend-mode:multiply" }, L);
         gsap.set(hl, { svgOrigin: `${BX + 52} ${y0}` });
         shown.forEach((l, i) => { const t = txt(L, BX + 60, y0 + i * lh, l, { size: 60, font: S.head, fill: S.ink, weight: 800, anchor: "start" }); fit(t, BW - 120, 60); });
@@ -762,7 +764,8 @@
       groups.forEach((g, i) => { if (g) g.style.display = i === si || (i === si - 1 && t - seg.start < 0.15 && cfg.segments[i].topic !== seg.topic) ? "" : "none"; });
       wall.set(seg.wall || "TODAY", seg.wallSub || "THE DAILY HABIT", si === 0);
       const lookY = shot === "split" ? 0.8 : 0, lookX = shot === "pip" ? 0.7 : Math.sin(t * 0.7) * 0.15;
-      const talking = mouthAt(t);
+      const speaking = words.some((x) => t >= x.s && t < x.e);
+      const talking = Math.max(mouthAt(t), speaking ? 0.2 : 0);   // a quiet word still moves the mouth (9 Nov: a flat line read as frozen)
       rig.pose({ mouth: talking, blink: blinkAt(t), lookX, lookY, bob: Math.sin(t * 2.1) * 6 + talking * 4, brow: talking > 0.6 ? 0.6 : 0.1,
         tilt: Math.sin(t * 0.9) * 2 + (seg.emotion === "doubtful" ? 4 : seg.emotion === "laughing" ? Math.sin(t * 9) * 2 : 0), emo: emoAt(t, si) });
       sweeps.forEach((s, i) => { const p = ((t * 0.18 + i / 3) % 1); s.setAttribute("x", -300 + p * 1700); s.setAttribute("opacity", 0.9); });
@@ -813,7 +816,7 @@
         const k = words.findLastIndex((x) => x.e <= t);
         if (k >= 0 && t - words[k].e < 0.9 && !(words[k + 1] && words[k + 1].s <= t)) w = k;
       }
-      const markOn = f.s < 1.05 && (w < 0 || atEnd || inSting);   // wide shot only (cut off in close-ups), and never under a
+      const markOn = f.s < 1.05 && (w < 0 || atEnd || inSting || bk > 0.5);   // wide shot only (cut off in close-ups), and never under a
       // caption (9 Nov: the open's caption sat on the desk wordmark)
       marks.forEach((mk) => { mk.style.opacity = markOn ? 1 : 0; });
       if (w < 0 || atEnd || inSting || bk > 0.5) cap.textContent = "";   // the BREAKING bar already shows the open's words (9 Nov)

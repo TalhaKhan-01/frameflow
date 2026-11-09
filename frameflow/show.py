@@ -175,6 +175,9 @@ What the table read marks down most (Ep 1-7), so write it right the first time:
 - Flow: every handoff points at the next story's subject ("Next, money at home:", "From chips to your wallet:"),
   never a bare unrelated sentence.
 - Face: the open's emotion fits its stake (worried or serious for a price rise, a hack, a loss; never a grin on bad news).
+- Hook: the open rounds its numbers ("over six billion dollars"); the exact figure belongs in the segment. No "point" in the open.
+- Flow: vary the handoffs. At most two may start with a stock word (Now, Next, Finally, Meanwhile, Lastly, Last up); the
+  rest bridge by meaning ("From stolen crypto to a falling rupee:", "Speaking of quitting:").
 - Hook: the open is two complete clauses, each with its own verb and a stake; no dangling "and a deal valued at...".
 - Ending: the outro's callback restates its story's fact exactly as the facts give it, no new detail.
 - Graphics: labels in one chart use one format ("Q4 FY2025, Q3 FY2026", not "Q4 2025" beside "Q3 FY2026").
@@ -358,6 +361,12 @@ def lint(script, data):
         for k in ("sub", "caption", "kicker", "label", "title"):   # long lines wrapped and shrank on a phone (9 Nov)
             if len(str(gr.get(k) or "")) > 34:
                 errs.append(f"segment {g['story']}: graphic {k} is {len(str(gr[k]))} characters (at most 34)")
+    if re.search(r"\bpoint\b", script["open"]["say"], re.I):   # a decimal in the open is hard to say and to hear (table read, 9 Nov)
+        errs.append("open: round its number (\"over six billion\"); the exact figure goes in the segment")
+    stock = [g["story"] for g in script["segments"][:-1] if (h := handoff_text(g["say"])) and
+             re.match(r"(now|next|finally|meanwhile|lastly|last up|up next)\b", h, re.I)]
+    if len(stock) > 2:   # "Now, ... Next, ... Next, ..." read as a list (table read flow row, every episode)
+        errs.append(f"handoffs of segments {stock} start with a stock word (Now/Next/Finally/Meanwhile): at most two; bridge the rest by meaning")
     if script["open"]["emotion"] in ("excited", "smug", "laughing") and BAD_NEWS.search(script["open"]["say"]):
         errs.append(f"open: emotion {script['open']['emotion']} on bad news: use worried, serious or surprised")
     errs += lint_analogies(script)
@@ -837,6 +846,12 @@ def still_times(c, settle=0.7):
     return times + [c["endAt"] + 1.0]
 
 
+def handoff_text(say, most=8):
+    """The handoff sentence of a segment line (its last short sentence), or ''."""
+    parts = [x for x in re.split(r"(?<=[.?!])\s+", TAG.sub(" ", say).strip()) if x]
+    return parts[-1] if len(parts) >= 2 and words(parts[-1]) <= most else ""
+
+
 def handoff_at(seg_words, start, say, most=8):
     """Seconds into a topic where its handoff starts: the last sentence of the script line (after the last . ? !), when
     it is short (at most `most` words) and not the whole line, found among the heard words from the end. While it is
@@ -917,8 +932,9 @@ def direct(script, data, vd, ep, day, media_by=None):
         pat = PATTERNS[(k - 1) % len(PATTERNS)]
         s = stories[g["story"]]
         lo = cfg()["segment_seconds"][0]
+        face = "serious" if g["emotion"] == "neutral" and BAD_NEWS.search(g["say"]) else g["emotion"]   # neutral smiles: not on layoffs
         seg = {"topic": k, "lane": s["lane"], "headline": g["headline"], "source": s.get("source_name", ""), "shot": pat[0][1],
-               "emotion": g["emotion"], "wall": g["wall"].upper(), "wallSub": s["lane"].upper(), "g": map_geo(g["graphic"])}
+               "emotion": face, "wall": g["wall"].upper(), "wallSub": s["lane"].upper(), "g": map_geo(g["graphic"])}
         place(f"t{k}", seg, lo)
         mine_w = [w for w in words if w["g"].startswith(f"{len(segs) - 1}-")]
         nxt = handoff_at(mine_w, seg["start"], g["say"])
@@ -953,7 +969,9 @@ def direct(script, data, vd, ep, day, media_by=None):
         fill_beats(seg, c)
     c["tickerAt"] = round(t + 0.2, 3)
     place("outro", {"shot": "wide", "emotion": script["outro"]["emotion"], "wall": "SEE YOU", "wallSub": "TOMORROW"})
-    segs[-1]["shots"] = [[0, "wide"], [round(D["outro"]["seconds"] * 0.45, 2), "close"]]   # a push-in: the outro held one
+    od = D["outro"]["seconds"]
+    segs[-1]["shots"] = [[0, "wide"], [round(od * 0.45, 2), "close"]] if od <= 5 else \
+        [[0, "wide"], [round(od * 0.33, 2), "close"], [round(od * 0.66, 2), "wide"]]   # a push-in (and out on a long outro): the outro held one
     # picture for 5.6 s (Ep 7 test, events gate)
     c["endAt"] = round(segs[-1]["start"] + D["outro"]["seconds"] - 0.2, 3)
     t = c["endAt"] + END_HOLD
