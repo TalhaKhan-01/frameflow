@@ -26,7 +26,7 @@ from pathlib import Path
 
 import numpy as np
 
-from frameflow import brief, build, captions, daily, llm, media, music, progress, qa, showdesk, sound, voice
+from frameflow import brief, build, captions, daily, llm, media, music, progress, showdesk, sound, voice
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out" / "show"
@@ -1287,26 +1287,47 @@ def event_gaps(c, limit=2.5):
     return [(round(a, 2), round(b - a, 2)) for a, b in zip(ev, ev[1:]) if b - a > limit]
 
 
-def check_render(final, c, script, vd, out):
-    bar = json.loads((ROOT / "research" / "quality-bar.json").read_text())
-    secs = media.duration(final)
-    lufs, peak = qa.loudness_and_peak(final)
-    black = qa.black_stretches(final, bar["picture"]["black_seconds"])
-    blank = qa.blank_spans(final)
-    lo, hi = cfg()["length"]
+INTEGRITY = Path.home() / "Talha_Khan" / "Claude" / "skills" / "video-integrity" / "scripts" / "integrity.py"
+
+
+def check_render(final, c, script, vd, out, data=None, assets=None):
+    """QA through the integrity gate (video-integrity skill, P25.6.1): length, loudness, black, blank, captions, the
+    picture-change gaps, and with `data` the numbers said and shown against the verified facts, with `assets` every
+    asset's licence tier (tier C fails). The layout gate (hyperframes check) is added by the caller."""
+    import tempfile
     heard = " ".join(w["w"] for w in json.loads((vd / "words.json").read_text()))
     lex = json.loads(LEX.read_text()) if LEX.exists() else {}
-    werr = captions.wer(" ".join(TAG.sub(" ", l["say"]) for l in lines_of(script)), heard, respelled=list(lex))   # a laugh tag is heard, not said
-    L = bar["sound"]["lufs"]
-    gates = {"length": {"pass": lo - 8 <= secs <= hi + 5, "detail": f"{secs:.1f} s (target {lo}-{hi})"},
-             "loudness": {"pass": lufs is not None and L[0] - 0.5 <= lufs <= L[1] + 0.5 and (peak is None or peak <= bar["sound"]["true_peak"] + 0.5),
-                          "detail": f"{lufs} LUFS, peak {peak} dBFS"},
-             "black": {"pass": not black, "detail": f"{len(black)} black stretches"},
-             "blank": {"pass": not blank, "detail": f"{len(blank)} blank stretches"},
-             "captions": {"pass": werr <= bar["captions"]["max_word_error"], "detail": f"word error {werr:.2f}"},
-             "events": (lambda gaps: {"pass": not gaps, "detail": f"{len(gaps)} stretch(es) over 2.5 s without a picture change"
-                                      + (f": {', '.join(f'{d} s at {a} s' for a, d in gaps[:4])}" if gaps else "")})(event_gaps(c))}
-    return {"pass": all(g["pass"] for g in gates.values()), "gates": gates, "seconds": secs}
+    first = min((s["start"] for s in c["segments"] if s.get("topic")), default=0.0)
+    inp = {"video": str(final), "length": cfg()["length"],
+           "script": " ".join(TAG.sub(" ", l["say"]) for l in lines_of(script)), "heard": heard, "respelled": list(lex),   # a laugh tag is heard, not said
+           "events": visual_events(c), "events_from": first, "events_to": c["endAt"]}
+    if data:
+        inp.update({"facts": [f["text"] for s in data["stories"] for f in s["facts"]], "said": inp["script"],
+                    "shown": " ".join(re.sub(r'"type": "\w+"', "", json.dumps(g.get("graphic") or {}, ensure_ascii=False)) for g in script["segments"])})
+    if assets is not None:
+        inp["ledgers"] = [assets]
+    with tempfile.TemporaryDirectory() as d:
+        f = Path(d) / "in.json"
+        f.write_text(json.dumps(inp, ensure_ascii=False))
+        r = subprocess.run(["python3", "-I", str(INTEGRITY), "--project", str(ROOT), "check", str(f), "--out", str(Path(d) / "qa.json")],
+                           capture_output=True, text=True, timeout=900)
+        if not (Path(d) / "qa.json").exists():
+            raise RuntimeError(f"video-integrity: {(r.stderr or r.stdout)[-400:]}")
+        return json.loads((Path(d) / "qa.json").read_text())
+
+
+def asset_ledger(sheet, vis_ledger):
+    """Every asset in the episode with its source and licence: sound effects, the theme, the music bed, the visuals."""
+    led = sound.ledger()
+    assets = [{"file": f"sfx2/{n}.wav", **{k: led.get(f"sfx2/{n}.wav", {}).get(k) for k in ("source", "licence", "url", "author")}}
+              for n in sorted({x["name"] for x in sheet})]
+    assets += [{"file": "theme", "source": "frameflow.show.theme (synthesised)", "licence": "original work by Talha Khan"}]
+    track = cfg().get("music", {}).get("track", "")
+    if track and not track.startswith("synth:"):
+        assets.append(led.get(f"music-cc/{sound.TRACKS[track][0]}", {"file": track}))
+    assets += [{"file": f"visuals/{r['file']}", "source": r["source"], "licence": r["licence"], "tier": r["tier"],
+                "url": r.get("page"), "author": r["author"]} for r in vis_ledger if not r.get("missing")]
+    return assets
 
 
 # ---------- the whole episode ----------
@@ -1379,7 +1400,8 @@ def produce(day, ep, slug, data, script, out):
         final = build.render(pd, out / "final.mp4", quality="looks")
         info["seconds"] = c["dur"]
     with progress.step("QA + screening", desk="qc") as info:
-        q = check_render(final, c, script, vd, out)
+        assets = asset_ledger(sheet, vis_ledger)
+        q = check_render(final, c, script, vd, out, data, assets)
         q["gates"]["layout"] = {"pass": not check_errors, "detail": "; ".join(e[:140] for e in check_errors[:3]) or "hyperframes check: 0 errors"}
         q["pass"] = all(g["pass"] for g in q["gates"].values())
         times = still_times(c)
@@ -1402,15 +1424,6 @@ def produce(day, ep, slug, data, script, out):
     media.ffmpeg("-ss", f"{cover_at:.2f}", "-i", str(final), "-frames:v", "1", str(out / "cover.png"))
     (out / "report.json").write_text(json.dumps({"seconds": q["seconds"], "final": str(final), "cover": str(out / "cover.png"),
                                                  "cover_at": cover_at, "episode": ep, "stories": len(script["segments"])}, indent=1))
-    led = sound.ledger()
-    assets = [{"file": f"sfx2/{n}.wav", **{k: led.get(f"sfx2/{n}.wav", {}).get(k) for k in ("source", "licence", "url", "author")}}
-              for n in sorted({x["name"] for x in sheet})]
-    assets += [{"file": "theme", "source": "frameflow.show.theme (synthesised)", "licence": "original work by Talha Khan"}]
-    track = cfg().get("music", {}).get("track", "")
-    if track and not track.startswith("synth:"):
-        assets.append(led.get(f"music-cc/{sound.TRACKS[track][0]}", {"file": track}))
-    assets += [{"file": f"visuals/{r['file']}", "source": r["source"], "licence": r["licence"], "tier": r["tier"],
-                "url": r.get("page"), "author": r["author"]} for r in vis_ledger if not r.get("missing")]
     (out / "assets.json").write_text(json.dumps(assets, indent=1))
     facts = [dict(f, story=s["story"]) for s in data["stories"] for f in s["facts"]]
     stories = {s["story"]: s for s in data["stories"]}

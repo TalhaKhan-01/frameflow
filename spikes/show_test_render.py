@@ -33,7 +33,7 @@ def main():
     arg = lambda f, d: sys.argv[sys.argv.index(f) + 1] if f in sys.argv else d
     ep = int(arg("--ep", src.rsplit("ep", 1)[-1] if src[-1].isdigit() else 0))
     day = arg("--day", src[:10])
-    media_by, _ = show.visuals(script, data, out)
+    media_by, vis_ledger = show.visuals(script, data, out)
     vd = show.narrate(script, out)
     c, voice_at = show.direct(script, data, vd, ep, day, media_by)
     for flag in ("--set", "--look"):   # render the same episode in another set or Habit look (P24.4.1, P24.4.3)
@@ -44,7 +44,7 @@ def main():
     code, log = build.check(pd)
     errs = [l for l in log.splitlines() if "✗ error" in l]
     final = build.render(pd, out / "final.mp4", quality="looks")
-    q = show.check_render(final, c, script, vd, out)
+    q = show.check_render(final, c, script, vd, out, data, show.asset_ledger(sheet, vis_ledger))
     if "--twice" in sys.argv:   # P24.4.4: the package is deterministic (same frames on a second render)
         import hashlib, subprocess
         from frameflow import media

@@ -45,80 +45,14 @@ def align(voice_dir):
     return words
 
 
-ONES = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split()
-TENS = "_ _ twenty thirty forty fifty sixty seventy eighty ninety".split()
+# The numbers-as-spoken normaliser and the word error rate live in the video-integrity skill (P25.6.1, 9 Nov):
+# one copy, shared with the integrity gate.
+import importlib.util as _ilu
 
-
-def spell(n):
-    """Integer to English words (international scale), for comparing '20,000' with 'twenty thousand'."""
-    if n < 20:
-        return ONES[n]
-    if n < 100:
-        return TENS[n // 10] + ("" if n % 10 == 0 else " " + ONES[n % 10])
-    if n < 1000:
-        return ONES[n // 100] + " hundred" + ("" if n % 100 == 0 else " " + spell(n % 100))
-    for size, name in ((10**9, "billion"), (10**6, "million"), (1000, "thousand")):
-        if n >= size:
-            return spell(n // size) + " " + name + ("" if n % size == 0 else " " + spell(n % size))
-
-
-def norm(text):
-    """Lowercase word tokens; numbers spelled out, ₹ read as rupees, spelled letters (G.S.T.) joined."""
-    text = text.lower()
-    # "$115 billion" is said "one hundred fifteen billion dollars": the currency moves after the scale word
-    text = re.sub(r"\$\s?([\d.,]+)(\s*(?:trillion|billion|million|thousand|crore|lakh))?", lambda m: f" {m.group(1)}{m.group(2) or ''} dollars ", text)
-    text = text.replace("₹", " rupees ").replace("%", " percent ")
-    # decimals are said digit by digit after "point": 154.3 -> one hundred fifty four point three (6 Nov: Ep 6 lost "point")
-    text = re.sub(r"(\d)\.(\d+)", lambda m: m.group(1) + " point " + " ".join(m.group(2)), text)
-    text = re.sub(r"\b(?:[a-z]\.){2,}", lambda m: m.group(0).replace(".", ""), text)
-    def number(m):
-        raw = m.group(0)
-        n = int(raw.replace(",", ""))
-        if "," not in raw and 1900 <= n <= 2099:   # years are said "twenty twenty-seven", not "two thousand ..."
-            return f" {spell(n // 100)} {spell(n % 100) if n % 100 else 'hundred'} "
-        return " " + spell(n) + " "
-    ORD = {"one": "first", "two": "second", "three": "third", "five": "fifth", "eight": "eighth", "nine": "ninth", "twelve": "twelfth"}
-    def ordinal(m):   # "18th" is said "eighteenth" (9 Nov: Whisper's "18th" came out "eighteen th")
-        ws = number(re.match(r"\d+", m.group(0))).split()
-        last = ws[-1]
-        ws[-1] = ORD.get(last) or (last[:-1] + "ieth" if last.endswith("y") else last + "th")
-        return " " + " ".join(ws) + " "
-    text = re.sub(r"\b\d+(?:st|nd|rd|th)\b", ordinal, text)
-    text = re.sub(r"\d[\d,]*", number, text)
-    return re.findall(r"[a-z]+", text)
-
-
-def wer(reference, hypothesis, respelled=()):
-    """Word error rate (edit distance over words) of hypothesis against reference. `respelled`: words the voice is told
-    to say another way (the pronunciation lexicon: "Binance" voiced as "BYE-nans"). A stretch where every script word
-    is one of them costs nothing, because Whisper writes the respelling it heard ("byenance"): those words are checked
-    by ear, and counting them failed the gate on every episode (9 Nov: Ep 7, 0.125 of which ~0.06 were respellings)."""
-    ref, hyp = norm(reference), norm(hypothesis)
-    names = {t for w in respelled for t in norm(w)}
-    if names:
-        import difflib
-        keep_r, keep_h = [], []
-        for op, a, b, c, d in difflib.SequenceMatcher(a=ref, b=hyp, autojunk=False).get_opcodes():
-            if op == "replace" and all(t in names for t in ref[a:b]):
-                continue   # a respelled name heard as its respelling
-            keep_r += ref[a:b]
-            keep_h += hyp[c:d]
-        ref, hyp = keep_r, keep_h
-    vocab, joined, i = set(ref), [], 0   # "chat gpt" heard for "chatgpt": a split name is the same word
-    while i < len(hyp):
-        two = hyp[i] + hyp[i + 1] if i + 1 < len(hyp) else None
-        if two and two in vocab and hyp[i] not in vocab:
-            joined.append(two); i += 2
-        else:
-            joined.append(hyp[i]); i += 1
-    hyp = joined
-    prev = list(range(len(hyp) + 1))
-    for i, r in enumerate(ref, 1):
-        cur = [i]
-        for j, h in enumerate(hyp, 1):
-            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (r != h)))
-        prev = cur
-    return prev[-1] / max(len(ref), 1)
+_spec = _ilu.spec_from_file_location("integrity", Path.home() / "Talha_Khan" / "Claude" / "skills" / "video-integrity" / "scripts" / "integrity.py")
+_integrity = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_integrity)
+ONES, TENS, spell, norm, wer = _integrity.ONES, _integrity.TENS, _integrity.spell, _integrity.norm, _integrity.wer
 
 
 def chunks(words):
