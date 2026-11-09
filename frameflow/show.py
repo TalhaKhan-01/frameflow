@@ -161,6 +161,22 @@ Hard rules:
   map {title, countries: 1-4 ISO alpha-3 codes ("IND", "USA", "CHN", "TWN"), route: true when something moves from the
   first country to the last (a shipment, a flight, a deal, a launch), caption} for a story about places; no city-states.
   Every number in a graphic must be in the verified facts. Labels short (max 28 characters).
+What the table read marks down most (Ep 1-7), so write it right the first time:
+- Accuracy: every sentence in say comes from a listed fact. The only words of your own are the handoff and at most one
+  witty line; no extra context, no "again", no "ordinary", no cause or effect the facts don't give (Ep 7: "Imports cost
+  more" was in no fact).
+- Accuracy: never join two facts with a cause or link word ("as", "because", "so", "after", "thanks to", "amid",
+  "driven by") unless a fact states that cause. Two facts side by side stay two sentences.
+- Accuracy: keep the source's hedge. A fact that is reported, estimated, planned, expected or claimed by someone stays
+  that way in say ("reportedly", "says", "plans to", "could"). A number that is "about" or "up to" keeps that word.
+- Accuracy: a fact more than a week older than the episode's date says when ("in July"), never "now" or "today".
+- Clarity: the first time a person appears, say who they are in two or three words ("AI researcher Andrej Karpathy").
+  A technical term gets a plain gloss or a plainer word ("a sun-blocking camera", not "a coronagraph" alone).
+- Flow: every handoff points at the next story's subject ("Next, money at home:", "From chips to your wallet:"),
+  never a bare unrelated sentence.
+- Hook: the open is two complete clauses, each with its own verb and a stake; no dangling "and a deal valued at...".
+- Ending: the outro's callback restates its story's fact exactly as the facts give it, no new detail.
+- Graphics: labels in one chart use one format ("Q4 FY2025, Q3 FY2026", not "Q4 2025" beside "Q3 FY2026").
 Laugh (optional, at most one per episode): if a witty line truly earns it, put [chuckle] (a small laugh) or
 [laugh] right after it inside that segment's say, with emotion laughing; never in the open or the outro, and never
 on a serious story. The tag is voiced as a real laugh and is not a word: it doesn't count toward the 22-28 words.
@@ -323,6 +339,16 @@ def lint(script, data):
                 errs.append(f"segment {g['story']}: map needs 1-4 country codes from the map (unknown: {bad})")
         if gr["type"] == "bars" and not 2 <= len(gr.get("items") or []) <= 4:
             errs.append(f"segment {g['story']}: bars need 2-4 items")
+        if gr["type"] == "bars" and len(gr.get("items") or []) >= 2:   # bars from zero can't show a small difference
+            vals = [num(it.get("value")) for it in gr["items"] if isinstance(it, dict)]
+            vals = [v for v in vals if v]
+            if len(vals) >= 2 and (max(vals) - min(vals)) / max(vals) < 0.15:
+                errs.append(f"segment {g['story']}: bars {vals} are within 15% of each other and would draw near-equal: "
+                            "use a stat or versus graphic instead")
+        if gr["type"] == "quote" and gr.get("text"):   # a quote is the source's own words, never our summary
+            q = norm(gr["text"])
+            if not any(q in norm(facts[i]["text"]) for i in g.get("facts", []) if i in facts) and not any(q in norm(f["text"]) for f in facts.values()):
+                errs.append(f"segment {g['story']}: quote text is not verbatim in a fact; use the fact's exact words in quotes, or another graphic")
     errs += lint_analogies(script)
     said = " ".join(t for _, t, _, _ in lines)
     shown = " ".join(json.dumps(g["graphic"], ensure_ascii=False) for g in script["segments"]) + " " + \
@@ -344,6 +370,18 @@ def lint(script, data):
     if len(set(emos)) < 4:
         errs.append(f"emotions too samey: {emos} (use at least 4 different ones)")
     return errs
+
+
+def num(v):
+    m = re.search(r"-?\d[\d,]*\.?\d*", str(v or ""))
+    try:
+        return abs(float(m.group().replace(",", ""))) if m else None
+    except ValueError:
+        return None
+
+
+def norm(t):
+    return re.sub(r"\s+", " ", re.sub(r"[“”\"'‘’.,;:!?]", "", str(t).lower())).strip()
 
 
 def lint_analogies(script):
@@ -410,9 +448,14 @@ def write(data, out, ep, date, rules=None):
         progress.note(f"script round {rnd}: {len(errs)} lint problems" + (f", table read {tr['total']}/{tr['max']}" if tr else ""))
         if (tr and tr["pass"]) or (tr and reads > c["doctor_rounds"]) or rnd == 2 * c["doctor_rounds"] + 1:
             break
-        notes = "\n".join(f"- {e}" for e in errs) or "\n".join(f"- {f['row']}: {f['fix']}" for f in tr["fixes"])
+        notes = "\n".join(f"- {e}" for e in errs) or "\n".join(f"- {f['row']}: {f['fix']}" for f in tr["fixes"] if tr["rows"].get(f["row"], 0) < 2)
+        keep = ""   # rows the table read already scored 2: their lines stay word for word (Ep 7: each round fixed two rows
+        if tr:      # and broke one, ending 1 -> 2 -> 1)
+            good = [r for r, v in tr["rows"].items() if v >= 2]
+            keep = (f"\nAlready ready to air (scored 2), keep these as they are and don't trade them away: {', '.join(good)}. "
+                    "Change only the segments the notes name.") if good else ""
         script = llm.call(f"{ask}\n\nYour draft:\n{json.dumps(script, ensure_ascii=False)}\n\nFix these problems (keep what works, "
-                          f"change only what the notes need, every rule still applies; count the words of every segment: 22-28):\n{notes}",
+                          f"change only what the notes need, every rule still applies; count the words of every segment: 22-28):\n{notes}{keep}",
                           writer_system(), WRITER_SCHEMA, model=c["doctor_model"], purpose=f"show.doctor{rnd + 1}", effort="medium", timeout=1500)
     (out / "script-rounds.json").write_text(json.dumps(history, ensure_ascii=False, indent=1))
     if best is None:
@@ -678,6 +721,67 @@ def phrase_chunks(ws, most=4, chars=24):
     return merged
 
 
+def open_media(m, lead):
+    """The open's wall picture: the hook story's photo, else its headline clipping (crop around the headline), with the
+    story's wall word on a band; None when the story has neither (the wall then shows the word alone)."""
+    sh = m.get("shot")   # the headline first: it is always the story; a photo is a pick that can miss (9 Nov: an
+    # iPhone-price open showed a 1980s memory board)
+    if sh and sh.get("w") and sh.get("head"):
+        hx, hy, hw, hh = sh["head"]
+        x0, y0 = max(0, hx - 24), max(0, hy - 24)
+        return {"kind": "shot", "src": sh["src"], "w": sh["w"], "h": sh["h"], "label": lead["wall"],
+                "crop": [x0, y0, min(sh["w"], hx + hw + 24) - x0, min(sh["h"], hy + hh + 24) - y0]}
+    if m.get("photo") and m["photo"].get("w"):
+        ph = m["photo"]
+        return {"kind": "photo", "src": ph["src"], "w": ph["w"], "h": ph["h"], "crop": None, "label": lead["wall"]}
+    return None
+
+
+def credited(say, source):
+    """The chip names the outlet the line credits ("per Entrackr") when the page on screen is another one (Ep 6: "per
+    Entrackr" over an OPEN page read as a mismatch): "Entrackr via OPEN"."""
+    m = re.search(r"\b(?:per|according to)\s+((?:[A-Z][\w&.-]*(?:'s)?\s?){1,3})", say)
+    if not m:
+        return source
+    name = re.sub(r"'s$", "", m.group(1).strip()).strip()
+    if not name or name.lower()[:5] in (source or "").lower():
+        return source
+    return f"{name} via {source}"[:34] if source else name
+
+
+def still_times(c, settle=0.7):
+    """The screening's stills: the open, the sting, two per topic (30% and 80% in), the end card. A still that falls
+    within `settle` s of a framing change or the media -> graphic handoff moves to the nearest settled moment in its
+    topic: a still frozen mid-wipe showed half a PiP, a stray wall word and a caption on Habit's face, faults no viewer
+    sees in motion (9 Nov)."""
+    times = [c["breakingAt"] + 1.0, c["stingAt"] + 0.7]
+    for s in c["segments"]:
+        if not s.get("topic"):
+            continue
+        a, b = s["start"], s["start"] + s["dur"]
+        cuts = [a + off for off, _ in (s.get("shots") or [])[1:]] + ([a + s["media"]["dur"]] if s.get("media") else [])
+        ok = lambda x: a + 0.6 <= x <= b - 0.4 and all(abs(x - k) >= settle for k in cuts)
+        for f in (0.3, 0.8):
+            want = a + s["dur"] * f
+            cand = [want + d / 10 for d in range(0, 40)] + [want - d / 10 for d in range(1, 40)]
+            times.append(round(min((x for x in cand if ok(x)), key=lambda x: abs(x - want), default=want), 2))
+    return times + [c["endAt"] + 1.0]
+
+
+def laugh_at(g, seg_words, start):
+    """A laughing segment laughs from its witty line on (seconds into the segment), excited before it; None when the
+    segment isn't laughing or the witty line can't be found in the heard words (then the whole segment laughs, as before)."""
+    if g.get("emotion") != "laughing" or not g.get("witty", "").strip():
+        return None
+    key = lambda x: re.sub(r"[^\w']", "", x.lower())
+    want = [key(x) for x in g["witty"].split()[:2] if key(x)]
+    heard = [key(w["w"]) for w in seg_words]
+    for i in range(len(heard)):
+        if heard[i:i + len(want)] == want:
+            return round(seg_words[i]["s"] - start, 2)
+    return None
+
+
 def direct(script, data, vd, ep, day, media_by=None):
     D = {l["id"]: l for l in json.loads((vd / "durations.json").read_text())["lines"]}
     heard = json.loads((vd / "words.json").read_text())
@@ -713,7 +817,11 @@ def direct(script, data, vd, ep, day, media_by=None):
         t += dur
 
     c["breakingAt"] = round(t + 0.05, 3)
-    place("open", {"shot": "wide", "emotion": script["open"]["emotion"], "wall": "BREAKING", "wallSub": "THE DAILY HABIT"})
+    from frameflow import hookpick
+    lead = hookpick.story_of(script["open"]["say"], script) or script["segments"][0]   # the wall shows the open's story, not a
+    # third "BREAKING" beside the bar and the desk (Ep 6 screening: the brand three times in the open)
+    c["openMedia"] = open_media((media_by or {}).get(lead["story"]) or {}, lead)
+    place("open", {"shot": "wide", "emotion": script["open"]["emotion"], "wall": lead["wall"].upper(), "wallSub": "TODAY"})
     c["breakingDur"] = D["open"]["seconds"]
     c["stingAt"] = round(t, 3)
     segs.append({"start": round(t, 3), "dur": STING, "shot": "wide", "wall": "EP " + str(ep), "emotion": "excited"})
@@ -725,6 +833,9 @@ def direct(script, data, vd, ep, day, media_by=None):
         seg = {"topic": k, "lane": s["lane"], "headline": g["headline"], "source": s.get("source_name", ""), "shot": pat[0][1],
                "emotion": g["emotion"], "wall": g["wall"].upper(), "wallSub": s["lane"].upper(), "g": map_geo(g["graphic"])}
         place(f"t{k}", seg, lo)
+        at = laugh_at(g, [w for w in words if w["g"].startswith(f"{len(segs) - 1}-")], seg["start"])
+        if at is not None:
+            seg["laughAt"] = at
         seg["shots"] = [[round(seg["dur"] * f, 2), shot] for f, shot in pat]
         m = dict((media_by or {}).get(g["story"]) or {})
         if media_by is not None and not (m.get("photo") or m.get("shot")):   # nothing captured: a drawn headline card, never an empty slot
@@ -735,6 +846,7 @@ def direct(script, data, vd, ep, day, media_by=None):
                 key = re.sub(r"[^a-z0-9]", "", seg["source"].lower())[:6]
                 if not key or key not in re.sub(r"[^a-z0-9]", "", m["shot"]["page"].lower()):
                     seg["source"] = daily.source_of(m["shot"]["page"])
+        seg["source"] = credited(g["say"], seg["source"])
         gag = gag_for(g, seg, [w for w in words if w["s"] >= seg["start"] - 0.01 and w["s"] < seg["start"] + seg["dur"]], media_by)
         if gag:
             seg["gag"] = gag
@@ -936,13 +1048,21 @@ def project(c, audio, out):
     return pd
 
 
+JUDGE_SIZE = "540:960"   # what the screening judge sees per still: half size, so 34 px text is 17 px (readable)
+
+
 def stills(video, times, out, name):
+    """The contact sheet for people (360x640 thumbnails, 6 across) and, in <name>/judge/, one 540x960 image per still
+    for the screening: the sheet reached the model at about 190x340 px a still (1/6 of phone size), so the judge could
+    not read captions or screenshots and marked every visual row 1 (found 9 Nov)."""
     d = out / name
     d.mkdir(exist_ok=True)
+    (d / "judge").mkdir(exist_ok=True)
     files = []
     for i, t in enumerate(times):
         f = d / f"{i:02d}.png"
-        media.ffmpeg("-ss", f"{t:.2f}", "-i", str(video), "-frames:v", "1", "-vf", "scale=360:640", str(f))
+        media.ffmpeg("-ss", f"{t:.2f}", "-i", str(video), "-frames:v", "1", "-vf", f"scale={JUDGE_SIZE}", str(d / "judge" / f.name))
+        media.ffmpeg("-i", str(d / "judge" / f.name), "-vf", "scale=360:640", str(f))
         files.append(f)
     sheet = out / f"{name}.png"
     cols = 6
@@ -956,17 +1076,33 @@ def stills(video, times, out, name):
     return sheet
 
 
-def screening(sheet, times, script):
+def heard_at(c, t, before=1.6, after=0.4):
+    """The words Habit says around a still (from the direction's word timings), or what plays instead: the judge
+    otherwise guessed which line was on, and blamed the title sting for 'not showing' the first story (9 Nov)."""
+    if c.get("stingAt") is not None and c["stingAt"] <= t < c["stingAt"] + STING:
+        return "(title sting: no voice)"
+    if c.get("endAt") is not None and t >= c["endAt"]:
+        return "(end card: no voice)"
+    ws = [w["w"] for w in c.get("words", []) if t - before <= w["s"] <= t + after]
+    return " ".join(ws) if ws else "(pause)"
+
+
+def screening(sheet, times, script, c=None):
     """The critic desk's stills mode (video-critic skill): the contact sheet scored row by row, run twice and averaged
     (the judge varies by 1-2 points between runs; Talha 5 Nov, P24.6.4), with the row "do we see what we hear"."""
-    return critic("screen", {"sheet": str(sheet), "times": [round(x, 2) for x in times],
-                             "script": "\n".join(f"- {l['id']}: {l['say']}" for l in lines_of(script)), "purpose": "show.screening"})
+    judge = sorted((Path(sheet).parent / Path(sheet).stem / "judge").glob("*.png"))
+    pics = {"stills": [str(f) for f in judge]} if len(judge) == len(times) else {"sheet": str(sheet)}
+    text = "\n".join(f"- {l['id']}: {l['say']}" for l in lines_of(script))
+    if c:
+        text += "\n\nHeard at each still (the words around that moment):\n" + "\n".join(f"- {t:.1f} s: {heard_at(c, t)}" for t in times)
+    return critic("screen", {**pics, "times": [round(x, 2) for x in times], "script": text, "purpose": "show.screening"})
 
 
 def fill_beats(seg, c, limit=2.4):
     """Something happens every 2.5 s (P9.2.1): a hold longer than `limit` inside a topic (usually the graphic with Habit
     in the corner, Ep 6: eleven 3.5-4.5 s stretches) gets a framing change at its middle, pip <-> split."""
-    for _ in range(4):
+    dedupe = lambda sh: [s for k, s in enumerate(sh) if k == 0 or s[1] != sh[k - 1][1]]   # a repeat framing is no cut
+    for _ in range(8):
         one = {"breakingAt": -9, "stingAt": -9, "endAt": seg["start"] + seg["dur"], "segments": [seg]}
         ev = sorted({x for x in visual_events(one) if seg["start"] - 0.01 <= x < seg["start"] + seg["dur"]} | {round(seg["start"] + seg["dur"], 2)})
         gaps = [(a, b) for a, b in zip(ev, ev[1:]) if b - a > limit]
@@ -975,8 +1111,14 @@ def fill_beats(seg, c, limit=2.4):
         a, b = max(gaps, key=lambda g: g[1] - g[0])
         off = round((a + b) / 2 - seg["start"], 2)
         cur = ([sh for o, sh in sorted(seg["shots"]) if o <= off] or [seg["shot"]])[-1]
-        sh = sorted(seg["shots"] + [[off, "split" if cur == "pip" else "pip"]], key=lambda s: s[0])
-        seg["shots"] = [s for k, s in enumerate(sh) if k == 0 or s[1] != sh[k - 1][1]]   # a repeat framing is no cut
+        other = "split" if cur == "pip" else "pip"
+        one_cut = dedupe(sorted(seg["shots"] + [[off, other]], key=lambda s: s[0]))
+        if len(one_cut) > len(seg["shots"]):
+            seg["shots"] = one_cut
+        else:   # the next change was the same move and got merged away, which only shifted the gap (9 Nov: 2.62 s at
+            # 14.08 s): there and back at the thirds instead
+            t1, t2 = round(a + (b - a) / 3 - seg["start"], 2), round(a + 2 * (b - a) / 3 - seg["start"], 2)
+            seg["shots"] = dedupe(sorted(seg["shots"] + [[t1, other], [t2, cur]], key=lambda s: s[0]))
     return seg
 
 
@@ -1106,9 +1248,9 @@ def produce(day, ep, slug, data, script, out):
         q = check_render(final, c, script, vd, out)
         q["gates"]["layout"] = {"pass": not check_errors, "detail": "; ".join(e[:140] for e in check_errors[:3]) or "hyperframes check: 0 errors"}
         q["pass"] = all(g["pass"] for g in q["gates"].values())
-        times = [c["breakingAt"] + 1.0, c["stingAt"] + 0.7] + [s["start"] + s["dur"] * f for s in c["segments"] if s.get("topic") for f in (0.3, 0.8)] + [c["endAt"] + 1.0]
+        times = still_times(c)
         sheet_png = stills(final, times, out, "contact")
-        scr = screening(sheet_png, times, script)
+        scr = screening(sheet_png, times, script, c)
         info.update({"qa": q["pass"], "screening": f"{scr['total']}/{scr['max']}"})
     tr = script["table_read"]
     review = {"total": scr["total"] + tr["total"], "max": scr["max"] + tr["max"], "pass": scr["pass"] and tr["pass"],

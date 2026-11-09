@@ -91,8 +91,7 @@
       sheets.forEach(([x, y, w, h, r], i) => {
         const sg = el("g", { transform: `rotate(${r} ${x + w / 2} ${y + h / 2})` }, g);
         el("rect", { x, y, width: w, height: h, fill: "#fbf8f1" }, sg);
-        if (i < 2) txt(el("g", { class: "mark" }, sg), x + w / 2, y + 44, ["THE DAILY", "HABIT"][i], {   // the two edge sheets stay unlabelled: they sit half off-frame ("ES", "T")   // a wall label: wide shot only, or a close-up cuts it to "ILY" / "H" (Ep 6 screening)
-           size: 34, font: S.head, fill: S.ink, weight: 800 });
+        // no labels on the sheets (9 Nov): "THE DAILY" / "HABIT" made the brand show four times in the open
         for (let l = 0; l < 9; l++) el("rect", { x: x + 22, y: y + 90 + l * 30, width: w - 44 - (l % 3) * 30, height: 9, fill: "#cfc4b0" }, sg);
       });
       el("rect", { x: 150, y: 330, width: 780, height: 520, rx: 18, fill: S.ink }, g);
@@ -122,7 +121,23 @@
     const g = el("g", {}, svg);
     const label = txt(g, 540, 600, "", { size: 150, font: S.head, fill: S.wallInk, weight: 800 });
     const sub = txt(g, 540, 760, "", { size: 40, font: S.body, fill: S.wallInk, weight: 600, spacing: 4 });
-    return { set(main, small) { if (label.textContent !== main) { label.textContent = main; fit(label, 720, 150); } sub.textContent = small || ""; } };
+    // the open's picture (9 Nov): the hook story's photo or its headline clipping fills the screen, its word on a band
+    // (Ep 6 screening: "a generic BREAKING board, nothing about the iPhone"; the brand showed four times)
+    const [sx, sy, sw, sh] = cfg.set === "paper" ? [170, 350, 740, 480] : [140, 350, 800, 500];
+    const pic = el("g", { opacity: 0 }, g), m = cfg.openMedia;
+    if (m) {
+      el("rect", { x: sx, y: sy, width: sw, height: sh, fill: "#ffffff" }, pic);
+      const box = el("svg", { x: sx, y: sy, width: sw, height: sh - 96, viewBox: (m.crop || [0, 0, m.w, m.h]).join(" "),
+                              preserveAspectRatio: m.kind === "photo" ? "xMidYMid slice" : "xMidYMid meet", overflow: "hidden" }, pic);
+      el("image", { href: m.src, x: 0, y: 0, width: m.w, height: m.h }, box);
+      el("rect", { x: sx, y: sy + sh - 96, width: sw, height: 96, fill: S.red }, pic);
+      const bl = txt(pic, sx + sw / 2, sy + sh - 46, String(m.label || "").toUpperCase(), { size: 60, font: S.head, fill: S.textOnRed, weight: 900, spacing: 2 });
+      fit(bl, sw - 60, 60);
+    }
+    return { set(main, small, showPic) {
+      const on = !!(m && showPic);
+      pic.setAttribute("opacity", on ? 1 : 0); label.setAttribute("opacity", on ? 0 : 1); sub.setAttribute("opacity", on ? 0 : 1);
+      if (label.textContent !== main) { label.textContent = main; fit(label, 720, 150); } sub.textContent = small || ""; } };
   }
 
   function drawDesk(svg, S, cfg) {
@@ -232,7 +247,8 @@
     excited:   { tilt: -6,  up: 0.7,  smile: 0.9,  eye: 1.2, open: 0.25 },
     surprised: { tilt: 4,   up: 1.1,  smile: 0,    eye: 1.4, open: 0.4 },
     doubtful:  { tilt: 0,   up: 0,    smile: -0.2, eye: 0.85, upL: 0.9, upR: -0.3, eyeR: 0.7 },
-    smug:      { tilt: -4,  up: -0.1, smile: 0.7,  eye: 0.6, upL: 0.4 },
+    smug:      { tilt: -4,  up: 0.05, smile: 0.7,  eye: 0.8, upL: 0.5 },   // eye 0.6 read as half-asleep / bored (Ep 6 screening)
+    alert:     { tilt: -3,  up: 0.55, smile: 0.4,  eye: 1.15 },   // the lead-in of every topic: "next story" (a flat lead-in read as bored)
     worried:   { tilt: 14,  up: 0.35, smile: -0.6, eye: 1.05 },
     laughing:  { tilt: -4,  up: 0.6,  smile: 1,    eye: 0.3, open: 0.35 },
     serious:   { tilt: -10, up: -0.25, smile: 0,   eye: 0.9 },
@@ -427,31 +443,32 @@
         credit(L, ph.credit);
         layers.push({ L, run: (a, b) => tl.fromTo(im, { scale: 1.0 }, { scale: 1.12, duration: b - a, ease: "none" }, a) });
       }
-      if (sh) {   // screenshot: fit the width, then zoom to the headline and sweep a highlighter over it
+      if (sh) {   // screenshot as a press clipping (9 Nov): only the category line, the headline and the byline, cropped
+        // from the page and scaled to fill the box's width, on a slight tilt over the desk paper. The old zoom left the
+        // headline in a band over blank paper ("half-empty white panel" in every screening) and body text too small to read.
         const L = el("g", {}, inner);
-        el("rect", { x: BX, y: BY, width: BW, height: BH, fill: "#ffffff" }, L);
-        const f = Math.min(BW / sh.w, BH / sh.h), w = sh.w * f, h = sh.h * f, x = BX + (BW - w) / 2, y = BY + (BH - h) / 2;
-        const zoom = el("g", {}, L);
-        el("image", { href: sh.src, x, y, width: w, height: h, preserveAspectRatio: "xMidYMid meet" }, zoom);
-        let hl = null, cx = BX + BW / 2, cy = BY + BH / 2, k = 1.0;
+        el("rect", { x: BX, y: BY, width: BW, height: BH, fill: S.panel }, L);
+        let cx0 = 0, cy0 = 0, cw = sh.w, ch = Math.min(sh.h, sh.w * 0.62);
         if (sh.head) {
-          const [hx, hy, hw, hh] = sh.head.map((v) => v * f);
-          cx = x + hx + hw / 2; cy = y + hy + hh / 2;
-          k = clamp(Math.min(((BW - 40) / Math.max(hw, 1)) * 0.9, 300 / Math.max(hh, 1)), 1, 3.2);   // the headline fills the box (3 Nov: up to 300 px tall; was 130, so body text stayed tiny on screen)
-          hl = el("rect", { x: x + hx - 8, y: y + hy - 4, width: hw + 16, height: hh + 8, fill: "#ffe14d", opacity: 0.5,
-                            style: "mix-blend-mode:multiply" }, zoom);   // over the headline, multiplied so the text stays black
-          gsap.set(hl, { svgOrigin: `${x + hx - 8} ${cy}` });
+          const [hx, hy, hw, hh] = sh.head, ln = Math.min(hh, 150);   // context: a line above (category), a line and a half below (byline, date)
+          cx0 = Math.max(0, hx - 28); cw = Math.min(sh.w, hx + hw + 28) - cx0;
+          cy0 = Math.max(0, hy - ln * 0.75); ch = Math.min(sh.h, hy + hh + ln * 1.1) - cy0;
         }
-        gsap.set(zoom, { svgOrigin: `${cx} ${cy}` });
-        let veil = null;
-        if (sh.head) {   // after the zoom, paper covers everything under the headline: unreadable body text never shows
-          const hb = BY + BH * 0.42 + (sh.head[3] * f * k) / 2 + 28;
-          if (hb < BY + BH - 40) veil = el("rect", { x: BX, y: hb, width: BW, height: BY + BH - hb, fill: "#fbf8f1" }, L);
+        const k = Math.min((BW - 90) / cw, (BH - 90) / ch), w = cw * k, h = ch * k, x = BX + (BW - w) / 2, y = BY + (BH - h) / 2;
+        const clipG = el("g", {}, L);
+        el("rect", { x: x - 18, y: y - 18, width: w + 36, height: h + 36, fill: "#ffffff", stroke: S.ink, "stroke-width": 5 }, clipG);
+        const crop = el("svg", { x, y, width: w, height: h, viewBox: `${cx0} ${cy0} ${cw} ${ch}`, preserveAspectRatio: "xMidYMid meet", overflow: "hidden" }, clipG);
+        el("image", { href: sh.src, x: 0, y: 0, width: sh.w, height: sh.h }, crop);
+        let hl = null;
+        if (sh.head) {
+          const [hx, hy, hw, hh] = sh.head;
+          hl = el("rect", { x: hx - 8, y: hy - 4, width: hw + 16, height: hh + 8, fill: "#ffe14d", opacity: 0.5, style: "mix-blend-mode:multiply" }, crop);   // multiplied: the text stays black
+          gsap.set(hl, { svgOrigin: `${hx - 8} ${hy + hh / 2}` });
         }
+        gsap.set(clipG, { svgOrigin: `${BX + BW / 2} ${BY + BH / 2}` });
         layers.push({ L, run: (a, b) => {   // no credit bar: the source chip names the outlet (screening: a duplicate source)
-          tl.fromTo(zoom, { scale: 1, x: 0, y: 0 }, { scale: k, x: BX + BW / 2 - cx, y: BY + BH * 0.42 - cy, duration: Math.min(1.2, (b - a) * 0.6), ease: "power2.inOut" }, a + 0.1);
+          tl.fromTo(clipG, { scale: 0.94, rotation: -2.5 }, { scale: 1, rotation: -1.2, duration: b - a, ease: "power1.out" }, a);
           if (hl) tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, a + 0.5);
-          if (veil) tl.fromTo(veil, { opacity: 0 }, { opacity: 1, duration: 0.35 }, a + 0.1 + Math.min(1.2, (b - a) * 0.6) - 0.2);
         } });
       }
       if (m.card) {   // no capture and no photo: the story's real headline as a press clipping, highlighter over it
@@ -521,11 +538,11 @@
         const c = txt(bar, 540, BY + BH - 95, String(a.caption || "").toUpperCase(), { size: 56, font: S.head, fill: S.textOnRed, weight: 900 }); fit(c, BW - 100, 56);
         tl.fromTo(bar, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, t0 + 0.4);
       } else {   // stamp: slams over whatever is on screen
-        const st = el("g", { transform: "rotate(-4 540 962)" }, g);   // at the box's foot, under the graphic's kicker line (Ep 6)
+        const st = el("g", { transform: "rotate(-4 540 950)" }, g);   // at the box's foot, under the graphic's kicker line (Ep 6); 9 Nov: 12 px up, clear of the captions
         const w = Math.max(280, 34 * String(a.word).length + 60);
-        el("rect", { x: 540 - w / 2, y: 932, width: w, height: 64, rx: 12, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
-        const t = txt(st, 540, 966, String(a.word || "").toUpperCase(), { size: 46, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 50, 46);
-        gsap.set(st, { svgOrigin: "540 962" });
+        el("rect", { x: 540 - w / 2, y: 920, width: w, height: 64, rx: 12, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
+        const t = txt(st, 540, 954, String(a.word || "").toUpperCase(), { size: 46, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 50, 46);
+        gsap.set(st, { svgOrigin: "540 950" });
         tl.fromTo(st, { scale: 3, opacity: 0 }, { scale: 1, opacity: 0.92, duration: 0.18, ease: "power4.in" }, t0);
       }
       tl.to(g, { opacity: 0, duration: 0.25 }, t0 + a.dur - 0.25);
@@ -615,7 +632,7 @@
     const cap = div(capBox, `position:absolute;left:60px;width:960px;text-align:center;font:800 62px/1.1 ${S.body === '"FF Mono", monospace' ? '"FF Display", sans-serif' : S.body};color:${S.text}`);
     const capStyle = (shot) => {
       if (shot === "pip") return { left: 500, width: 380, top: 1160, align: "left", size: 52 };   // right of the PiP, clear of the buttons (x > 900)
-      if (shot === "split") return { left: 60, width: 820, top: 992, align: "center", size: 56 };   // inside x 60-880: the buttons sit right of x 900
+      if (shot === "split") return { left: 60, width: 820, top: 1004, align: "center", size: 56 };   // 9 Nov: 992 -> 1004, a clear gap under the box (980)   // inside x 60-880: the buttons sit right of x 900
       if (shot === "wide") return { left: 60, width: 820, top: 1336, align: "center", size: 54 };   // under the breaking row, above the ticker (y 1432)   // under the breaking bar
       return { left: 60, width: 820, top: 1210, align: "center" };
     };
@@ -648,24 +665,39 @@
       let i = 0;
       while (i + 1 < keys.length && keys[i + 1][0] <= t) i++;
       const cur = framing(keys[i][1]);
-      if (i === 0) return { f: cur, shot: keys[i][1], since: t - keys[0][0] };
+      if (i === 0) return { f: cur, shot: keys[i][1], seen: keys[i][1], since: t - keys[0][0] };
       const k = clamp((t - keys[i][0]) / TR);
-      return { f: k >= 1 ? cur : mixF(framing(keys[i - 1][1]), cur, ease(k)), shot: keys[i][1], since: t - keys[i][0] };
+      // seen: the framing the viewer mostly sees (the old one until the move is half done); captions follow it, or they
+      // jumped onto Habit's face while the window was still wide (9 Nov screening)
+      return { f: k >= 1 ? cur : mixF(framing(keys[i - 1][1]), cur, ease(k)), shot: keys[i][1], seen: k < 0.5 ? keys[i - 1][1] : keys[i][1], since: t - keys[i][0] };
     };
     const segAt = (t) => { const i = cfg.segments.findIndex((s) => t >= s.start && t < s.start + s.dur); return i < 0 ? cfg.segments.length - 1 : i; };
     const env = cfg.env || [], fps = cfg.envFps || 30;
     const mouthAt = (t) => { const i = Math.floor(t * fps); const v = env[i] ?? 0; return clamp((v - 0.06) / 0.5); };
     const blinkAt = (t) => { const p = (t + 0.7) % 3.7; return p < 0.08 ? p / 0.08 : p < 0.16 ? 1 - (p - 0.08) / 0.08 : 0; };
+    // a segment's face over time: topics open alert for LEAD s, then the line's emotion; a laughing segment is excited
+    // until its witty line (laughAt), so the squint shows on the joke only (screening: a squint on the news read as asleep)
+    const LEAD = 1.1;
+    const faceOf = (seg, t) => {
+      if (!seg) return EMO.neutral;
+      if (seg.laughAt != null) return t - seg.start >= seg.laughAt ? EMO.laughing : EMO.excited;
+      return EMO[seg.emotion] || EMO.neutral;
+    };
     const emoAt = (t, si) => {
-      const cur = EMO[cfg.segments[si]?.emotion] || EMO.neutral;
-      const prev = EMO[cfg.segments[si - 1]?.emotion] || EMO.neutral;
-      return si > 0 ? mixEmo(prev, cur, ease(clamp((t - cfg.segments[si].start) / 0.35))) : cur;
+      const seg = cfg.segments[si], prev = cfg.segments[si - 1];
+      const end = prev ? faceOf(prev, seg.start - 1e-3) : EMO.neutral;
+      if (!seg.topic) return si > 0 ? mixEmo(end, faceOf(seg, t), ease(clamp((t - seg.start) / 0.35))) : faceOf(seg, t);
+      const into = t - seg.start;
+      if (into < LEAD) return mixEmo(end, EMO.alert, ease(clamp(into / 0.3)));
+      const cur = faceOf(seg, t), k = ease(clamp((into - LEAD) / 0.35));
+      if (seg.laughAt != null && t - seg.start >= seg.laughAt) return mixEmo(EMO.excited, cur, ease(clamp((into - seg.laughAt) / 0.25)));
+      return mixEmo(EMO.alert, cur, k);
     };
     const words = cfg.words || [];
     let lastStrip = -1;
 
     const frame = (t) => {
-      const { f, shot, since } = frameAt(t);
+      const { f, shot, seen, since } = frameAt(t);
       cam.style.transform = `translate(${f.tx}px, ${f.ty}px) scale(${f.s})`;
       const sb = 1 + (f.s - 1) * DEPTH, kb = sb / f.s;   // the back layer's own scale inside the camera, about Habit's face
       backG.setAttribute("transform", `translate(${(FACE.x * (1 - kb)).toFixed(2)} ${(FACE.y * (1 - kb)).toFixed(2)}) scale(${kb.toFixed(4)})`);
@@ -674,11 +706,11 @@
       studio.style.webkitMaskImage = m; studio.style.maskImage = m;
       studio.style.opacity = f.op;
       vis.style.visibility = shot === "wide" && Math.abs(f.s - 1) < 1e-3 && f.ma < 0 ? "hidden" : "";
-      pipFrame.style.opacity = shot === "pip" ? clamp((since - 0.3) / 0.3) : 0;
+      pipFrame.style.opacity = shot === "pip" ? clamp((since - 0.2) / 0.2) : 0;   // 9 Nov: in by 0.4 s (was 0.6), a frameless PiP read as broken
       const si = segAt(t);
       const seg = cfg.segments[si];
       groups.forEach((g, i) => { if (g) g.style.display = i === si || (i === si - 1 && t - seg.start < 0.15 && cfg.segments[i].topic !== seg.topic) ? "" : "none"; });
-      wall.set(seg.wall || "TODAY", seg.wallSub || "THE DAILY HABIT");
+      wall.set(seg.wall || "TODAY", seg.wallSub || "THE DAILY HABIT", si === 0);
       const lookY = shot === "split" ? 0.8 : 0, lookX = shot === "pip" ? 0.7 : Math.sin(t * 0.7) * 0.15;
       const talking = mouthAt(t);
       rig.pose({ mouth: talking, blink: blinkAt(t), lookX, lookY, bob: Math.sin(t * 2.1) * 6 + talking * 4, brow: talking > 0.6 ? 0.6 : 0.1,
@@ -697,7 +729,7 @@
         ring.setAttribute("stroke", left < 3 ? S.red : S.blue);
         if (lastStrip !== si) {
           strip.innerHTML = `<span style="background:${S.red};color:${S.textOnRed};padding:12px 18px 8px;font-family:${q(S.body)};font-size:30px;letter-spacing:2px;white-space:nowrap">${seg.topic}/${cfg.topics} · ${esc(seg.lane).toUpperCase()}</span>` +
-            `<span style="background:${S.ink};color:${S.bg};padding:12px 20px 8px;white-space:nowrap;font-size:${String(seg.headline).length > 30 ? 34 : 40}px">${esc(seg.headline)}</span>`;
+            `<span style="background:${S.ink};color:${S.bg};padding:12px 20px 8px;white-space:nowrap;font-size:34px">${esc(seg.headline)}</span>`;   // one size for every topic (a 40/34 switch read as "t4 drawn larger")
           chip.textContent = `SOURCE · ${seg.source || ""}`;   // the source only (a subject logo beside it read as the source)
           lastStrip = si;
         }
@@ -722,14 +754,15 @@
         const k = words.findLastIndex((x) => x.e <= t);
         if (k >= 0 && t - words[k].e < 0.9 && !(words[k + 1] && words[k + 1].s <= t)) w = k;
       }
-      const markOn = f.s < 1.05;   // on the wide shot only (cut off in close-ups); at y 1505, under the open's caption
+      const markOn = f.s < 1.05 && (w < 0 || atEnd || inSting);   // wide shot only (cut off in close-ups), and never under a
+      // caption (9 Nov: the open's caption sat on the desk wordmark)
       marks.forEach((mk) => { mk.style.opacity = markOn ? 1 : 0; });
       if (w < 0 || atEnd || inSting) cap.textContent = "";
       else {
         const grp = words.filter((x) => x.g === words[w].g);
         cap.innerHTML = `<span style="display:inline-block;text-wrap:balance;max-width:100%;width:fit-content;box-sizing:border-box;background:${S.bg};padding:8px 20px;border-radius:${cfg.set === "riso" ? 0 : 14}px;box-shadow:0 0 0 3px ${S.text}">` +
-          grp.map((x) => `<span style="color:${x === words[w] ? S.red : x.st ? S.blue : S.text}${x.st ? ";font-weight:900" : ""}">${esc(x.w)}</span>`).join(" ")   // spoken word red, stressed words blue (P9.1.5) + "</span>";
-        const c = capStyle(shot);
+          grp.map((x) => `<span style="color:${x === words[w] ? S.red : x.st ? S.blue : S.text}${x.st ? ";font-weight:900" : ""}">${esc(String(x.w).replace(/[;:,]+$/, ""))}</span>`).join(" ")   // spoken word red, stressed words blue (P9.1.5) + "</span>";
+        const c = capStyle(seen);
         Object.assign(cap.style, { left: c.left + "px", width: c.width + "px", top: c.top + "px", textAlign: c.align, display: "block", fontSize: (c.size || 62) + "px" });
       }
     };

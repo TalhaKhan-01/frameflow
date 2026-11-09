@@ -26,7 +26,7 @@
  "virality_model": "sonnet",
  "writer_model": "opus",
  "doctor_model": "opus",
- "doctor_rounds": 2,
+ "doctor_rounds": 3,
  "judge_model": "opus",
  "music": {
   "track": "sneaky-snitch",
@@ -43,5 +43,6 @@
   "wait_minutes": 20,
   "model": "sonnet"
  },
- "_critic": "6 Nov: the table read and the screening are the video-critic skill (research/video-critic.json holds rows, runs, models)"
+ "_critic": "6 Nov: the table read and the screening are the video-critic skill (research/video-critic.json holds rows, runs, models)",
+ "_doctor_rounds": "9 Nov: 2 -> 3. Fix rounds now keep the rows the table read scored 2 (they used to trade one row for another), so a third round converges instead of churning."
 }

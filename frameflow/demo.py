@@ -117,9 +117,9 @@ def run(brief):
             info.update(seconds=c["dur"])
         with progress.step("QA + critic", desk="qc") as info:
             q = show.check_render(final, c, script, vd, out)
-            times = [c["breakingAt"] + 1.0] + [s["start"] + s["dur"] * f for s in c["segments"] if s.get("topic") for f in (0.3, 0.8)]
+            times = show.still_times(c)[:1] + show.still_times(c)[2:-1]
             png = show.stills(final, times, out, "contact")
-            scr = show.screening(png, times, script)
+            scr = show.screening(png, times, script, c)
             info.update(qa=q["pass"], screening=f"{scr['total']}/{scr['max']}")
         with progress.step("send the video to Telegram", desk="owner"):
             mins = (time.time() - t0) / 60

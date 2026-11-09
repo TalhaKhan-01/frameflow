@@ -142,3 +142,50 @@ def test_word_error_reads_numbers_and_split_names_as_said():
     said = "Marvell pays one hundred fifteen billion dollars, up one hundred fifty-four point three percent, says ChatGPT."
     heard = "Marvell pays $115 billion, up 154.3%, says chat GPT."
     assert captions.wer(said, heard) == 0
+
+
+def test_near_equal_bars_and_made_up_quotes_fail():   # 9 Nov: Ep 7's table read caught both; code catches them first
+    s = copy.deepcopy(SCRIPT)
+    s["segments"][0]["graphic"] = {"type": "bars", "title": "RUPEE PER $", "items": [{"label": "now", "value": "16.3"}, {"label": "then", "value": "16"}]}
+    s["segments"][1]["graphic"] = {"type": "quote", "text": "Paytm is printing money now", "who": "Paytm"}
+    e = " | ".join(errs(s))
+    assert "near-equal" in e and "quote text is not verbatim" in e
+    s["segments"][1]["graphic"] = {"type": "quote", "text": "Paytm profit was Rs 225 crore", "who": "Paytm"}
+    assert "quote text" not in " | ".join(errs(s))
+
+
+def test_laugh_lands_on_the_witty_line_only():
+    ws = [{"w": "Basically,", "s": 10.2}, {"w": "a", "s": 10.5}, {"w": "Less", "s": 12.0}, {"w": "perfect", "s": 12.3}]
+    assert show.laugh_at({"emotion": "laughing", "witty": "Less perfect bubble."}, ws, 10.0) == 2.0
+    assert show.laugh_at({"emotion": "excited", "witty": "Less perfect"}, ws, 10.0) is None
+    assert show.laugh_at({"emotion": "laughing", "witty": "not said"}, ws, 10.0) is None
+
+
+def test_open_wall_shows_the_hook_story_picture():
+    lead = {"wall": "154%"}
+    ph = show.open_media({"photo": {"src": "a.jpg", "w": 800, "h": 600}}, lead)
+    assert ph["kind"] == "photo" and ph["label"] == "154%"
+    sh = show.open_media({"shot": {"src": "s.png", "w": 1080, "h": 600, "head": [32, 260, 1016, 138]}}, lead)
+    assert sh["kind"] == "shot" and sh["crop"] == [8, 236, 1064, 186]
+    assert show.open_media({}, lead) is None
+
+
+def test_judge_hears_the_words_at_each_still():
+    c = {"stingAt": 5.0, "endAt": 80.0, "words": [{"w": "India", "s": 7.0}, {"w": "leads", "s": 7.4}]}
+    assert show.heard_at(c, 5.7) == "(title sting: no voice)"
+    assert show.heard_at(c, 7.6) == "India leads"
+    assert show.heard_at(c, 81) == "(end card: no voice)" and show.heard_at(c, 30) == "(pause)"
+
+
+def test_chip_credits_the_outlet_the_line_names():
+    assert show.credited("Funding fell, per Entrackr's count.", "openthemagazine.com") == "Entrackr via openthemagazine.com"
+    assert show.credited("OpenAI says India is its biggest market.", "Inc42") == "Inc42"
+    assert show.credited("Profit rose, per Reuters.", "Reuters") == "Reuters"
+
+
+def test_stills_avoid_framing_moves():
+    c = {"breakingAt": 0.3, "stingAt": 5.0, "endAt": 30.0, "segments": [
+        {"topic": 1, "start": 6.5, "dur": 10.0, "shots": [[0, "pip"], [3.0, "split"], [8.0, "pip"]], "media": {"dur": 4.5}}]}
+    t = show.still_times(c)
+    cuts = [9.5, 14.5, 11.0]
+    assert all(min(abs(x - k) for k in cuts) >= 0.7 for x in t[2:4]), t
