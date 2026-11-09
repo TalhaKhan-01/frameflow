@@ -1,6 +1,7 @@
 """Re-render a made show episode into a test folder with the current template and code, then QA + screening.
 
     uv run python spikes/show_test_render.py 2026-11-03-daily-habit-ep5 test-ep5 [--no-screening] [--set riso|paper|night] [--look puppet|pixel] [--twice]
+    uv run python spikes/show_test_render.py test-ep7w test-ep7-full --ep 7 --day 2026-11-06   (a writer test: voiced fresh)
 
 Copies the episode's research, script and voice (no new voice, no GPU) into out/show/<test>/, re-runs visuals
 (library cached), direct, sound, render, QA, the contact sheet and (unless --no-screening) the screening.
@@ -21,15 +22,17 @@ def main():
     for f in ("research.json", "script.json", "voice-script.json"):
         if (a / f).exists():
             shutil.copy(a / f, out / f)
-    shutil.copytree(a / "voice", out / "voice", dirs_exist_ok=True)
+    if (a / "voice").exists():   # a script-only source (a writer test) is voiced fresh: Chatterbox on the GPU
+        shutil.copytree(a / "voice", out / "voice", dirs_exist_ok=True)
     data, script = json.loads((out / "research.json").read_text()), json.loads((out / "script.json").read_text())
     if script.get("hook_pick"):   # the banner follows the picked hook (hookpick.apply since 3 Nov)
         from frameflow import hookpick
         g = hookpick.story_of(script["open"]["say"], script)
         if g:
             script["breaking"] = g["headline"][:55]
-    ep = int(src.rsplit("ep", 1)[1])
-    day = src[:10]
+    arg = lambda f, d: sys.argv[sys.argv.index(f) + 1] if f in sys.argv else d
+    ep = int(arg("--ep", src.rsplit("ep", 1)[-1] if src[-1].isdigit() else 0))
+    day = arg("--day", src[:10])
     media_by, _ = show.visuals(script, data, out)
     vd = show.narrate(script, out)
     c, voice_at = show.direct(script, data, vd, ep, day, media_by)

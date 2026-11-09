@@ -177,15 +177,50 @@ def test_judge_hears_the_words_at_each_still():
     assert show.heard_at(c, 81) == "(end card: no voice)" and show.heard_at(c, 30) == "(pause)"
 
 
-def test_chip_credits_the_outlet_the_line_names():
-    assert show.credited("Funding fell, per Entrackr's count.", "openthemagazine.com") == "Entrackr via openthemagazine.com"
-    assert show.credited("OpenAI says India is its biggest market.", "Inc42") == "Inc42"
-    assert show.credited("Profit rose, per Reuters.", "Reuters") == "Reuters"
-
-
 def test_stills_avoid_framing_moves():
     c = {"breakingAt": 0.3, "stingAt": 5.0, "endAt": 30.0, "segments": [
         {"topic": 1, "start": 6.5, "dur": 10.0, "shots": [[0, "pip"], [3.0, "split"], [8.0, "pip"]], "media": {"dur": 4.5}}]}
     t = show.still_times(c)
-    cuts = [9.5, 14.5, 11.0]
-    assert all(min(abs(x - k) for k in cuts) >= 0.7 for x in t[2:4]), t
+    g0 = 6.5 + 0.15 + 4.5   # the graphic enters; its count-ups settle within 1.3 s
+    assert all(min(abs(x - k) for k in (9.5, 14.5)) >= 0.7 and not (g0 - 0.7 <= x < g0 + 1.3) for x in t[2:4]), t
+
+
+def test_handoff_is_the_last_short_sentence():
+    say = "UPI crossed twenty five billion payments in October. Next: build your own ChatGPT?"
+    ws = [{"w": w, "s": float(i)} for i, w in enumerate((say + " Karpathy's").split())]   # the next line's first word bled in
+    assert show.handoff_at(ws, 0.0, say) == 8.0
+    assert show.handoff_at(ws, 0.0, "UPI crossed twenty five billion payments in October.") is None   # one sentence: no handoff
+
+
+def test_breaking_bar_says_what_the_open_says():
+    assert show.chyron("Breaking: your next iPhone could cost more, and Marvell buys Lumentum.") == "Your next iPhone could cost more"
+    assert show.chyron("Breaking: hi.") == ""
+
+
+def test_caption_error_ignores_respelled_names_but_not_slips():
+    from frameflow import captions
+    ref = "Binance says the rupee fell on November 18th"
+    assert captions.wer(ref, "Byenance says the rupee fell on November 18th", respelled=["Binance"]) == 0
+    assert captions.wer(ref, "Byenance says the ruby fell on November eighteenth", respelled=["Binance"]) > 0   # a real slip counts
+    assert captions.wer(ref, "Binance says the rupee fell on November eighteenth") == 0
+
+
+def test_media_hands_over_just_before_the_number():
+    ws = [{"w": "Startups", "s": 10.0}, {"w": "raised", "s": 10.4}, {"w": "forty-seven", "s": 13.0}, {"w": "percent", "s": 13.5}]
+    assert show.media_window(ws, 10.0, 9.0) == 2.65
+    assert show.media_window(ws[:2], 10.0, 9.0) == 4.05          # no number: 45% of the topic
+    assert show.media_window([{"w": "2", "s": 10.2}], 10.0, 9.0) == 2.2   # never shorter than 2.2 s
+
+
+def test_chip_names_the_cited_source_and_the_page():
+    assert show.credited("Funding fell, per Entrackr's count.", "Entrackr", "openthemagazine.com") == "Entrackr via OPEN"
+    assert show.credited("UPI crossed 25 billion, per NPCI data.", "Oneindia", "Oneindia") == "NPCI via Oneindia"
+    assert show.credited("Apple's inventory jumped.", "TechCrunch", "TechCrunch") == "TechCrunch"
+    assert show.outlet_name("www.economictimes.indiatimes.com") == "ET"
+
+
+def test_thin_or_narrow_clippings_become_drawn_cards():
+    assert show.clipping_ok({"w": 1080, "h": 900, "head": [40, 300, 1000, 260]})          # a phone-width headline, 4 lines: a clipping
+    assert not show.clipping_ok({"w": 1080, "h": 600, "head": [32, 260, 1016, 138]})      # two desktop lines: 139 px, a thin strip
+    assert not show.clipping_ok({"w": 1080, "h": 600, "head": [66, 260, 300, 60]})        # one word ("nanochat")
+    assert not show.clipping_ok({"w": 2006, "h": 936, "head": [124, 520, 1760, 70]})      # a hairline one-liner

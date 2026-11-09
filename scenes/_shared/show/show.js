@@ -262,8 +262,10 @@
     const cam = (s, tx, ty) => ({ s, tx: tx - FACE.x * s, ty: ty - FACE.y * s });
     switch (shot) {
       case "split": return { ...cam(1.6, 540, 1345), ct: 0, cr: 0, cb: 0, cl: 0, rad: 0, ma: 960, mb: 1150, op: 1 };
-      case "pip": return { ...cam(1.12 * PIP.s / 320, PIP.x + PIP.s / 2, PIP.y + PIP.s / 2 + 40), ct: PIP.y, cr: W - PIP.x - PIP.s, cb: H - PIP.y - PIP.s, cl: PIP.x, rad: 30, ma: -2, mb: -1, op: 1 };
-      case "full": return { ...cam(1.12 * PIP.s / 320, PIP.x + PIP.s / 2, PIP.y + PIP.s / 2 + 40), ct: PIP.y + PIP.s / 2, cr: W - PIP.x - PIP.s / 2, cb: H - PIP.y - PIP.s / 2, cl: PIP.x + PIP.s / 2, rad: 30, ma: -2, mb: -1, op: 0 };
+      // 9 Nov: PiP zoom 1.47x -> 1.29x: a tilted head lost an earcup at the frame edge
+      case "pip": return { ...cam(0.98 * PIP.s / 320, PIP.x + PIP.s / 2, PIP.y + PIP.s / 2 + 40), ct: PIP.y, cr: W - PIP.x - PIP.s, cb: H - PIP.y - PIP.s, cl: PIP.x, rad: 30, ma: -2, mb: -1, op: 1 };
+      case "full": return { ...cam(0.98 * PIP.s / 320, PIP.x + PIP.s / 2, PIP.y + PIP.s / 2 + 40), ct: PIP.y + PIP.s / 2, cr: W - PIP.x - PIP.s / 2, cb: H - PIP.y - PIP.s / 2, cl: PIP.x + PIP.s / 2, rad: 30, ma: -2, mb: -1, op: 0 };
+      case "close": return { ...cam(1.2, 540, 1000), ct: 0, cr: 0, cb: 0, cl: 0, rad: 0, ma: -2, mb: -1, op: 1 };   // the outro's push-in (9 Nov)
       case "end": return { ...cam(1, 540, 1090), ct: 0, cr: 0, cb: 0, cl: 0, rad: 0, ma: -2, mb: -1, op: 0 };
       default: return { ...cam(1, 540, 1090), ct: 0, cr: 0, cb: 0, cl: 0, rad: 0, ma: -2, mb: -1, op: 1 };   // wide
     }
@@ -301,7 +303,7 @@
       },
       stat(g, tl, t0, d) {
         const num = H1(g, 540, 520, "", 300, { fill: S.red });
-        countUp(tl, num, d.value, t0 + 0.1, 1.2, 900);   // 90 px side margins
+        countUp(tl, num, d.value, t0 + 0.1, 0.7, 900);   // 90 px side margins; 9 Nov: done by 0.8 s (stills caught a half-rolled number)
         const l1 = B(g, 540, 720, String(d.label || "").toUpperCase(), 46, { weight: 800, spacing: 1 }); fit(l1, 960, 46);
         tl.fromTo(l1, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35 }, t0 + 0.8);
         if (d.sub) {   // one or two lines at >= 40 px in ink (a long sub shrank to ~22 px in blue)
@@ -364,13 +366,13 @@
           const lab = wrap(item?.label, 16).slice(0, 3);
           lab.forEach((l, k) => { const n = B(c, x, 400 + k * 46, l.toUpperCase(), 36, { weight: 800 }); fit(n, 330, 36); });
           const v = H1(c, x, 640, "", 120, { fill });
-          countUp(tl, v, item?.value, t0 + 0.5 + i * 0.5, 1.0, 330);
-          tl.fromTo(c, { opacity: 0, x: i ? 120 : -120 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, t0 + i * 0.35);
+          countUp(tl, v, item?.value, t0 + 0.3 + i * 0.25, 0.6, 330);   // both settled by 1.15 s (9 Nov)
+          tl.fromTo(c, { opacity: 0, x: i ? 120 : -120 }, { opacity: 1, x: 0, duration: 0.35, ease: "power3.out" }, t0 + i * 0.2);
         };
         side(290, d.left, S.blue, 0); side(790, d.right, S.red, 1);
         const vs = H1(g, 540, 565, "VS", 54, { fill: S.ink }); piv(vs, 540, 565);
-        tl.fromTo(vs, { scale: 0 }, { scale: 1, duration: 0.35, ease: "back.out(2.5)" }, t0 + 0.7);
-        kicker(g, tl, t0 + 1.8, d.caption, 880);
+        tl.fromTo(vs, { scale: 0 }, { scale: 1, duration: 0.3, ease: "back.out(2.5)" }, t0 + 0.5);
+        kicker(g, tl, t0 + 1.0, d.caption, 880);
       },
       bars(g, tl, t0, d) {
         const items = (d.items || []).slice(0, 4);
@@ -383,11 +385,11 @@
           const w = 40 + 700 * Math.abs(parseNum(it.value)?.n ?? 0) / max;
           const bar = el("rect", { x: 110, y: y + 26, width: w, height: 64, rx: cfg.set === "riso" ? 0 : 10, fill: i === (d.highlight ?? 0) ? S.red : S.blue }, g); piv(bar, 110, y + 58);
           const v = B(g, 110 + w + 18, y + 64, "", 56, { anchor: "start", weight: 800 });
-          tl.fromTo(bar, { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power3.out" }, t0 + 0.2 + i * 0.3);
-          countUp(tl, v, it.value, t0 + 0.2 + i * 0.3, 0.6);
+          tl.fromTo(bar, { scaleX: 0 }, { scaleX: 1, duration: 0.55, ease: "power3.out" }, t0 + 0.15 + i * 0.15);   // all bars settled by ~1.15 s
+          countUp(tl, v, it.value, t0 + 0.15 + i * 0.15, 0.55);
           if (w > 760) { v.setAttribute("x", 110 + w - 18); v.setAttribute("text-anchor", "end"); v.setAttribute("fill", "#fbf8f1"); }
         });
-        kicker(g, tl, t0 + 0.4 + items.length * 0.3, d.caption, Math.min(930, top + items.length * gap + 50));
+        kicker(g, tl, t0 + 0.3 + items.length * 0.15, d.caption, Math.min(930, top + items.length * gap + 50));
       },
       quote(g, tl, t0, d) {
         card(g, 90, 300, 900, 620, paper);
@@ -419,7 +421,31 @@
   function mediaBuilder(S) {
     const BX = 60, BY = 300, BW = 960, BH = 680;
     let n = 0;
+    // the story's own headline as a press clipping (9 Nov, third pass): cropped to the headline alone (context lines
+    // came out half cut), as wide as the frame allows, the outlet's name over it, the card sized to its content (a
+    // fixed box around a short crop read as "mostly empty"). Centred in the graphics area, y 300-980.
+    function clipping(g, tl, t0, m) {
+      const sh = m.shot, L = el("g", {}, g);
+      const [hx, hy, hw, hh] = sh.head || [0, 0, sh.w, Math.min(sh.h, sh.w * 0.4)];
+      const pad = Math.max(10, hh * 0.08);
+      const cx0 = Math.max(0, hx - pad), cy0 = Math.max(0, hy - pad);
+      const cw = Math.min(sh.w, hx + hw + pad) - cx0, ch = Math.min(sh.h, hy + hh + pad) - cy0;
+      const k = Math.min(900 / cw, 480 / ch), w = cw * k, h = ch * k;
+      const x = 540 - w / 2, y = BY + (BH - h) / 2;   // no outlet heading: the chip names it (9 Nov: "the source appears twice")
+      const card = el("g", {}, L);
+      el("rect", { x: x - 20, y: y - 20, width: w + 40, height: h + 40, fill: "#ffffff", stroke: S.ink, "stroke-width": 5 }, card);
+      const crop = el("svg", { x, y, width: w, height: h, viewBox: `${cx0} ${cy0} ${cw} ${ch}`, preserveAspectRatio: "xMidYMid meet", overflow: "hidden" }, card);
+      el("image", { href: sh.src, x: 0, y: 0, width: sh.w, height: sh.h }, crop);
+      const hl = el("rect", { x: hx - 6, y: hy - 2, width: hw + 12, height: hh + 4, fill: "#ffe14d", opacity: 0.45, style: "mix-blend-mode:multiply" }, crop);
+      gsap.set(hl, { svgOrigin: `${hx - 6} ${hy + hh / 2}` });
+      gsap.set(card, { svgOrigin: `540 ${y + h / 2}` });
+      tl.fromTo(L, { opacity: 0 }, { opacity: 1, duration: 0.25 }, t0);
+      tl.fromTo(card, { scale: 0.92, rotation: -2 }, { scale: 1, rotation: -0.8, duration: m.dur - 0.25, ease: "power1.out" }, t0);
+      tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, t0 + 0.5);
+      tl.to(L, { opacity: 0, y: -40, duration: 0.3, ease: "power2.in" }, t0 + m.dur - 0.25);
+    }
     return function media(g, tl, t0, m, si) {
+      if (m.shot && !m.photo && !m.card) return clipping(g, tl, t0, m);
       const id = `mclip${si}-${n++}`;
       const cp = el("clipPath", { id }, el("defs", {}, g));
       el("rect", { x: BX, y: BY, width: BW, height: BH, rx: 22 }, cp);
@@ -430,18 +456,19 @@
       const credit = (layer, text) => {
         if (!text) return;
         const bar = el("g", {}, layer);
-        el("rect", { x: BX, y: BY + BH - 44, width: BW, height: 44, fill: "rgba(20,18,26,0.72)" }, bar);
-        const c = txt(bar, BX + BW - 18, BY + BH - 21, text, { size: 20, font: S.body, fill: "#f3eee4", weight: 600, anchor: "end" });
+        el("rect", { x: BX, y: BY + BH - 34, width: BW, height: 34, fill: S.ink }, bar);   // the licence's credit: a solid strip
+        const c = txt(bar, BX + BW - 16, BY + BH - 16, text, { size: 20, font: S.body, fill: "#f3eee4", weight: 600, anchor: "end" });
         fit(c, BW - 36, 20);
       };
       const layers = [];
       const ph = m.photo, sh = m.shot;
+      const order = [];   // 9 Nov: the headline clipping first (it names the story as the line does), then the photo
       if (ph) {   // photo: cover the box, slow push in
         const L = el("g", {}, inner);
         const im = el("image", { href: ph.src, x: BX, y: BY, width: BW, height: BH, preserveAspectRatio: "xMidYMid slice" }, L);
         gsap.set(im, { svgOrigin: `${BX + BW / 2} ${BY + BH / 2}` });
         credit(L, ph.credit);
-        layers.push({ L, run: (a, b) => tl.fromTo(im, { scale: 1.0 }, { scale: 1.12, duration: b - a, ease: "none" }, a) });
+        order.push({ L, run: (a, b) => tl.fromTo(im, { scale: 1.0 }, { scale: 1.12, duration: b - a, ease: "none" }, a) });
       }
       if (sh) {   // screenshot as a press clipping (9 Nov): only the category line, the headline and the byline, cropped
         // from the page and scaled to fill the box's width, on a slight tilt over the desk paper. The old zoom left the
@@ -452,7 +479,7 @@
         if (sh.head) {
           const [hx, hy, hw, hh] = sh.head, ln = Math.min(hh, 150);   // context: a line above (category), a line and a half below (byline, date)
           cx0 = Math.max(0, hx - 28); cw = Math.min(sh.w, hx + hw + 28) - cx0;
-          cy0 = Math.max(0, hy - ln * 0.75); ch = Math.min(sh.h, hy + hh + ln * 1.1) - cy0;
+          cy0 = Math.max(0, hy - ln * 0.75); ch = Math.min(sh.h, hy + hh + ln * 0.85) - cy0;
         }
         const k = Math.min((BW - 90) / cw, (BH - 90) / ch), w = cw * k, h = ch * k, x = BX + (BW - w) / 2, y = BY + (BH - h) / 2;
         const clipG = el("g", {}, L);
@@ -466,12 +493,12 @@
           gsap.set(hl, { svgOrigin: `${hx - 8} ${hy + hh / 2}` });
         }
         gsap.set(clipG, { svgOrigin: `${BX + BW / 2} ${BY + BH / 2}` });
-        layers.push({ L, run: (a, b) => {   // no credit bar: the source chip names the outlet (screening: a duplicate source)
+        order.unshift({ L, run: (a, b) => {   // no credit bar: the source chip names the outlet (screening: a duplicate source)
           tl.fromTo(clipG, { scale: 0.94, rotation: -2.5 }, { scale: 1, rotation: -1.2, duration: b - a, ease: "power1.out" }, a);
           if (hl) tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, a + 0.5);
         } });
       }
-      if (m.card) {   // no capture and no photo: the story's real headline as a press clipping, highlighter over it
+      if (m.card) {   // no capture: the story's real headline as a press clipping, highlighter over it, before any photo (9 Nov)
         const L = el("g", {}, inner);
         el("rect", { x: BX, y: BY, width: BW, height: BH, fill: "#fbf8f1" }, L);
         const out = txt(L, BX + 60, BY + 90, String(m.card.outlet || "").toUpperCase(), { size: 34, font: S.body, fill: S.red, weight: 800, anchor: "start", spacing: 3 });
@@ -484,8 +511,10 @@
         const hl = el("rect", { x: BX + 52, y: y0 - 50, width: BW - 104, height: lh * Math.min(2, shown.length) + 14, fill: "#ffe14d", opacity: 0.5, style: "mix-blend-mode:multiply" }, L);
         gsap.set(hl, { svgOrigin: `${BX + 52} ${y0}` });
         shown.forEach((l, i) => { const t = txt(L, BX + 60, y0 + i * lh, l, { size: 60, font: S.head, fill: S.ink, weight: 800, anchor: "start" }); fit(t, BW - 120, 60); });
-        layers.push({ L, run: (a) => tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, a + 0.4) });
+        order.unshift({ L, run: (a) => tl.fromTo(hl, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, a + 0.4) });
       }
+      order.forEach(({ L }) => inner.appendChild(L));   // DOM order = time order: each layer fades in over the one before
+      layers.push(...order);
       // timing: one layer = the whole window; two = split it; each layer fades in over the one before
       const span = m.dur - 0.25;
       layers.forEach(({ L, run }, i) => {
@@ -514,9 +543,8 @@
     const label = (g, x, y, s, size, fill = S.text, maxW = 420) => { const t = txt(g, x, y, String(s || "").toUpperCase(), { size, font: S.body, fill, weight: 800, spacing: 1 }); fit(t, maxW, size); return t; };
     const pop = (tl, node, t, ox, oy, d = 0.35) => { gsap.set(node, { svgOrigin: `${ox} ${oy}` }); tl.fromTo(node, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: d, ease: "back.out(2)" }, t); };
     return function gag(g, tl, t0, a) {
-      const back = el("rect", { x: BX, y: BY, width: BW, height: BH, rx: 22, fill: S.bg, stroke: S.ink, "stroke-width": a.treatment === "stamp" ? 0 : 5,
-                                opacity: a.treatment === "stamp" ? 0 : 1 }, g);
-      if (a.treatment !== "stamp") tl.fromTo(back, { opacity: 0 }, { opacity: 1, duration: 0.2 }, t0);
+      const back = el("rect", { x: BX, y: BY, width: BW, height: BH, rx: 22, fill: S.bg, stroke: S.ink, "stroke-width": 5 }, g);
+      tl.fromTo(back, { opacity: 0 }, { opacity: 1, duration: 0.2 }, t0);
       if (a.treatment === "compare") {
         const L = el("g", {}, g), R = el("g", {}, g);
         pic(L, a.left, 110, 360, 360, 360); label(L, 290, 790, a.left_label, 40);
@@ -538,11 +566,13 @@
         const c = txt(bar, 540, BY + BH - 95, String(a.caption || "").toUpperCase(), { size: 56, font: S.head, fill: S.textOnRed, weight: 900 }); fit(c, BW - 100, 56);
         tl.fromTo(bar, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, t0 + 0.4);
       } else {   // stamp: slams over whatever is on screen
-        const st = el("g", { transform: "rotate(-4 540 950)" }, g);   // at the box's foot, under the graphic's kicker line (Ep 6); 9 Nov: 12 px up, clear of the captions
-        const w = Math.max(280, 34 * String(a.word).length + 60);
-        el("rect", { x: 540 - w / 2, y: 920, width: w, height: 64, rx: 12, fill: "none", stroke: S.red, "stroke-width": 14 }, st);
-        const t = txt(st, 540, 954, String(a.word || "").toUpperCase(), { size: 46, font: S.head, fill: S.red, weight: 900, spacing: 4 }); fit(t, w - 50, 46);
-        gsap.set(st, { svgOrigin: "540 950" });
+        // 9 Nov: the stamp owns the box while it is on (the graphic steps out like for the other gags): over the graphic
+        // it sat on a text line in every position tried (check: content_overlap; screening: "neither can be read")
+        const st = el("g", { transform: "rotate(-6 540 640)" }, g);
+        const w = Math.min(900, Math.max(420, 62 * String(a.word).length + 120));
+        el("rect", { x: 540 - w / 2, y: 570, width: w, height: 140, rx: 18, fill: "none", stroke: S.red, "stroke-width": 18 }, st);
+        const t = txt(st, 540, 644, String(a.word || "").toUpperCase(), { size: 96, font: S.head, fill: S.red, weight: 900, spacing: 6 }); fit(t, w - 70, 96);
+        gsap.set(st, { svgOrigin: "540 640" });
         tl.fromTo(st, { scale: 3, opacity: 0 }, { scale: 1, opacity: 0.92, duration: 0.18, ease: "power4.in" }, t0);
       }
       tl.to(g, { opacity: 0, duration: 0.25 }, t0 + a.dur - 0.25);
@@ -574,14 +604,31 @@
       if (!hasG && !seg.media && !seg.gag) return null;
       const g = el("g", {}, visSvg);
       const m = seg.media ? seg.media.dur : 0;   // real visuals first (P25.2.2), then the data graphic
-      const gr = hasG ? el("g", { filter: look(S) }, g) : null;
+      const gw = hasG ? el("g", {}, g) : null, gr = hasG ? el("g", { filter: look(S) }, gw) : null;
       if (hasG) G[seg.g.type](gr, tl, seg.start + 0.15 + m, seg.g);
+      if (gw && m) { gsap.set(gw, { opacity: 0 }); tl.set(gw, { opacity: 1 }, seg.start + 0.15 + m - 0.05); }   // hidden under the
+      // media: a clipping card doesn't cover the whole box, and the graphic's start state ("0B+", "0.00") showed (9 Nov)
       if (seg.media) media(el("g", {}, g), tl, seg.start + 0.15, seg.media, si);
       if (seg.gag) {   // the graphic steps back while the gag is on (a stamp over live text read as a clash)
         const a0 = seg.start + seg.gag.at, gg = el("g", {}, g);
         gsap.set(gg, { opacity: 0 }); tl.set(gg, { opacity: 1 }, a0); gag(gg, tl, a0, seg.gag);
-        if (gr) { tl.to(gr, { opacity: seg.gag.treatment === "stamp" ? 1 : 0, duration: 0.15 }, a0); tl.to(gr, { opacity: 1, duration: 0.2 }, a0 + seg.gag.dur - 0.2); }
+        if (gr) { tl.to(gr, { opacity: 0, duration: 0.15 }, a0); tl.to(gr, { opacity: 1, duration: 0.2 }, a0 + seg.gag.dur - 0.2); }
       }
+      return g;
+    });
+
+    // the handoff card (9 Nov): while a topic's last short sentence teases the next story, the box shows what is next
+    const nexts = cfg.segments.map((seg) => {
+      if (seg.nextAt == null) return null;
+      const g = el("g", { style: "display:none" }, visSvg);
+      el("rect", { x: 60, y: 300, width: 960, height: 680, rx: 22, fill: S.bg, stroke: S.ink, "stroke-width": 5 }, g);
+      txt(g, 540, 390, `UP NEXT · ${seg.topic + 1}/${cfg.topics}`, { size: 44, font: S.body, fill: S.red, weight: 800, spacing: 6 });
+      el("rect", { x: 380, y: 425, width: 320, height: 8, fill: S.red }, g);
+      const ws = String(seg.nextHeadline || "").split(/\s+/), lines = []; let cur = "";
+      ws.forEach((w) => { if ((cur + " " + w).trim().length > 18 && cur) { lines.push(cur); cur = w; } else cur = (cur + " " + w).trim(); });
+      if (cur) lines.push(cur);
+      const shown = lines.slice(0, 3), lh = 108, mid = 690;   // the block centred in y 470-920, under the kicker (9 Nov: it ran into it)
+      shown.forEach((l, i) => { const n = txt(g, 540, mid + (i - (shown.length - 1) / 2) * lh, l, { size: 88, font: S.head, fill: S.text, weight: 800 }); fit(n, 880, 88); });
       return g;
     });
 
@@ -616,7 +663,7 @@
     const cdSvg = svgBox(cd, 132, 132, "position:absolute;left:0;top:0");
     el("circle", { cx: 66, cy: 66, r: 58, fill: S.bg, stroke: S.ink, "stroke-width": 5 }, cdSvg);
     const ring = el("circle", { cx: 66, cy: 66, r: 50, fill: "none", stroke: S.red, "stroke-width": 12, "stroke-dasharray": `${2 * Math.PI * 50}`, transform: "rotate(-90 66 66)" }, cdSvg);
-    const cdNum = txt(cdSvg, 66, 84, "", { size: 52, font: S.head, fill: S.text, weight: 800 });
+    const cdNum = txt(cdSvg, 66, 82, "", { size: 44, font: S.head, fill: S.text, weight: 800 });   // "8s": a bare 8 beside "1/7" read as a story count (9 Nov)
     const strip = div(pkg, `position:absolute;left:48px;top:176px;width:984px;opacity:0;display:flex;align-items:stretch;font:800 40px/1.15 ${q(S.head)}`);
     const chip = div(pkg, `position:absolute;left:48px;top:244px;background:${S.bg};color:${S.text};border:3px solid ${S.text};font:800 28px/1 ${S.body};padding:8px 14px;opacity:0`);   // ~50 px tall with padding; placed under the strip each topic
     const ticker = div(pkg, `position:absolute;left:0;top:1432px;width:1080px;height:64px;background:${S.ink};overflow:hidden;opacity:0`);
@@ -624,7 +671,7 @@
     tickTag.textContent = "TODAY";
     const tickText = div(ticker, `position:absolute;left:0;top:0;height:64px;white-space:nowrap;color:${S.bg};font:700 30px/64px ${S.body};letter-spacing:2px`);
     tickText.textContent = ((cfg.ticker || []).join("   ◆   ") + "   ◆   ").repeat(3);
-    const breaking = div(pkg, `position:absolute;left:0;top:1236px;width:1080px;opacity:0;display:flex;align-items:stretch`);   // one compact row under Habit's chin (y 1236-1320)
+    const breaking = div(pkg, `position:absolute;left:0;top:1290px;width:1080px;padding-right:200px;box-sizing:border-box;opacity:0;display:flex;align-items:stretch`);   // 9 Nov: y 1236 -> 1290 (it cut Habit at the chin); text ends by x 880 (buttons)
     breaking.innerHTML = `<div style="background:${S.red};color:${S.textOnRed};font:900 44px/1 ${q(S.head)};padding:20px 22px 16px 48px;letter-spacing:3px;white-space:nowrap">BREAKING</div>
       <div style="flex:1;background:${S.ink};color:${S.bg};font:700 32px/1.15 ${q(S.body)};padding:14px 24px;display:flex;align-items:center">${esc(cfg.breakingText)}</div>`;
 
@@ -633,7 +680,7 @@
     const capStyle = (shot) => {
       if (shot === "pip") return { left: 500, width: 380, top: 1160, align: "left", size: 52 };   // right of the PiP, clear of the buttons (x > 900)
       if (shot === "split") return { left: 60, width: 820, top: 1004, align: "center", size: 56 };   // 9 Nov: 992 -> 1004, a clear gap under the box (980)   // inside x 60-880: the buttons sit right of x 900
-      if (shot === "wide") return { left: 60, width: 820, top: 1336, align: "center", size: 54 };   // under the breaking row, above the ticker (y 1432)   // under the breaking bar
+      if (shot === "wide" || shot === "close") return { left: 60, width: 820, top: 1336, align: "center", size: 54 };   // under the breaking row, above the ticker (y 1432)   // under the breaking bar
       return { left: 60, width: 820, top: 1210, align: "center" };
     };
 
@@ -680,6 +727,7 @@
     const LEAD = 1.1;
     const faceOf = (seg, t) => {
       if (!seg) return EMO.neutral;
+      if (seg.nextAt != null && t - seg.start >= seg.nextAt) return EMO.alert;   // the handoff looks ahead (9 Nov: a grin left over from the last story)
       if (seg.laughAt != null) return t - seg.start >= seg.laughAt ? EMO.laughing : EMO.excited;
       return EMO[seg.emotion] || EMO.neutral;
     };
@@ -690,6 +738,8 @@
       const into = t - seg.start;
       if (into < LEAD) return mixEmo(end, EMO.alert, ease(clamp(into / 0.3)));
       const cur = faceOf(seg, t), k = ease(clamp((into - LEAD) / 0.35));
+      if (seg.nextAt != null && into >= seg.nextAt)   // into the handoff: from the story's face to alert
+        return mixEmo(faceOf(seg, seg.start + seg.nextAt - 1e-3), EMO.alert, ease(clamp((into - seg.nextAt) / 0.3)));
       if (seg.laughAt != null && t - seg.start >= seg.laughAt) return mixEmo(EMO.excited, cur, ease(clamp((into - seg.laughAt) / 0.25)));
       return mixEmo(EMO.alert, cur, k);
     };
@@ -721,21 +771,30 @@
       bug.style.opacity = inSting || atEnd ? 0 : 1;
       // topic countdown + strip
       if (seg.topic && !atEnd) {
+        const handoff = seg.nextAt != null && t - seg.start >= seg.nextAt;
         const left = Math.max(seg.start + seg.dur - t, 0);
         const k = clamp((t - seg.start) / 0.3);
         cd.style.opacity = k; cd.style.transform = `scale(${0.7 + 0.3 * ease(k)})`;
-        cdNum.textContent = String(Math.ceil(left - 1e-6));
+        cdNum.textContent = `${Math.ceil(left - 1e-6)}s`;
         ring.setAttribute("stroke-dashoffset", `${2 * Math.PI * 50 * (1 - left / seg.dur)}`);
         ring.setAttribute("stroke", left < 3 ? S.red : S.blue);
-        if (lastStrip !== si) {
+        if (lastStrip !== si && !handoff) {
           strip.innerHTML = `<span style="background:${S.red};color:${S.textOnRed};padding:12px 18px 8px;font-family:${q(S.body)};font-size:30px;letter-spacing:2px;white-space:nowrap">${seg.topic}/${cfg.topics} · ${esc(seg.lane).toUpperCase()}</span>` +
             `<span style="background:${S.ink};color:${S.bg};padding:12px 20px 8px;white-space:nowrap;font-size:34px">${esc(seg.headline)}</span>`;   // one size for every topic (a 40/34 switch read as "t4 drawn larger")
           chip.textContent = `SOURCE · ${seg.source || ""}`;   // the source only (a subject logo beside it read as the source)
           lastStrip = si;
         }
+        const hs = handoff ? "next" : si;
+        if (lastStrip !== hs && handoff) {   // the handoff names the next story (9 Nov: heard over the old chart)
+          strip.innerHTML = `<span style="background:${S.blue};color:#fff;padding:12px 18px 8px;font-family:${q(S.body)};font-size:30px;letter-spacing:2px;white-space:nowrap">NEXT ▸</span>` +
+            `<span style="background:${S.ink};color:${S.bg};padding:12px 20px 8px;white-space:nowrap;font-size:34px">${esc(seg.nextLane || "").toUpperCase()}</span>`;   // the card shows the headline
+          lastStrip = hs;
+        }
+        if (groups[si]) groups[si].style.opacity = handoff ? 0 : 1;   // the card cuts to UP NEXT (a dimmed card read as unfinished)
+        nexts.forEach((n, i) => { if (n) n.style.display = handoff && i === si ? "" : "none"; });
         const sk = clamp((t - seg.start - 0.1) / 0.3);
         strip.style.opacity = shot === "wide" ? 0 : sk; strip.style.marginLeft = `${(1 - ease(sk)) * -60}px`;
-        chip.style.opacity = seg.source && shot !== "wide" ? clamp((t - seg.start - 0.6) / 0.3) : 0;
+        chip.style.opacity = seg.source && shot !== "wide" && !handoff ? clamp((t - seg.start - 0.6) / 0.3) : 0;
       } else { cd.style.opacity = 0; strip.style.opacity = 0; chip.style.opacity = 0; }
       const tk = cfg.tickerAt != null ? clamp((t - cfg.tickerAt) / 0.4) : 0;
       ticker.style.opacity = atEnd ? 0 : tk;
@@ -757,13 +816,18 @@
       const markOn = f.s < 1.05 && (w < 0 || atEnd || inSting);   // wide shot only (cut off in close-ups), and never under a
       // caption (9 Nov: the open's caption sat on the desk wordmark)
       marks.forEach((mk) => { mk.style.opacity = markOn ? 1 : 0; });
-      if (w < 0 || atEnd || inSting) cap.textContent = "";
+      if (w < 0 || atEnd || inSting || bk > 0.5) cap.textContent = "";   // the BREAKING bar already shows the open's words (9 Nov)
       else {
         const grp = words.filter((x) => x.g === words[w].g);
         cap.innerHTML = `<span style="display:inline-block;text-wrap:balance;max-width:100%;width:fit-content;box-sizing:border-box;background:${S.bg};padding:8px 20px;border-radius:${cfg.set === "riso" ? 0 : 14}px;box-shadow:0 0 0 3px ${S.text}">` +
           grp.map((x) => `<span style="color:${x === words[w] ? S.red : x.st ? S.blue : S.text}${x.st ? ";font-weight:900" : ""}">${esc(String(x.w).replace(/[;:,]+$/, ""))}</span>`).join(" ")   // spoken word red, stressed words blue (P9.1.5) + "</span>";
         const c = capStyle(seen);
         Object.assign(cap.style, { left: c.left + "px", width: c.width + "px", top: c.top + "px", textAlign: c.align, display: "block", fontSize: (c.size || 62) + "px" });
+        if (seen !== "pip") {   // one line: shrink to fit (9 Nov: "to three point five billion dollars" wrapped onto the headphones)
+          const pill = cap.firstElementChild; pill.style.whiteSpace = "nowrap";
+          pill.style.maxWidth = "none";   // measure the real line (max-width capped offsetWidth, so it never shrank)
+          let fs = c.size || 62; while (pill.scrollWidth > c.width && fs > 38) { fs -= 2; cap.style.fontSize = fs + "px"; }
+        }
       }
     };
     const clock = { t: 0 };

@@ -174,6 +174,7 @@ What the table read marks down most (Ep 1-7), so write it right the first time:
   A technical term gets a plain gloss or a plainer word ("a sun-blocking camera", not "a coronagraph" alone).
 - Flow: every handoff points at the next story's subject ("Next, money at home:", "From chips to your wallet:"),
   never a bare unrelated sentence.
+- Face: the open's emotion fits its stake (worried or serious for a price rise, a hack, a loss; never a grin on bad news).
 - Hook: the open is two complete clauses, each with its own verb and a stake; no dangling "and a deal valued at...".
 - Ending: the outro's callback restates its story's fact exactly as the facts give it, no new detail.
 - Graphics: labels in one chart use one format ("Q4 FY2025, Q3 FY2026", not "Q4 2025" beside "Q3 FY2026").
@@ -349,6 +350,16 @@ def lint(script, data):
             q = norm(gr["text"])
             if not any(q in norm(facts[i]["text"]) for i in g.get("facts", []) if i in facts) and not any(q in norm(f["text"]) for f in facts.values()):
                 errs.append(f"segment {g['story']}: quote text is not verbatim in a fact; use the fact's exact words in quotes, or another graphic")
+    for g in script["segments"]:   # the face fits the news (screening: a grin on a heist, a smile on job cuts)
+        if g["emotion"] in ("excited", "smug", "laughing") and BAD_NEWS.search(g["say"]) and not g["witty"].strip():
+            errs.append(f"segment {g['story']}: emotion {g['emotion']} on bad news ({BAD_NEWS.search(g['say']).group(0)}): "
+                        "use worried, serious, surprised or doubtful")
+        gr = g["graphic"]
+        for k in ("sub", "caption", "kicker", "label", "title"):   # long lines wrapped and shrank on a phone (9 Nov)
+            if len(str(gr.get(k) or "")) > 34:
+                errs.append(f"segment {g['story']}: graphic {k} is {len(str(gr[k]))} characters (at most 34)")
+    if script["open"]["emotion"] in ("excited", "smug", "laughing") and BAD_NEWS.search(script["open"]["say"]):
+        errs.append(f"open: emotion {script['open']['emotion']} on bad news: use worried, serious or surprised")
     errs += lint_analogies(script)
     said = " ".join(t for _, t, _, _ in lines)
     shown = " ".join(json.dumps(g["graphic"], ensure_ascii=False) for g in script["segments"]) + " " + \
@@ -534,7 +545,7 @@ def visuals(script, data, out):
                 continue
             if p["kind"] != "none" and p["name"]:
                 cues.append({"id": f"s{p['story']}-photo", "kind": "photo", "name": p["name"], "wiki": p["wiki"] or None,
-                             "context": s["headline"]})
+                             "context": s["headline"], "subject": p["kind"]})
             if p.get("scene"):   # P0.1.5: an open-licence everyday photo when the subject has none (Ep 6: 2 of 7 stories had a photo)
                 cues.append({"id": f"s{p['story']}-scene", "kind": "photo", "name": p["scene"], "context": f"{s['headline']} (a general scene, not a specific person)"})
             if p["logo"]:
@@ -564,6 +575,7 @@ def visuals(script, data, out):
         shutil.rmtree(batch)
         led_path.write_text(json.dumps(ledger, ensure_ascii=False, indent=1))
     by = {}
+    subject = {c["id"]: c.get("subject") for c in cues}   # person | product | place | thing (the cue desk's call)
     for r in ledger:
         if r.get("missing"):
             continue
@@ -576,7 +588,7 @@ def visuals(script, data, out):
         if kind == "photo" and r["id"].endswith("-scene") and "photo" in by.get(story, {}):
             continue   # the subject's own photo wins over the scene photo
         if kind == "photo":
-            by.setdefault(story, {})["photo"] = {"src": src, "w": r["width"], "h": r["height"],
+            by.setdefault(story, {})["photo"] = {"src": src, "w": r["width"], "h": r["height"], "subject": subject.get(r["id"]),
                                                 "credit": f"Photo: {r['author'][:40]} · {r['licence']} · {r['source']}"}
         elif kind == "screenshot":
             by.setdefault(story, {})["shot"] = {"src": src, "w": r["width"], "h": r["height"], "head": r.get("headline"), "page": r.get("page"),
@@ -610,6 +622,10 @@ def gag_for(g, seg, mine_words, media_by):
 
 
 # ---------- narrator ----------
+SOMBRE = ("worried", "serious", "surprised", "doubtful")
+BAD_NEWS = re.compile(r"\b(hack\w*|heist|stole\w*|stolen|scam\w*|fraud|layoffs?|laid off|job cuts?|cuts?|fired|exit packages?|"
+                      r"loss(es)?|lost|crash\w*|plunge\w*|fell|falls?|slump\w*|slips?|slipped|breach\w*|died|death|killed|"
+                      r"bankrupt\w*|fine[ds]?|penalt\w+|ban(ned|s)?|probe|lawsuit|sued|outage|recall\w*|warning)\b", re.I)
 ENERGY = {"neutral": 0.55, "excited": 0.75, "surprised": 0.7, "doubtful": 0.5, "smug": 0.6, "worried": 0.5, "laughing": 0.75, "serious": 0.45}
 
 
@@ -729,24 +745,76 @@ def open_media(m, lead):
     if sh and sh.get("w") and sh.get("head"):
         hx, hy, hw, hh = sh["head"]
         x0, y0 = max(0, hx - 24), max(0, hy - 24)
-        return {"kind": "shot", "src": sh["src"], "w": sh["w"], "h": sh["h"], "label": lead["wall"],
+        return {"kind": "shot", "src": sh["src"], "w": sh["w"], "h": sh["h"], "label": "TOP STORY",   # its number is in the headline already
                 "crop": [x0, y0, min(sh["w"], hx + hw + 24) - x0, min(sh["h"], hy + hh + 24) - y0]}
     if m.get("photo") and m["photo"].get("w"):
         ph = m["photo"]
-        return {"kind": "photo", "src": ph["src"], "w": ph["w"], "h": ph["h"], "crop": None, "label": lead["wall"]}
+        return {"kind": "photo", "src": ph["src"], "w": ph["w"], "h": ph["h"], "crop": None, "label": lead["wall"] or "TOP STORY"}
     return None
 
 
-def credited(say, source):
-    """The chip names the outlet the line credits ("per Entrackr") when the page on screen is another one (Ep 6: "per
-    Entrackr" over an OPEN page read as a mismatch): "Entrackr via OPEN"."""
-    m = re.search(r"\b(?:per|according to)\s+((?:[A-Z][\w&.-]*(?:'s)?\s?){1,3})", say)
-    if not m:
-        return source
-    name = re.sub(r"'s$", "", m.group(1).strip()).strip()
-    if not name or name.lower()[:5] in (source or "").lower():
-        return source
-    return f"{name} via {source}"[:34] if source else name
+def chyron(say, most=46):
+    """The BREAKING bar says what the open says (9 Nov: the bar named the inventory story while the voice said 'your
+    next iPhone could cost more', flagged on every screening): the open's first clause after "Breaking:", cut at a word."""
+    t = re.sub(r"^\s*breaking[:,]?\s*", "", say, flags=re.I)
+    t = re.split(r"[,;.!?]| and | but | while ", t)[0].strip()
+    if len(t) > most:
+        t = t[:most].rsplit(" ", 1)[0]
+    return (t[:1].upper() + t[1:]) if len(t) >= 12 else ""
+
+
+NUMWORD = re.compile(r"^(\d|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|"
+                     r"seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|"
+                     r"billion|trillion|crore|lakh|half|double|twice)", re.I)
+
+
+def clipping_ok(sh, min_h=170):
+    """A headline capture is worth showing as a clipping when it has a headline box at least 40% of the page wide and,
+    scaled to the clipping's 900 px width (at most 480 px tall), comes out at least `min_h` px tall. A one-word repo name
+    or a one-line desktop headline came out as a thin strip in an empty panel (screening, 9 Nov)."""
+    if not sh.get("head") or not sh.get("w"):
+        return False
+    hx, hy, hw, hh = sh["head"]
+    pad = max(10, hh * 0.08)
+    cw, ch = min(sh["w"], hx + hw + pad) - max(0, hx - pad), min(sh["h"], hy + hh + pad) - max(0, hy - pad)
+    k = min(900 / cw, 480 / ch)
+    return hw >= 0.4 * sh["w"] and ch * k >= min_h
+
+
+def media_window(seg_words, start, dur, lo=2.2, hi=5.0):
+    """How long the real visuals stay before the data graphic: until just before the first number word is said, so the
+    number is on screen when it is heard (9 Nov: '47.5 percent' was heard over a headline with no number); 45% of the
+    topic when the line has no number. Between `lo` and `hi` seconds."""
+    first = next((w["s"] for w in seg_words if NUMWORD.match(re.sub(r"^[^\w]+", "", w["w"]))), None)
+    want = (first - start - 0.35) if first is not None else dur * 0.45
+    return round(min(max(want, lo), hi, dur - 1.5), 2)
+
+
+OUTLETS = {"openthemagazine": "OPEN", "economictimes": "ET", "timesofindia": "TOI", "indiatimes": "TOI", "oneindia": "Oneindia",
+           "techcrunch": "TechCrunch", "reuters": "Reuters", "livemint": "Mint", "thehindu": "The Hindu", "hindustantimes": "HT",
+           "ndtv": "NDTV", "moneycontrol": "Moneycontrol", "business-standard": "Business Standard", "inc42": "Inc42",
+           "theverge": "The Verge", "bloomberg": "Bloomberg", "cnbc": "CNBC", "bbc": "BBC", "github": "GitHub", "macrumors": "MacRumors",
+           "entrackr": "Entrackr", "medianama": "MediaNama", "financialexpress": "Financial Express", "indianexpress": "Indian Express"}
+
+
+def outlet_name(source):
+    """'openthemagazine.com' -> 'OPEN'; a name stays a name (the chip read 'opentheamagazine.com' as a raw slug)."""
+    if not source or "." not in source:
+        return source or ""
+    key = re.sub(r"^(www|m|amp)\.", "", source.lower()).split(".")[0]
+    return OUTLETS.get(key, key.capitalize())
+
+
+def credited(say, cited, page):
+    """The chip names who the line credits and the page on screen: "Entrackr via OPEN" (the screening asked for the
+    cited source on one pass and the outlet on screen on the next: both, in one chip). `cited` is the story's own
+    source name; a line's "per NPCI" wins over it."""
+    m = re.search(r"\b(?:per|according to)\s+([A-Z][\w&-]*(?: [A-Z][\w&-]*){0,2})", say)
+    who = m.group(1) if m else outlet_name(cited)
+    shown = outlet_name(page)
+    if not who or who.lower()[:5] in shown.lower() or shown.lower()[:5] in who.lower():
+        return shown or who
+    return f"{who} via {shown}" if shown else who
 
 
 def still_times(c, settle=0.7):
@@ -759,13 +827,31 @@ def still_times(c, settle=0.7):
         if not s.get("topic"):
             continue
         a, b = s["start"], s["start"] + s["dur"]
-        cuts = [a + off for off, _ in (s.get("shots") or [])[1:]] + ([a + s["media"]["dur"]] if s.get("media") else [])
-        ok = lambda x: a + 0.6 <= x <= b - 0.4 and all(abs(x - k) >= settle for k in cuts)
+        cuts = [a + off for off, _ in (s.get("shots") or [])[1:]] + ([a + s["nextAt"]] if s.get("nextAt") is not None else [])
+        g0 = a + 0.15 + (s["media"]["dur"] if s.get("media") else 0)   # the graphic enters; its numbers settle by +1.2 s
+        ok = lambda x: a + 0.6 <= x <= b - 0.4 and all(abs(x - k) >= settle for k in cuts) and not (g0 - settle <= x < g0 + 1.3)
         for f in (0.3, 0.8):
             want = a + s["dur"] * f
             cand = [want + d / 10 for d in range(0, 40)] + [want - d / 10 for d in range(1, 40)]
             times.append(round(min((x for x in cand if ok(x)), key=lambda x: abs(x - want), default=want), 2))
     return times + [c["endAt"] + 1.0]
+
+
+def handoff_at(seg_words, start, say, most=8):
+    """Seconds into a topic where its handoff starts: the last sentence of the script line (after the last . ? !), when
+    it is short (at most `most` words) and not the whole line, found among the heard words from the end. While it is
+    said the box shows UP NEXT (9 Nov screening: 'UPI hit a milestone' was heard over the Apple chart). The sentence
+    comes from the script, not from the heard window: Whisper's timing let the next line's first word into the window,
+    which then passed for the handoff."""
+    parts = [x for x in re.split(r"(?<=[.?!])\s+", TAG.sub(" ", say).strip()) if x]
+    if len(parts) < 2 or words(parts[-1]) > most:
+        return None
+    key = lambda x: re.sub(r"[^\w']", "", x.lower())
+    first = key(parts[-1].split()[0])
+    for w in reversed(seg_words):
+        if key(w["w"]) == first:
+            return round(w["s"] - start, 2)
+    return None
 
 
 def laugh_at(g, seg_words, start):
@@ -790,7 +876,7 @@ def direct(script, data, vd, ep, day, media_by=None):
     stories = {s["story"]: s for s in data["stories"]}
     t, segs, voice_at, words, env = 0.3, [], [], [], []
     c = {"set": cfg()["set"], "look": cfg()["look"], "episode": ep, "topics": len(script["segments"]),
-         "date": dt.date.fromisoformat(day).strftime("%d %b").upper(), "breakingText": hookpick_banner(script),
+         "date": dt.date.fromisoformat(day).strftime("%d %b").upper(), "breakingText": chyron(script["open"]["say"]) or hookpick_banner(script),
          "ticker": [g["headline"].upper() for g in script["segments"]]}
 
     stress_of = {f"t{k}": {re.sub(r"[^\w']", "", x.lower()) for s in g.get("stress") or [] for x in s.split()}
@@ -821,7 +907,8 @@ def direct(script, data, vd, ep, day, media_by=None):
     lead = hookpick.story_of(script["open"]["say"], script) or script["segments"][0]   # the wall shows the open's story, not a
     # third "BREAKING" beside the bar and the desk (Ep 6 screening: the brand three times in the open)
     c["openMedia"] = open_media((media_by or {}).get(lead["story"]) or {}, lead)
-    place("open", {"shot": "wide", "emotion": script["open"]["emotion"], "wall": lead["wall"].upper(), "wallSub": "TODAY"})
+    open_face = lead["emotion"] if lead["emotion"] in SOMBRE else script["open"]["emotion"]   # no grin on a heist (9 Nov)
+    place("open", {"shot": "wide", "emotion": open_face, "wall": lead["wall"].upper(), "wallSub": lead["headline"].upper()[:30]})
     c["breakingDur"] = D["open"]["seconds"]
     c["stingAt"] = round(t, 3)
     segs.append({"start": round(t, 3), "dur": STING, "shot": "wide", "wall": "EP " + str(ep), "emotion": "excited"})
@@ -833,26 +920,41 @@ def direct(script, data, vd, ep, day, media_by=None):
         seg = {"topic": k, "lane": s["lane"], "headline": g["headline"], "source": s.get("source_name", ""), "shot": pat[0][1],
                "emotion": g["emotion"], "wall": g["wall"].upper(), "wallSub": s["lane"].upper(), "g": map_geo(g["graphic"])}
         place(f"t{k}", seg, lo)
-        at = laugh_at(g, [w for w in words if w["g"].startswith(f"{len(segs) - 1}-")], seg["start"])
+        mine_w = [w for w in words if w["g"].startswith(f"{len(segs) - 1}-")]
+        nxt = handoff_at(mine_w, seg["start"], g["say"])
+        if nxt is not None and k < len(script["segments"]):
+            seg["nextAt"], seg["nextHeadline"] = nxt, script["segments"][k]["headline"]
+            seg["nextLane"] = stories[script["segments"][k]["story"]]["lane"]
+        at = laugh_at(g, mine_w, seg["start"])
         if at is not None:
             seg["laughAt"] = at
         seg["shots"] = [[round(seg["dur"] * f, 2), shot] for f, shot in pat]
         m = dict((media_by or {}).get(g["story"]) or {})
-        if media_by is not None and not (m.get("photo") or m.get("shot")):   # nothing captured: a drawn headline card, never an empty slot
+        if m.get("shot") and not clipping_ok(m["shot"]):   # a one-word or hairline crop reads as a placeholder: the drawn
+            m.pop("shot")                                    # card with the story's full title instead (9 Nov: "nanochat")
+        if m.get("shot"):   # the story's own headline is the picture; a stock photo beside it misled on every screening
+            m.pop("photo", None)   # (9 Nov: a road sign for Marvell, a 1984 memory board for Apple)
+        if m.get("photo") and m["photo"].get("subject") not in ("person", "place"):   # a product UI or a "thing" photo
+            m.pop("photo")   # misled the screening on every pass (a Gurmukhi chat for ChatGPT, a 1984 memory board for Apple)
+        if media_by is not None and not m.get("shot"):   # no capture: the drawn headline card names the story first
             m["card"] = {"title": s.get("title") or s["headline"], "outlet": s.get("source_name") or s.get("outlet", "")}
-        if m.get("photo") or m.get("shot") or m.get("card"):   # real visuals for the first ~45% of the story, then the graphic
-            seg["media"] = {**m, "dur": round(min(max(seg["dur"] * 0.45, 3.0), 5.0), 2)}
+        if m.get("photo") or m.get("shot") or m.get("card"):   # real visuals until the number is said, then the graphic
+            mine_w = [w for w in words if w["g"].startswith(f"{len(segs) - 1}-")]
+            seg["media"] = {**m, "dur": media_window(mine_w, seg["start"], seg["dur"])}
             if m.get("shot") and m["shot"].get("page"):   # the chip names the outlet whose page is on screen
                 key = re.sub(r"[^a-z0-9]", "", seg["source"].lower())[:6]
                 if not key or key not in re.sub(r"[^a-z0-9]", "", m["shot"]["page"].lower()):
                     seg["source"] = daily.source_of(m["shot"]["page"])
-        seg["source"] = credited(g["say"], seg["source"])
+            seg["source"] = credited(g["say"], s.get("source_name") or "", seg["source"])
+            seg["media"]["outlet"] = seg["source"]   # the card's label and the chip name the same outlet (9 Nov)
         gag = gag_for(g, seg, [w for w in words if w["s"] >= seg["start"] - 0.01 and w["s"] < seg["start"] + seg["dur"]], media_by)
         if gag:
             seg["gag"] = gag
         fill_beats(seg, c)
     c["tickerAt"] = round(t + 0.2, 3)
     place("outro", {"shot": "wide", "emotion": script["outro"]["emotion"], "wall": "SEE YOU", "wallSub": "TOMORROW"})
+    segs[-1]["shots"] = [[0, "wide"], [round(D["outro"]["seconds"] * 0.45, 2), "close"]]   # a push-in: the outro held one
+    # picture for 5.6 s (Ep 7 test, events gate)
     c["endAt"] = round(segs[-1]["start"] + D["outro"]["seconds"] - 0.2, 3)
     t = c["endAt"] + END_HOLD
     segs[-1]["dur"] = round(t - segs[-1]["start"], 3)
@@ -1076,7 +1178,7 @@ def stills(video, times, out, name):
     return sheet
 
 
-def heard_at(c, t, before=1.6, after=0.4):
+def heard_at(c, t, before=0.7, after=0.2):   # 9 Nov: 1.6 s back mixed in the sentence before a cut
     """The words Habit says around a still (from the direction's word timings), or what plays instead: the judge
     otherwise guessed which line was on, and blamed the title sting for 'not showing' the first story (9 Nov)."""
     if c.get("stingAt") is not None and c["stingAt"] <= t < c["stingAt"] + STING:
@@ -1126,7 +1228,8 @@ def visual_events(c):
     """Picture changes the viewer sees (P9.2.1 in the show): each topic's cut-in, its shot changes, each media layer (photo,
     page, card) and the page's highlighter, the graphic's entry and its beat (a count-up landing, a headline slam), the
     analogy gag. Captions and the running countdown don't count: they change all the time and would hide a dead stretch."""
-    ev = [c["breakingAt"], c["stingAt"], c["endAt"]]
+    ev = [c["breakingAt"], c["stingAt"], c["endAt"]] + ([c["tickerAt"]] if c.get("tickerAt") is not None else [])
+    ev += [s["start"] + off for s in c["segments"][-1:] if not s.get("topic") for off, _ in (s.get("shots") or [[0, "wide"]])]   # the outro's cut and push-in
     for s in c["segments"]:
         if not s.get("topic"):
             continue
@@ -1144,6 +1247,8 @@ def visual_events(c):
             ev += [g0 + 0.2] + ([g0 + 1.4] if s["g"]["type"] in ("stat", "versus", "bars", "map") else []) + ([g0 + 0.3] if s["g"]["type"] == "headline" else [])
         if s.get("gag"):
             ev.append(a + s["gag"]["at"])
+        if s.get("nextAt") is not None:   # the UP NEXT card cuts in
+            ev.append(a + s["nextAt"])
     return sorted(round(x, 2) for x in ev)
 
 
@@ -1162,7 +1267,8 @@ def check_render(final, c, script, vd, out):
     blank = qa.blank_spans(final)
     lo, hi = cfg()["length"]
     heard = " ".join(w["w"] for w in json.loads((vd / "words.json").read_text()))
-    werr = captions.wer(" ".join(TAG.sub(" ", l["say"]) for l in lines_of(script)), heard)   # a laugh tag is heard, not said
+    lex = json.loads(LEX.read_text()) if LEX.exists() else {}
+    werr = captions.wer(" ".join(TAG.sub(" ", l["say"]) for l in lines_of(script)), heard, respelled=list(lex))   # a laugh tag is heard, not said
     L = bar["sound"]["lufs"]
     gates = {"length": {"pass": lo - 8 <= secs <= hi + 5, "detail": f"{secs:.1f} s (target {lo}-{hi})"},
              "loudness": {"pass": lufs is not None and L[0] - 0.5 <= lufs <= L[1] + 0.5 and (peak is None or peak <= bar["sound"]["true_peak"] + 0.5),
