@@ -10,13 +10,13 @@ DATA = {"stories": [
 SEG = "The story here is short and simple, and it keeps going with plain words, because sixteen point three billion dollars is a lot of money, honestly."
 SCRIPT = {
     "title": "Ep", "breaking": "x",
-    "open": {"say": "Breaking: a giant AI lab opens its books, and a payments app suddenly prints money at last.", "emotion": "excited"},
-    "outro": {"say": "That's the show, from big books to tiny profits. See you tomorrow. Make learning a Habit.", "emotion": "smug"},
+    "open": {"say": "Breaking: a giant AI lab opens its books, and a payments app suddenly prints money at last.", "emotion": "excited", "show": "SHOW: both headlines"},
+    "outro": {"say": "That's the show, from big books to tiny profits. See you tomorrow. Make learning a Habit.", "emotion": "smug", "show": "SHOW: Habit at the desk"},
     "segments": [
         {"story": 1, "say": SEG, "witty": "honestly", "emotion": "surprised", "headline": "AI lab opens its books", "wall": "$16.3B",
-         "facts": ["s1f1"], "graphic": {"type": "stat", "value": "$16.3B", "label": "revenue"}},
+         "facts": ["s1f1"], "show": "SHOW: the revenue stat", "graphic": {"type": "stat", "value": "$16.3B", "label": "revenue"}},
         {"story": 3, "say": SEG.replace("sixteen point three billion dollars", "two hundred twenty-five crore rupees"), "witty": "honestly",
-         "emotion": "laughing", "headline": "Paytm prints money", "wall": "10X", "facts": ["s3f1"],
+         "emotion": "laughing", "headline": "Paytm prints money", "wall": "10X", "facts": ["s3f1"], "show": "SHOW: Paytm's profit",
          "graphic": {"type": "versus", "left": {"label": "before", "value": "1x"}, "right": {"label": "now", "value": "10x"}}},
     ]}
 

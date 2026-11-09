@@ -128,64 +128,7 @@ def research(stories, out):
 
 
 # ---------- writer, lints, table read, fix rounds ----------
-WRITER_SYSTEM = """You write The Daily Habit, a daily news show for YouTube Shorts / Instagram Reels, read aloud by the narrator
-Habit (warm, quick, a little cheeky; Indian, speaks clear English; audience Indians aged 18-30, most don't code).
-Format: a cold open, then one segment per story in the given order, then the outro. Every segment is 22-28 spoken words
-(about 8-10 seconds; never over 30): a hook that names the story, ONE fact (the strongest), why it matters to the viewer
-in plain words, and a quick handoff into the next story (the last segment hands off to the outro).
-Humour: at most MAX_JOKES witty lines in the whole episode, only where one comes naturally from the story (a light desi
-comparison, a deadpan aside). Never force a pun; a clear, sharp line beats a weak joke. The owner found forced jokes
-cringe, so when in doubt, leave it out.
-Hard rules:
-- Use only the verified facts given. Never add a number, name or claim that is not in them; never overstate (see cautions).
-- No digits anywhere in `say`: write numbers as words the way a person says them ("ninety percent", "sixteen point three
-  billion dollars", "sixty thousand"). Round only if the fact itself rounds.
-- Plain spoken English, short sentences, no jargon without a two-word explanation, no "folks", no "buckle up",
-  no "in today's episode", no greeting.
-- open: 10-20 words, starts with "Breaking:" and teases the top two stories with a stake.
-- outro: 10-20 words, a one-line wrap that calls back to one story, and ends exactly with "Make learning a Habit."
-- witty: copy the exact witty sentence from `say` (verbatim), or "" when the segment has no joke (most segments).
-- emotion: Habit's face for that line, one of neutral, excited, surprised, doubtful, smug, worried, laughing, serious. The face fits the news
-  first: worried, serious or surprised for losses, hacks, scams, layoffs and risks; excited, smug or laughing only for good
-  news or the witty line (screening: a grin on a record hack read as wrong).
-  Match it to the line, and vary it across the episode.
-- stress: the one or two words in the segment's say that carry its point (the number or the surprising word), copied
-  exactly as they appear in say; the captions mark them.
-- headline: the on-screen topic strip, at most 38 characters. wall: one big word or number for the studio wall, at most
-  8 characters. breaking: the open's on-screen bar, at most 55 characters. title: the episode's post title, at most 60
-  characters, naming the top story.
-- graphic: what fills the screen while Habit speaks. Pick the type that shows the fact best and vary types:
-  stat {value, label, sub} (value like "90%", "₹225 Cr", "$16.3B", "60,000"; digits allowed in graphics),
-  versus {left:{label,value}, right:{label,value}, caption}, bars {title (what is measured, with its unit, e.g. "MARKET VALUE, $ TRILLION"), items:[{label,value}] 2-4, caption},
-  headline {top, bottom, kicker}, quote {text (max 20 words, verbatim from a fact), who}, list {title, items: 3 short},
-  map {title, countries: 1-4 ISO alpha-3 codes ("IND", "USA", "CHN", "TWN"), route: true when something moves from the
-  first country to the last (a shipment, a flight, a deal, a launch), caption} for a story about places; no city-states.
-  Every number in a graphic must be in the verified facts. Labels short (max 28 characters).
-What the table read marks down most (Ep 1-7), so write it right the first time:
-- Accuracy: every sentence in say comes from a listed fact. The only words of your own are the handoff and at most one
-  witty line; no extra context, no "again", no "ordinary", no cause or effect the facts don't give (Ep 7: "Imports cost
-  more" was in no fact).
-- Accuracy: never join two facts with a cause or link word ("as", "because", "so", "after", "thanks to", "amid",
-  "driven by") unless a fact states that cause. Two facts side by side stay two sentences.
-- Accuracy: keep the source's hedge. A fact that is reported, estimated, planned, expected or claimed by someone stays
-  that way in say ("reportedly", "says", "plans to", "could"). A number that is "about" or "up to" keeps that word.
-- Accuracy: a fact more than a week older than the episode's date says when ("in July"), never "now" or "today".
-- Clarity: the first time a person appears, say who they are in two or three words ("AI researcher Andrej Karpathy").
-  A technical term gets a plain gloss or a plainer word ("a sun-blocking camera", not "a coronagraph" alone).
-- Flow: every handoff points at the next story's subject ("Next, money at home:", "From chips to your wallet:"),
-  never a bare unrelated sentence.
-- Face: the open's emotion fits its stake (worried or serious for a price rise, a hack, a loss; never a grin on bad news).
-- Dates: never "today", "tomorrow" or "yesterday" (the episode airs on another day than it is written): say the date.
-- Hook: the open rounds its numbers ("over six billion dollars"); the exact figure belongs in the segment. No "point" in the open.
-- Flow: vary the handoffs. At most two may start with a stock word (Now, Next, Finally, Meanwhile, Lastly, Last up); the
-  rest bridge by meaning ("From stolen crypto to a falling rupee:", "Speaking of quitting:").
-- Hook: the open is two complete clauses, each with its own verb and a stake; no dangling "and a deal valued at...".
-- Ending: the outro's callback restates its story's fact exactly as the facts give it, no new detail.
-- Graphics: labels in one chart use one format ("Q4 FY2025, Q3 FY2026", not "Q4 2025" beside "Q3 FY2026").
-Laugh (optional, at most one per episode): if a witty line truly earns it, put [chuckle] (a small laugh) or
-[laugh] right after it inside that segment's say, with emotion laughing; never in the open or the outro, and never
-on a serious story. The tag is voiced as a real laugh and is not a word: it doesn't count toward the 22-28 words.
-Return JSON only."""
+# The rundown prompt and its schema moved to research/rundown.json (the shorts-writer skill's rundown format, 9 Nov).
 
 ANALOGIES = ROOT / "research" / "analogies.json"
 _SLUG = {}   # the episode being written (set by write), so the reuse rule only looks at earlier episodes
@@ -219,35 +162,6 @@ def analogy_rules():
   is said, so pair it with the segment's witty line when there is one. Pick the treatment by what the line needs:
 {tr}
   image, left, right: only these image ids: {', '.join(analogy_images(_SLUG.get('now')))}. A number in big/labels must be in the verified facts.""")
-
-
-def writer_system():
-    return WRITER_SYSTEM.replace("MAX_JOKES", str(cfg().get("max_jokes", 3))).replace("Return JSON only.", analogy_rules() + "\nReturn JSON only.")
-
-
-G_ITEM = {"type": "object", "properties": {"label": {"type": "string"}, "value": {"type": "string"}}}
-LINE = {"type": "object", "required": ["say", "emotion"], "properties": {"say": {"type": "string"}, "emotion": {"type": "string", "enum": EMOTIONS}}}
-WRITER_SCHEMA = {"type": "object", "required": ["title", "breaking", "open", "segments", "outro"], "properties": {
-    "title": {"type": "string"}, "breaking": {"type": "string"}, "open": LINE, "outro": LINE,
-    "segments": {"type": "array", "items": {"type": "object",
-                 "required": ["story", "say", "witty", "emotion", "headline", "wall", "facts", "graphic", "analogy"],
-                 "properties": {"story": {"type": "integer"}, "say": {"type": "string"}, "witty": {"type": "string"},
-                                "stress": {"type": "array", "maxItems": 2, "items": {"type": "string"}},
-                                "emotion": {"type": "string", "enum": EMOTIONS}, "headline": {"type": "string"},
-                                "wall": {"type": "string"}, "facts": {"type": "array", "items": {"type": "string"}},
-                                "graphic": {"type": "object", "required": ["type"], "properties": {
-                                    "type": {"type": "string", "enum": GRAPHICS}, "value": {"type": "string"}, "label": {"type": "string"},
-                                    "sub": {"type": "string"}, "top": {"type": "string"}, "bottom": {"type": "string"},
-                                    "kicker": {"type": "string"}, "text": {"type": "string"}, "who": {"type": "string"},
-                                    "title": {"type": "string"}, "caption": {"type": "string"},
-                                    "left": G_ITEM, "right": G_ITEM, "items": {"type": "array", "items": {}},
-                                    "countries": {"type": "array", "items": {"type": "string"}}, "route": {"type": "boolean"}}},
-                                "analogy": {"type": "object", "required": ["treatment"], "properties": {
-                                    "treatment": {"type": "string", "enum": ["none", "compare", "scale", "photo", "stamp"]},
-                                    "image": {"type": "string"}, "left": {"type": "string"}, "right": {"type": "string"},
-                                    "left_label": {"type": "string"}, "right_label": {"type": "string"}, "joiner": {"type": "string"},
-                                    "big": {"type": "string"}, "label": {"type": "string"}, "caption": {"type": "string"},
-                                    "word": {"type": "string"}}}}}}}}
 
 
 def stories_block(data):
@@ -298,36 +212,45 @@ def map_geo(gr):
     return {**gr, "geo": {"view": view, "paths": paths, "labels": {c: w[c]["label"] for c in codes}, "names": {c: w[c]["name"] for c in codes}}}
 
 
-def lint(script, data):
-    c, errs = cfg(), []
-    lo, hi = c["segment_words"]
-    order = [s["story"] for s in data["stories"]]
-    if [g["story"] for g in script["segments"]] != order:
-        errs.append(f"segments must cover stories {order} in that order, one each (got {[g['story'] for g in script['segments']]})")
-    lines = [("open", script["open"]["say"], 10, 22), ("outro", script["outro"]["say"], 10, 22)] + \
-            [(f"segment {g['story']}", g["say"], lo, hi) for g in script["segments"]]
-    for name, say, a, b in lines:
-        n = words(say)
-        if not a <= n <= b:
-            errs.append(f"{name}: {n} words (needs {a}-{b})")
-        if re.search(r"\d", say):
-            errs.append(f"{name}: digits in say ({say[:60]}...): write numbers as words")
-    tags = [n for n, say, _, _ in lines for _ in TAG.finditer(say)]
-    if len(tags) > 1:
-        errs.append(f"{len(tags)} laugh tags ({', '.join(tags)}): at most one [chuckle] or [laugh] per episode")
-    if any(n in ("open", "outro") for n in tags):
-        errs.append("no laugh tag in the open or the outro")
-    for name, say, _, _ in lines:
-        if re.search(r"\[(?!chuckle\]|laugh\])[^\]]*\]", say):
-            errs.append(f"{name}: only [chuckle] or [laugh] may appear in brackets")
-    if not script["open"]["say"].lower().startswith("breaking"):
-        errs.append("open must start with 'Breaking:'")
-    if not script["outro"]["say"].rstrip().endswith("Make learning a Habit."):
-        errs.append("outro must end exactly with 'Make learning a Habit.'")
+RUNDOWN = Path.home() / "Talha_Khan" / "Claude" / "skills" / "shorts-writer" / "scripts" / "rundown.py"   # the script-writer desk (P25.3.1)
+_rd = {}
+
+
+def rundown():
+    """The shorts-writer skill's rundown module (loaded once): the format's generic lints and the write loop live there."""
+    if "m" not in _rd:
+        spec = importlib.util.spec_from_file_location("rundown", RUNDOWN)
+        _rd["m"] = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_rd["m"])
+    return _rd["m"]
+
+
+def rundown_config(save=False):
+    """research/rundown.json with its numbers from research/show.json and the quality bar (one source of truth): merged
+    in memory; save=True also writes them to the file (write() does, so the skill's own process reads the same)."""
+    sc = cfg()
+    want = {"segment_words": sc["segment_words"], "length": sc["length"], "max_jokes": sc.get("max_jokes", 3), "words_per_second": wps(),
+            "writer_model": sc["writer_model"], "doctor_model": sc["doctor_model"], "doctor_rounds": sc["doctor_rounds"]}
+    if save:
+        p = ROOT / "research" / "rundown.json"
+        c = json.loads(p.read_text())
+        if any(c.get(k) != v for k, v in want.items()):
+            p.write_text(json.dumps({**c, **want}, ensure_ascii=False, indent=1) + "\n")
+    return {**rundown().config(ROOT), **want}
+
+
+def rundown_input(data, ep=0, date=""):
+    return {"header": f"Episode {ep} of The Daily Habit, {date}. {len(data['stories'])} stories, in this order:",
+            "stories": stories_block(data), "order": [s["story"] for s in data["stories"]],
+            "facts": [{"id": f["id"], "text": f["text"]} for s in data["stories"] for f in s["facts"]]}
+
+
+def project_lint(script, data):
+    """The Daily Habit's own checks on top of the format's (graphics, the map, quotes, bars, analogies, the numbers
+    shown on screen); the skill runs them as its lint hook (frameflow/rundown_hook.py)."""
+    errs = []
     facts = {f["id"]: f for s in data["stories"] for f in s["facts"]}
     for g in script["segments"]:
-        if g["witty"].strip() and g["witty"].strip().strip(".") not in g["say"]:
-            errs.append(f"segment {g['story']}: witty line is not in say verbatim")
         if len(g["headline"]) > 40:
             errs.append(f"segment {g['story']}: headline over 38 characters")
         if len(g["wall"]) > 9:
@@ -352,48 +275,26 @@ def lint(script, data):
                             "use a stat or versus graphic instead")
         if gr["type"] == "quote" and gr.get("text"):   # a quote is the source's own words, never our summary
             q = norm(gr["text"])
-            if not any(q in norm(facts[i]["text"]) for i in g.get("facts", []) if i in facts) and not any(q in norm(f["text"]) for f in facts.values()):
+            if not any(q in norm(f["text"]) for f in facts.values()):
                 errs.append(f"segment {g['story']}: quote text is not verbatim in a fact; use the fact's exact words in quotes, or another graphic")
-    for g in script["segments"]:   # the face fits the news (screening: a grin on a heist, a smile on job cuts)
-        if (g["emotion"] in ("excited", "smug") or (g["emotion"] == "laughing" and not g["witty"].strip())) and BAD_NEWS.search(g["say"]):
-            errs.append(f"segment {g['story']}: emotion {g['emotion']} on bad news ({BAD_NEWS.search(g['say']).group(0)}): "
-                        "use worried, serious, surprised or doubtful")
-        gr = g["graphic"]
         for k in ("sub", "caption", "kicker", "label", "title"):   # long lines wrapped and shrank on a phone (9 Nov)
             if len(str(gr.get(k) or "")) > 34:
                 errs.append(f"segment {g['story']}: graphic {k} is {len(str(gr[k]))} characters (at most 34)")
-    for name, say, _, _ in lines:   # "tomorrow" is wrong the day it airs, and against the dated sting (9 Nov)
-        if re.search(r"\b(today|tomorrow|yesterday|tonight|this morning|last night)\b", re.sub(r"see you tomorrow", "", say, flags=re.I), re.I):   # the sign-off is fine
-            errs.append(f"{name}: no relative days (today/tomorrow/yesterday): say the date ('November tenth')")
-    if re.search(r"\bpoint\b", script["open"]["say"], re.I):   # a decimal in the open is hard to say and to hear (table read, 9 Nov)
-        errs.append("open: round its number (\"over six billion\"); the exact figure goes in the segment")
-    stock = [g["story"] for g in script["segments"][:-1] if (h := handoff_text(g["say"])) and
-             re.match(r"(now|next|finally|meanwhile|lastly|last up|up next)\b", h, re.I)]
-    if len(stock) > 2:   # "Now, ... Next, ... Next, ..." read as a list (table read flow row, every episode)
-        errs.append(f"handoffs of segments {stock} start with a stock word (Now/Next/Finally/Meanwhile): at most two; bridge the rest by meaning")
-    if script["open"]["emotion"] in ("excited", "smug", "laughing") and BAD_NEWS.search(script["open"]["say"]):
-        errs.append(f"open: emotion {script['open']['emotion']} on bad news: use worried, serious or surprised")
     errs += lint_analogies(script)
-    said = " ".join(t for _, t, _, _ in lines)
     shown = " ".join(json.dumps(g["graphic"], ensure_ascii=False) for g in script["segments"]) + " " + \
         " ".join(f"{(g.get('analogy') or {}).get('big', '')} {(g.get('analogy') or {}).get('label', '')}" for g in script["segments"])
-    for what, text in (("said", said), ("shown", re.sub(r'"type": "\w+"', "", shown))):
-        r = factcheck.check_script(text, {"facts": list(facts.values())})
-        if not r["pass"]:
-            errs.append(f"numbers {what} but not in the verified facts: {r['unverified_numbers']}")
-    secs = sum(words(t) for _, t, _, _ in lines) / wps() + STING + GAP * len(lines) + END_HOLD
-    if not c["length"][0] - 8 <= secs <= c["length"][1]:
-        errs.append(f"estimated length {secs:.0f} s (target {c['length'][0]}-{c['length'][1]} s)")
-    jokes = sum(1 for g in script["segments"] if g["witty"].strip())
-    if jokes > c.get("max_jokes", 3):
-        errs.append(f"{jokes} witty lines (at most {c.get('max_jokes', 3)}: keep only the ones that come naturally)")
+    r = factcheck.check_script(re.sub(r'"type": "\w+"', "", shown), {"facts": list(facts.values())})
+    if not r["pass"]:
+        errs.append(f"numbers shown but not in the verified facts: {r['unverified_numbers']}")
     types = [g["graphic"]["type"] for g in script["segments"]]
     if max(types.count(t) for t in set(types)) > 3:
         errs.append(f"graphics too samey: {types} (no type more than 3 times)")
-    emos = [g["emotion"] for g in script["segments"]]
-    if len(set(emos)) < 4:
-        errs.append(f"emotions too samey: {emos} (use at least 4 different ones)")
     return errs
+
+
+def lint(script, data):
+    """Every check a rundown script must pass before a reader sees it: the skill's format lints + project_lint."""
+    return rundown().lint(script, rundown_input(data), rundown_config(), lambda s, _: project_lint(s, data))
 
 
 def num(v):
@@ -449,44 +350,29 @@ def table_read(script, data):
 
 
 def write(data, out, ep, date, rules=None):
+    """The script-writer desk: the shorts-writer skill's rundown format (P25.3.1) with this show's config
+    (research/rundown.json), its checks (project_lint) and the table read (video-critic). The coach's playbook and the
+    analogy catalogue of this episode go in as the run's rules."""
     _SLUG["now"] = out.name
     path = out / "script.json"
     if path.exists():
         return json.loads(path.read_text())
-    c = cfg()
     from frameflow import coach   # the learning loop's playbook (P11): proven rules + this episode's rules under test
     rules = coach.playbook("writer", out) if rules is None else (f"House rules (follow them where they fit):\n{rules}" if rules else "")
-    ask = (f"Episode {ep} of The Daily Habit, {date}. {len(data['stories'])} stories, in this order:\n{stories_block(data)}\n\n"
-           + (f"{rules}\n\n" if rules else "") + "Write the episode.")
-    script = llm.call(ask, writer_system(), WRITER_SCHEMA, model=c["writer_model"], purpose="show.write", effort="high", timeout=1500)
-    history, best, reads = [], None, 0
-    for rnd in range(2 * c["doctor_rounds"] + 2):   # a lint-only repair may follow any fix round that broke the format
-        errs = lint(script, data)
-        tr = None
-        if not errs:
-            tr = table_read(script, data)
-            reads += 1
-            if best is None or tr["total"] > best[1]["total"]:
-                best = (script, tr)
-        history.append({"round": rnd, "lint": errs, "table_read": tr})
-        progress.note(f"script round {rnd}: {len(errs)} lint problems" + (f", table read {tr['total']}/{tr['max']}" if tr else ""))
-        if (tr and tr["pass"]) or (tr and reads > c["doctor_rounds"]) or rnd == 2 * c["doctor_rounds"] + 1:
-            break
-        notes = "\n".join(f"- {e}" for e in errs) or "\n".join(f"- {f['row']}: {f['fix']}" for f in tr["fixes"] if tr["rows"].get(f["row"], 0) < 2)
-        keep = ""   # rows the table read already scored 2: their lines stay word for word (Ep 7: each round fixed two rows
-        if tr:      # and broke one, ending 1 -> 2 -> 1)
-            good = [r for r, v in tr["rows"].items() if v >= 2]
-            keep = (f"\nAlready ready to air (scored 2), keep these as they are and don't trade them away: {', '.join(good)}. "
-                    "Change only the segments the notes name.") if good else ""
-        script = llm.call(f"{ask}\n\nYour draft:\n{json.dumps(script, ensure_ascii=False)}\n\nFix these problems (keep what works, "
-                          f"change only what the notes need, every rule still applies; count the words of every segment: 22-28):\n{notes}{keep}",
-                          writer_system(), WRITER_SCHEMA, model=c["doctor_model"], purpose=f"show.doctor{rnd + 1}", effort="medium", timeout=1500)
-    (out / "script-rounds.json").write_text(json.dumps(history, ensure_ascii=False, indent=1))
-    if best is None:
-        raise RuntimeError(f"no draft passed the script checks: {history[-1]['lint'][:4]}")
-    script = best[0]
-    script["table_read"] = best[1]
-    path.write_text(json.dumps(script, ensure_ascii=False, indent=1))
+    rundown_config(save=True)   # sync the numbers before the skill reads its config
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "rundown-input.json").write_text(json.dumps({**rundown_input(data, ep, date), "slug": out.name}, ensure_ascii=False, indent=1))
+    (out / "rundown-rules.txt").write_text(analogy_rules() + ("\n" + rules if rules else ""))
+    with progress.step("script-writer (shorts-writer rundown)", desk="writer") as info:
+        r = subprocess.run([sys.executable, str(RUNDOWN), "--project", str(ROOT), "write", str(out / "rundown-input.json"),
+                            "--out", str(out), "--rules", str(out / "rundown-rules.txt")], capture_output=True, text=True, timeout=7200)
+        for line in r.stderr.splitlines():
+            if line.startswith("round "):
+                progress.note(f"script {line}")
+        if r.returncode or not path.exists():
+            raise RuntimeError(f"script-writer: {(r.stderr or r.stdout)[-600:]}")
+        script = json.loads(path.read_text())
+        info["table_read"] = f"{script['table_read']['total']}/{script['table_read']['max']}"
     return script
 
 
