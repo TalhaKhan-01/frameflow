@@ -7,12 +7,14 @@
    "text": "Make every screenshot and the Breaking lower third match the narration at that moment: the open strip must name the story spoken in the open line, and each source shot must be cropped or highlighted on the exact passage that supports the claim, with a date that fits the episode.",
    "source": "fixes up to 2026-11-04-daily-habit-ep6",
    "status": "trial",
-   "alpha": 1.0,
+   "alpha": 2.0,
    "beta": 1.0,
-   "trials": 0,
+   "trials": 1,
    "created": "2026-11-05T12:12:18",
-   "updated": "2026-11-05T12:12:18",
-   "log": []
+   "updated": "2026-11-09T09:26:16",
+   "log": [
+    "2026-11-09 2026-11-06-daily-habit-ep7: screen story 2.0 vs baseline 0.60"
+   ]
   },
   {
    "id": "R2",
@@ -21,12 +23,14 @@
    "text": "Keep all captions and stamps off other text: hide the title-card text while the open caption shows, keep captions within x 60–900 and clear of screenshot edges, place stamps in a corner away from numbers and sublines, and crop screenshots to the headline so text is phone-readable (at least 34 px).",
    "source": "fixes up to 2026-11-04-daily-habit-ep6",
    "status": "trial",
-   "alpha": 1.0,
+   "alpha": 2.0,
    "beta": 1.0,
-   "trials": 0,
+   "trials": 1,
    "created": "2026-11-05T12:12:18",
-   "updated": "2026-11-05T12:12:18",
-   "log": []
+   "updated": "2026-11-09T09:26:16",
+   "log": [
+    "2026-11-09 2026-11-06-daily-habit-ep7: screen readability 1.0 vs baseline 0.62"
+   ]
   },
   {
    "id": "R3",
@@ -35,13 +39,14 @@
    "text": "State each claim only as strongly as the source facts support: attribute reported reasons with 'reportedly' or 'according to', never turn a correlation into a cause, avoid absolutes like 'no names' when caveats exist, and name the real speaker.",
    "source": "fixes up to 2026-11-04-daily-habit-ep6",
    "status": "trial",
-   "alpha": 1.5,
-   "beta": 1.5,
-   "trials": 1,
+   "alpha": 2.0,
+   "beta": 2.0,
+   "trials": 2,
    "created": "2026-11-05T12:12:18",
-   "updated": "2026-11-05T12:26:38",
+   "updated": "2026-11-09T09:26:16",
    "log": [
-    "2026-11-05 practice on 2026-11-04-daily-habit-ep6: accuracy 1 with vs 1 without"
+    "2026-11-05 practice on 2026-11-04-daily-habit-ep6: accuracy 1 with vs 1 without",
+    "2026-11-09 2026-11-06-daily-habit-ep7: script accuracy 1.0 vs baseline 1.08"
    ]
   },
   {
@@ -51,29 +56,88 @@
    "text": "Write every segment so it is understood by ear: round long numbers to a speakable figure, give a short identifier before any unfamiliar name or jargon term, and check that each segment is 22–28 spoken words with no repeated words.",
    "source": "fixes up to 2026-11-04-daily-habit-ep6",
    "status": "trial",
+   "alpha": 1.5,
+   "beta": 1.5,
+   "trials": 1,
+   "created": "2026-11-05T12:12:18",
+   "updated": "2026-11-09T09:26:16",
+   "log": [
+    "2026-11-09 2026-11-06-daily-habit-ep7: script clarity 1.0 vs baseline 1.13"
+   ]
+  },
+  {
+   "id": "R5",
+   "desk": "visuals",
+   "row": "screen seen_heard",
+   "text": "Show each spoken key number or claim on screen at the moment it is said: put a big-number card or on-photo label with that exact figure under the line, and never leave a generic stock photo or an unrelated quote card over a number line.",
+   "source": "fixes up to 2026-11-06-daily-habit-ep7",
+   "status": "trial",
    "alpha": 1.0,
    "beta": 1.0,
    "trials": 0,
-   "created": "2026-11-05T12:12:18",
-   "updated": "2026-11-05T12:12:18",
+   "created": "2026-11-09T09:26:23",
+   "updated": "2026-11-09T09:26:23",
+   "log": []
+  },
+  {
+   "id": "R6",
+   "desk": "visuals",
+   "row": "screen readability",
+   "text": "Never let a cutout, logo tile, stamp or caption overlap an article card's headline or subline: place the cutout in its own panel, crop each screenshot to the highlighted headline with no cut-off sentence at the bottom, and make that headline fill at least half the card width.",
+   "source": "fixes up to 2026-11-06-daily-habit-ep7",
+   "status": "trial",
+   "alpha": 1.0,
+   "beta": 1.0,
+   "trials": 0,
+   "created": "2026-11-09T09:26:23",
+   "updated": "2026-11-09T09:26:23",
+   "log": []
+  },
+  {
+   "id": "R7",
+   "desk": "writer",
+   "row": "script clarity",
+   "text": "Make each segment end with a spoken handoff that links to the next story (for example 'Now, ...' or 'Next, ...'), and replace any aside that puts two nouns side by side (like 'settings runs') with a short plain sentence that reads clearly aloud.",
+   "source": "fixes up to 2026-11-06-daily-habit-ep7",
+   "status": "trial",
+   "alpha": 1.0,
+   "beta": 1.0,
+   "trials": 0,
+   "created": "2026-11-09T09:26:23",
+   "updated": "2026-11-09T09:26:23",
+   "log": []
+  },
+  {
+   "id": "R8",
+   "desk": "writer",
+   "row": "script accuracy",
+   "text": "Never present our own summary as a verbatim quote or credit it to a named source, and never skip steps in a chain of events: state only the facts in the source, and say 'about' or 'reportedly' for approximate or unverified figures.",
+   "source": "fixes up to 2026-11-06-daily-habit-ep7",
+   "status": "trial",
+   "alpha": 1.0,
+   "beta": 1.0,
+   "trials": 0,
+   "created": "2026-11-09T09:26:23",
+   "updated": "2026-11-09T09:26:23",
    "log": []
   }
  ],
  "baselines": {
-  "script hook": 1.436,
-  "script clarity": 1.13,
+  "script hook": 1.262,
+  "script clarity": 1.078,
   "script wit": 2.0,
-  "script flow": 1.24,
-  "script accuracy": 1.078,
-  "script variety": 1.922,
-  "script ending": 1.708,
+  "script flow": 1.544,
+  "script accuracy": 1.047,
+  "script variety": 1.553,
+  "script ending": 1.825,
   "screen look": 1.0,
-  "screen readability": 0.616,
-  "screen framing": 1.4,
-  "screen captions": 1.0,
-  "screen package": 1.4,
-  "screen story": 0.6,
-  "screen habit": 1.0
+  "screen readability": 0.77,
+  "screen framing": 1.64,
+  "screen captions": 1.4,
+  "screen package": 1.64,
+  "screen story": 1.16,
+  "screen habit": 1.4,
+  "screen seen_heard": 1.0
  },
  "history": [
   {
@@ -213,7 +277,36 @@
    },
    "scored": [],
    "changes": []
+  },
+  {
+   "episode": "2026-11-06-daily-habit-ep7",
+   "at": "2026-11-09T09:26:16",
+   "total": 23.0,
+   "rows": {
+    "script hook": 1.0,
+    "script clarity": 1.0,
+    "script wit": 2.0,
+    "script flow": 2.0,
+    "script accuracy": 1.0,
+    "script variety": 1.0,
+    "script ending": 2.0,
+    "screen look": 1.0,
+    "screen readability": 1.0,
+    "screen framing": 2.0,
+    "screen captions": 2.0,
+    "screen package": 2.0,
+    "screen story": 2.0,
+    "screen habit": 2.0,
+    "screen seen_heard": 1.0
+   },
+   "scored": [
+    "R4",
+    "R3",
+    "R2",
+    "R1"
+   ],
+   "changes": []
   }
  ],
- "next_id": 5
+ "next_id": 9
 }

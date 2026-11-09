@@ -1,0 +1,255 @@
+{
+ "topic": "The Daily Habit Ep 7: today's 8 stories (Binance hack began with a fake job; Rupee slips to 94.55 per dollar; Voyager 1 nears one light-day; Apple to let apps pitch at cancel; Google widens voluntary buyouts; Giant AI claims to run on one CPU; Canva shake-up affects 1,271 staff; GTA 6 pre-load: 212 GB)",
+ "angle_hint": "An episode digest carousel: slide 1 a bold hook naming the biggest story and that there are 8 stories today; then one stat, compare or fact slide per story for the first five stories in the episode's order (each with its own source); a close slide inviting people to watch the full episode for all of them.",
+ "facts": [
+  {
+   "id": "s1f1",
+   "text": "Binance says about $6.34 billion in digital assets was stolen on October 29, 2026.",
+   "source": "https://www.bleepingcomputer.com/news/security/binance-says-fake-job-interview-led-to-63-billion-crypto-heist/",
+   "story": 1
+  },
+  {
+   "id": "s1f2",
+   "text": "The attack began in September when a software engineer was contacted through a legitimate job-hunting platform by someone impersonating a Project Director at a fictitious company. The fake recruiter scheduled two interviews: first with someone posing as an HR representative (live video call), then with someone claiming to be the CEO, held on a social chat application, where the employee was told to download a coding assignment from an online code repository.",
+   "source": "https://www.bleepingcomputer.com/news/security/binance-says-fake-job-interview-led-to-63-billion-crypto-heist/",
+   "story": 1
+  },
+  {
+   "id": "s1f3",
+   "text": "The assignment hid previously unseen custom malware that antivirus did not detect.",
+   "source": "https://www.bleepingcomputer.com/news/security/binance-says-fake-job-interview-led-to-63-billion-crypto-heist/",
+   "story": 1
+  },
+  {
+   "id": "s1f4",
+   "text": "By October 20 the attackers used the laptop and an internal AI tool to compromise two more wallet-team employees, then used their credentials to reach the wallet signing service on October 29.",
+   "source": "https://www.bleepingcomputer.com/news/security/binance-says-fake-job-interview-led-to-63-billion-crypto-heist/",
+   "story": 1
+  },
+  {
+   "id": "s1f5",
+   "text": "The FBI attributes the attack to North Korean state-sponsored hackers (TraderTraitor/Lazarus). As of Nov 3, about $2.85 billion of stolen assets was frozen or intercepted; as of Oct 31, 98% of impacted token assets had been replenished.",
+   "source": "https://www.bleepingcomputer.com/news/security/binance-says-fake-job-interview-led-to-63-billion-crypto-heist/",
+   "story": 1
+  },
+  {
+   "id": "s2f1",
+   "text": "In a Reuters poll of 37 FX strategists (Nov 2–4), the median forecast sees the rupee weakening from about 94.70 per dollar to 96.00 by end-January and 96.33 by end-April.",
+   "source": "https://www.gulf-times.com/article/737498/business/india-rupee-seen-set-to-resume-slide-as-foreign-inflows-remain-weak",
+   "story": 2
+  },
+  {
+   "id": "s2f2",
+   "text": "The rupee is down 5% this year and hit a record low of 96.96 per dollar in May.",
+   "source": "https://www.gulf-times.com/article/737498/business/india-rupee-seen-set-to-resume-slide-as-foreign-inflows-remain-weak",
+   "story": 2
+  },
+  {
+   "id": "s2f3",
+   "text": "BofA is the most bearish, calling for 99 per dollar within 12 months. Morgan Stanley expects a record low in early 2027. No respondent expects the rupee to breach 100.",
+   "source": "https://www.gulf-times.com/article/737498/business/india-rupee-seen-set-to-resume-slide-as-foreign-inflows-remain-weak",
+   "story": 2
+  },
+  {
+   "id": "s2f4",
+   "text": "The pressures are higher oil prices (India is the world's third-largest energy importer) and record foreign investor outflows. The RBI's latest measures have raised hedging costs, which makes it harder for foreign investors to come back.",
+   "source": "https://www.gulf-times.com/article/737498/business/india-rupee-seen-set-to-resume-slide-as-foreign-inflows-remain-weak",
+   "story": 2
+  },
+  {
+   "id": "s2f5",
+   "text": "Forex reserves have fallen to $719.75bn, and forward dollar liabilities are at a record $239.2bn.",
+   "source": "https://www.gulf-times.com/article/737498/business/india-rupee-seen-set-to-resume-slide-as-foreign-inflows-remain-weak",
+   "story": 2
+  },
+  {
+   "id": "s2f6",
+   "text": "On Nov 5 the rupee fell 9 paise to 94.55 against the dollar in early trade. The previous close was 94.46 after a 29-paise gain.",
+   "source": "https://telanganatoday.com/rupee-slips-9-paise-to-94-55-against-us-dollar-in-early-trade",
+   "story": 2
+  },
+  {
+   "id": "s3f1",
+   "text": "Voyager 1 reaches one light-day from Earth at 12:16:07 a.m. CST on November 18, 2026, according to NASA.",
+   "source": "https://earthsky.org/space/voyager-1-1-light-day-from-earth-november-17-18-2026/",
+   "story": 3
+  },
+  {
+   "id": "s3f2",
+   "text": "One light-day is about 16.1 billion miles (25.9 billion km), or 173.14 AU.",
+   "source": "https://earthsky.org/space/voyager-1-1-light-day-from-earth-november-17-18-2026/",
+   "story": 3
+  },
+  {
+   "id": "s3f3",
+   "text": "Voyager 1 launched September 5, 1977. The trip to one light-day took 49 years, 2 months and 11 days.",
+   "source": "https://earthsky.org/space/voyager-1-1-light-day-from-earth-november-17-18-2026/",
+   "story": 3
+  },
+  {
+   "id": "s3f4",
+   "text": "A one-way message to Voyager 1 will take about a day. Voyager 2 reaches one light-day in November 2035.",
+   "source": "https://earthsky.org/space/voyager-1-1-light-day-from-earth-november-17-18-2026/",
+   "story": 3
+  },
+  {
+   "id": "s3f5",
+   "text": "Most instruments on the Voyagers no longer work. NASA turned off the LECP instrument in April 2026 to save power.",
+   "source": "https://earthsky.org/space/voyager-1-1-light-day-from-earth-november-17-18-2026/",
+   "story": 3
+  },
+  {
+   "id": "s4f1",
+   "text": "Apple's Retention Messaging tool lets developers reach subscribers at the moment they choose to cancel, with custom messages about the subscription's value, images and an optional special offer.",
+   "source": "https://www.macrumors.com/2026/06/11/apple-introduces-app-store-subscription-overhaul/",
+   "story": 4
+  },
+  {
+   "id": "s4f2",
+   "text": "Developers can set it up in App Store Connect or via a new Retention Messaging API for real-time interaction; MacRumors says it arrives this fall (announced at WWDC 2026).",
+   "source": "https://www.macrumors.com/2026/06/11/apple-introduces-app-store-subscription-overhaul/",
+   "story": 4
+  },
+  {
+   "id": "s4f3",
+   "text": "Apps can show a simple static message, dynamic progress based on the user's app state, or a special offer (Apple's example: three months free, or promoting annual-plan discounts), in a card labelled 'from the developer'.",
+   "source": "https://9to5mac.com/2025/07/23/apple-retention-offers-in-app-purchase/",
+   "story": 4
+  },
+  {
+   "id": "s4f4",
+   "text": "It appears when a user goes to cancel in the Settings Subscriptions screen, before they confirm the cancellation, with the Cancel Subscription button always prominently visible. It applies to subscriptions managed through Apple's In-App Purchase system. As of the article, it was a pre-release feature requiring developers to register interest.",
+   "source": "https://9to5mac.com/2025/07/23/apple-retention-offers-in-app-purchase/",
+   "story": 4
+  },
+  {
+   "id": "s5f1",
+   "text": "Google has offered voluntary exit packages since June 2026 to some employees in Canada, France, Germany, Japan and Switzerland, widening a scheme already run in the US and UK.",
+   "source": "https://thenextweb.com/news/google-voluntary-buyouts-five-countries",
+   "story": 5
+  },
+  {
+   "id": "s5f2",
+   "text": "Swiss staff were offered one month's pay for each year worked, capped at one year's salary.",
+   "source": "https://thenextweb.com/news/google-voluntary-buyouts-five-countries",
+   "story": 5
+  },
+  {
+   "id": "s5f3",
+   "text": "DeepMind was left out of the Swiss scheme; earlier rounds also excluded Google Cloud and DeepMind.",
+   "source": "https://thenextweb.com/news/google-voluntary-buyouts-five-countries",
+   "story": 5
+  },
+  {
+   "id": "s5f4",
+   "text": "Reuters could not establish how many people took up the offers; in one team of roughly 50, at least four signed up, according to one of the sources.",
+   "source": "https://thenextweb.com/news/google-voluntary-buyouts-five-countries",
+   "story": 5
+  },
+  {
+   "id": "s5f5",
+   "text": "Last week, Microsoft offered buyouts to 60,000 employees. The Reuters report was published on the day of the article, but the page gives no date.",
+   "source": "https://thenextweb.com/news/google-voluntary-buyouts-five-countries",
+   "story": 5
+  },
+  {
+   "id": "s6f1",
+   "text": "The repo FareedKhan-dev/kimi-k3-in-c describes itself as a 2.78-trillion-parameter Kimi K3 running inference on a single CPU in 8.24 GB of RAM.",
+   "source": "https://github.com/FareedKhan-dev/kimi-k3-in-c",
+   "story": 6
+  },
+  {
+   "id": "s6f2",
+   "text": "It is written in portable C99 with no BLAS, no framework and no GPU.",
+   "source": "https://github.com/FareedKhan-dev/kimi-k3-in-c",
+   "story": 6
+  },
+  {
+   "id": "s6f3",
+   "text": "The repo shows about 11.3k stars and 1.8k forks, under an Apache-2.0 license.",
+   "source": "https://github.com/FareedKhan-dev/kimi-k3-in-c",
+   "story": 6
+  },
+  {
+   "id": "s6f4",
+   "text": "Repo topics include mxfp4, quantization, mixture-of-experts, linear-attention and avx2, which hint at 4-bit weights and x86 SIMD. The page does not spell this out.",
+   "source": "https://github.com/FareedKhan-dev/kimi-k3-in-c",
+   "story": 6
+  },
+  {
+   "id": "s6f5",
+   "text": "The repo is hosted under the user account FareedKhan-dev, with no Moonshot affiliation shown on the page. No releases appear under the Releases heading.",
+   "source": "https://github.com/FareedKhan-dev/kimi-k3-in-c",
+   "story": 6
+  },
+  {
+   "id": "s7f1",
+   "text": "As many as 1,271 Canva staff, or 22% of headcount, will be affected by layoffs, role changes or relocations.",
+   "source": "https://smartcompany.com.au/technology/hardest-moment-canva-to-cut-change-more-than-1200-jobs",
+   "story": 7
+  },
+  {
+   "id": "s7f2",
+   "text": "Perkins wrote: \"This is without doubt the hardest moment in our thirteen-year history.\" She also said: \"This has been our hardest year yet.\"",
+   "source": "https://smartcompany.com.au/technology/hardest-moment-canva-to-cut-change-more-than-1200-jobs",
+   "story": 7
+  },
+  {
+   "id": "s7f3",
+   "text": "Reasons given: growth has slowed for the first time in a decade, and there is concern design firms may lose business to AI tools. Canva will merge some functions and make Sydney the main home for more product teams.",
+   "source": "https://smartcompany.com.au/technology/hardest-moment-canva-to-cut-change-more-than-1200-jobs",
+   "story": 7
+  },
+  {
+   "id": "s7f4",
+   "text": "Affected staff get at least six months' salary plus a year of healthcare cover, and Canva will launch a fund of US$10,000 grants for departing staff starting businesses.",
+   "source": "https://smartcompany.com.au/technology/hardest-moment-canva-to-cut-change-more-than-1200-jobs",
+   "story": 7
+  },
+  {
+   "id": "s7f5",
+   "text": "From January, most hybrid Canva staff will be expected in the office two to three days a week.",
+   "source": "https://smartcompany.com.au/technology/hardest-moment-canva-to-cut-change-more-than-1200-jobs",
+   "story": 7
+  },
+  {
+   "id": "s8f1",
+   "text": "Rockstar has confirmed the GTA 6 pre-load file will require up to 212 GB depending on your device (PS5 and Xbox Series X|S), so players need ample space for digital pre-loading.",
+   "source": "https://gamesradar.com/games/grand-theft-auto/rockstar-confirms-gta-6-is-212gb-pre-loading-opens-earlier-than-previously-announced-for-digital-orders",
+   "story": 8
+  },
+  {
+   "id": "s8f2",
+   "text": "Digital pre-loads on PS5 and Xbox begin 9 days before launch (headline); the search summary gives the pre-load date as Nov 10.",
+   "source": "https://techradar.com/gaming/gta-6-digital-pre-loads-for-ps5-and-xbox-will-begin-9-days-early-and-require-a-whopping-212gb-of-free-space",
+   "story": 8
+  },
+  {
+   "id": "s8f3",
+   "text": "Pre-loading opens earlier than previously announced for digital orders.",
+   "source": "https://gamesradar.com/games/grand-theft-auto/rockstar-confirms-gta-6-is-212gb-pre-loading-opens-earlier-than-previously-announced-for-digital-orders",
+   "story": 8
+  },
+  {
+   "id": "s8f4",
+   "text": "Tech Insider's own pieces cover the 212GB size and say the pre-load was moved up two days (from Nov 12).",
+   "source": "https://tech-insider.org/gta-6-download-size-212gb-preload-moved-up-two-days-2026/",
+   "story": 8
+  }
+ ],
+ "lane": "global-tech",
+ "cautions": [
+  "Could not open the Guardian, BBC or FT pages; facts are from BleepingComputer, which reports Binance's own disclosure. Search summaries of other outlets agree but were not read directly.",
+  "Only one page was read in full; Axios returned 403, so there is no second independent read.",
+  "Binance has not formally tied the employee compromise to a specific North Korean campaign; the FBI attribution is separate.",
+  "Figure is $6.3bn in some outlets and $6.34bn in others.",
+  "Do not say customers lost money: 98% of impacted token assets were replenished, but the source says little more on customer impact.",
+  "Some reports give different start dates for the attack (September vs June); BleepingComputer says September.",
+  "I could not open the Reuters page itself. The poll facts come from Gulf Times' republication of the Reuters story, dated Nov 4, 2026.",
+  "The 94.55 figure is from a PTI report on Nov 5 (via Telangana Today). I only saw it in search-result excerpts, not on the page. It is a different report from the Reuters poll.",
+  "These are median forecasts from a poll, not certainties. Nobody in the poll expects the rupee to pass 100 per dollar.",
+  "The rupee is near 95 largely because of regular RBI intervention. The RBI says it has no target level and only curbs volatility. Analysts' views on that differ.",
+  "The rupee touched a two-week high on Wednesday after US Democrats won majorities in the Senate and House. So the slide has not yet resumed, and the poll is a forecast.",
+  "The milestone has NOT happened yet as of Nov 9, 2026. Say 'will reach' on Nov 18, not 'has reached'."
+ ]
+}
